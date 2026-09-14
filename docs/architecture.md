@@ -1,17 +1,17 @@
 # MMA Mastery App — Architecture
 
-Source de vérité Phase 0. Statut: validé, passe corrective appliquée (voir `decisions/`).
+Reflète l'état réel du code (dernière mise à jour: lot AI Coach + PWA). Voir `decisions/` pour le détail des choix et leurs justifications.
 
-## Stack
+## Stack (réelle)
 
-- Frontend: Next.js 14 (App Router), React, TypeScript strict, Tailwind, shadcn/ui
-- Animation: Framer Motion, Lucide Icons
-- DB: PostgreSQL (Supabase), extension pgvector
+- Frontend: Next.js 15 (App Router), React 19, TypeScript strict, Tailwind v4, shadcn/ui (`@base-ui/react`), Lucide Icons
+- DB: PostgreSQL (Supabase)
 - Auth: Supabase Auth + Row Level Security
-- IA locale: Ollama (LLM + embeddings) — interchangeable, voir `AIProvider`
-- IA cloud (fallback): Claude API
-- Charts: Recharts
-- Vidéo (future, Phase 9): FFmpeg, OpenCV, modèles à choisir en phase
+- Validation: Zod
+- Tests: Vitest
+- IA: fondation déterministe (`DeterministicCoachProvider`), provider Ollama local optionnel via `fetch` brut — aucune dépendance IA npm, aucune clé cloud. Voir `decisions/0005`.
+
+Pas de Framer Motion, pas de Recharts, pas d'intégration Claude/API cloud, pas de pgvector/VectorStore: ces éléments figuraient dans le plan Phase 0 initial mais n'ont jamais été construits. Ne pas s'y fier — cette section documente ce qui existe réellement.
 
 ## Couches
 
@@ -22,88 +22,69 @@ Use cases (lib/usecases) — logique applicative, transactions, invariants
   ↓
 Domain (lib/domain) — types, règles pures, validation Zod, calculs dérivés (ex: mastery_stage)
   ↓
-Infrastructure (lib/infra) — repositories DB, adapters IA, VectorStore
+Infrastructure (lib/infra) — repositories DB (Supabase), adapters IA
 ```
 
 Règle: aucun accès DB ni appel IA direct depuis un composant UI. Toute logique de calcul dérivé (ex: `mastery_stage`) vit dans `lib/domain`, testable indépendamment de la DB.
 
-## Arborescence
+## Arborescence (réelle)
 
 ```
-/app                    routes (dashboard, training, skills, goals, analytics, search, profile)
-/components             UI partagés
+/app
+  /dashboard            "que travailler aujourd'hui" (Training Intelligence V2)
+  /coach                AI Coach — réponse + faits sources + question libre
+  /training             historique, /new (saisie séance), /[id] (+ /edit), /review (learning review loop)
+  /skills               liste, /map (skill graph), /[id] (détail + progression)
+  /profile, /login, /signup
+/components
+  /ui                   primitives shadcn (button, card, badge, dialog, ...)
+  /training, /coach      composants métier par domaine
 /lib
-  /domain               types, règles métier pures, calculs dérivés
-  /usecases             orchestration (createTrainingSession, recomputeSkillProgress, ...)
+  /domain               types, règles métier pures, calculs dérivés — zéro dépendance DB/réseau
+  /usecases             orchestration server-only ("use server" pour les actions appelées du client)
   /infra
-    /db                 repositories Supabase/Postgres
-    /ai                 adapters (Ollama, Claude, embeddings)
-    /vectorstore        abstraction + impl pgvector
+    /db                 clients Supabase (server, service role)
+    /ai                 DeterministicCoachProvider (défaut), OllamaCoachProvider (optionnel)
+    /vectorstore         vide — jamais implémenté, RAG hors scope actuel
 /supabase/migrations    schéma SQL versionné, additif uniquement
 /docs
   architecture.md
   data-model.md
   /decisions            ADRs courts
 /tests
+  /domain               un fichier par module lib/domain
+  /usecases, /infra      couverture ciblée des points critiques (ex: fallback AI Coach)
 ```
 
-## Couche IA — abstractions
+## AI Coach — architecture réelle
 
-Aucune implémentation n'est architecturalement irréversible. `Ollama` et un éventuel fournisseur cloud sont des adapters interchangeables derrière ces interfaces (définies dans `lib/domain`, implémentées dans `lib/infra/ai`):
+Contrat `AIProvider` (`lib/domain/ai-coach.ts`): `generateCoachResponse(context, question?)`. Toute implémentation s'y conforme, aucune dépendance réseau dans le domaine.
 
-```typescript
-interface AIProvider {
-  complete(prompt: string, opts?: CompletionOptions): Promise<{ text: string; usage: Usage }>
-  chat(messages: ChatMessage[], opts?: CompletionOptions): Promise<{ text: string; usage: Usage }>
-}
+- `CoachContext.facts[]` distingue `OBSERVED` (lu tel quel), `INFERRED` (dérivé par Training Intelligence/Review, déjà validés ailleurs dans l'app), `HYPOTHESIS` (jamais mélangée aux deux premières).
+- `buildCoachContext()` (`lib/usecases/ai-coach-actions.ts`) n'invente rien: assemblé uniquement depuis `getTrainingIntelligenceBundle()` et `getReviewQueue()`.
+- `DeterministicCoachProvider`: aucun appel réseau, réorganise les faits reçus. Provider par défaut, toujours disponible.
+- `OllamaCoachProvider` (optionnel, `lib/infra/ai/ollama-provider.ts`): activé seulement si `OLLAMA_BASE_URL`/`OLLAMA_MODEL` sont définies (variables serveur uniquement). Réponse du modèle renvoyée en `summary` uniquement, jamais en `recommendations` (une recommandation générée ne peut pas être vérifiée contre un fait réel).
+- `getCoachResponse()` retombe sur le provider déterministe au moindre échec du provider configuré — un Ollama absent, injoignable, ou en erreur ne casse jamais le coach.
+- UI `/coach`: affiche la réponse, le provider actif, les faits sources (dépliables), et un formulaire de question libre.
 
-interface EmbeddingProvider {
-  readonly modelVersion: string
-  embed(texts: string[]): Promise<number[][]>
-}
+## RLS — principe (vérifié dans les migrations)
 
-interface VectorStore {
-  upsert(documentId: string, vector: number[], metadata: Record<string, unknown>): Promise<void>
-  search(vector: number[], topK: number, filter?: Record<string, unknown>): Promise<SearchResult[]>
-  delete(documentId: string): Promise<void>
-}
-```
-
-- `AIProvider`: implémentations `OllamaAIProvider` (défaut, coût zéro, confidentialité), `ClaudeAIProvider` (fallback qualité). Sélection par config/env, jamais par un `import` direct hors `lib/infra/ai`.
-- `EmbeddingProvider`: `OllamaEmbeddingProvider` par défaut. `modelVersion` propagé jusqu'à `Embedding.model_version` (voir data-model.md) pour permettre le ré-embedding sans perdre l'historique.
-- `VectorStore`: `PgVectorStore` (Postgres/pgvector) au MVP. Migration Qdrant possible sans changer le reste de l'app — seul l'adapter change.
-
-## Provenance des sources IA — règle produit
-
-Toute réponse générée par RAG doit citer sa source quand elle existe. Le pipeline:
-
-```
-Requête utilisateur
-  ↓
-VectorStore.search (Embedding → SearchDocument → Resource)
-  ↓
-AIProvider.chat (contexte + citations obligatoires)
-  ↓
-Message.citations = [{ resource_id, title, author, url, published_at?, source_locator? }]
-```
-
-Invariant appliqué en use case (pas en DB): si le contexte fourni au LLM contient au moins un `SearchDocument`, la réponse persistée doit avoir `citations` non vide. Une réponse sans contexte récupéré doit être marquée comme non sourcée (`citations: []`) plutôt que de simuler une source. Détail des champs de citation: voir `data-model.md` (Resource, SearchDocument).
-
-## RLS — principe
-
-- Tables user-owned (données personnelles): RLS `user_id = auth.uid()`, directe ou via la table parente (ex: `SessionObservation` via `TrainingSession.user_id`).
-- Tables catalogue partagé (Discipline, Skill, SkillRelation, Achievement, Resource, SearchDocument, Embedding): lecture publique, écriture réservée au rôle service (pas d'écriture utilisateur direct).
+- Tables user-owned (`profiles`, `training_sessions`, `session_techniques`, `session_observations`, `skill_progress`): RLS `user_id = auth.uid()`, directe ou via la table parente.
+- Tables catalogue partagé (`disciplines`, `skills`, `skill_relations`): lecture publique, pas d'écriture utilisateur direct.
+- Fonctions RPC (`create_training_session`, `update_training_session`): `security invoker`, scoping `auth.uid()` explicite — jamais `security definer` pour du code touchant des données utilisateur.
 
 ## Stratégie d'évolution du schéma
 
 - Migrations additives uniquement (nouvelle colonne nullable, nouvelle table) — pas de migration destructive sans ADR dédié.
 - `SkillRelation.relation_type` et les dimensions de `SkillProgress`: extensibles par ajout de valeur d'enum / colonne nullable, jamais par restructuration.
-- `Embedding` versionné par `model_version`: changer de modèle d'embedding n'écrase pas l'historique.
 
 ## Différé (non construit, schéma non créé)
 
-Club, ClubMember, messagerie de club: prévu conceptuellement (Phase 8), aucune table créée avant cette phase.
-Computer Vision (Video, VideoAnnotation): Phase 9, aucune table créée avant cette phase.
+- VectorStore / RAG / citations sourcées: envisagé au Phase 0 initial, jamais implémenté. Si un besoin réel de recherche sémantique apparaît, le réévaluer avec une vraie justification produit plutôt que ressusciter le plan initial tel quel.
+- Provider IA cloud (Claude API ou autre): volontairement hors scope (docs/decisions/0005) — pas de coût récurrent, pas de clé à gérer.
+- Club, ClubMember, messagerie de club, Computer Vision (Video, VideoAnnotation): jamais entamés.
+- PWA: manifest + viewport ajoutés; pas d'icône d'app dédiée (192/512 PNG) — nécessite une décision de design, pas fabriquée ici. Pas de mode offline.
+- Recherche globale (command center type Raycast): non implémentée — évaluer le besoin réel avant d'ajouter une dépendance.
 
 ## Décisions nécessitant validation
 
