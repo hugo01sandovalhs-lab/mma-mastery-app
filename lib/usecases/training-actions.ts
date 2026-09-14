@@ -99,9 +99,24 @@ export async function updateTrainingSession(
   redirect(`/training/${sessionId}`);
 }
 
-export async function deleteTrainingSession(sessionId: string): Promise<void> {
+export async function deleteTrainingSession(
+  sessionId: string,
+  prevState: TrainingActionState,
+): Promise<TrainingActionState> {
+  void prevState;
   const supabase = await createClient();
-  await supabase.from("training_sessions").delete().eq("id", sessionId);
+  const { error, count } = await supabase
+    .from("training_sessions")
+    .delete({ count: "exact" })
+    .eq("id", sessionId);
+
+  if (error) {
+    return { error: error.message };
+  }
+  if (!count) {
+    return { error: "Séance introuvable ou déjà supprimée." };
+  }
+
   redirect("/training");
 }
 

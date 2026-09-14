@@ -1,5 +1,6 @@
 "use client";
 
+import { useActionState } from "react";
 import { TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteTrainingSession } from "@/lib/usecases/training-actions";
+import { deleteTrainingSession, type TrainingActionState } from "@/lib/usecases/training-actions";
 
 export function DeleteSessionDialog({ sessionId }: { sessionId: string }) {
+  const [state, formAction, isPending] = useActionState<TrainingActionState, FormData>(
+    deleteTrainingSession.bind(null, sessionId),
+    { error: null },
+  );
+
   return (
     <Dialog>
       <DialogTrigger render={<Button variant="destructive" size="sm" />}>
@@ -28,10 +34,11 @@ export function DeleteSessionDialog({ sessionId }: { sessionId: string }) {
             également supprimées.
           </DialogDescription>
         </DialogHeader>
+        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>Annuler</DialogClose>
-          <form action={deleteTrainingSession.bind(null, sessionId)}>
-            <Button type="submit" variant="destructive" className="w-full">
+          <form action={formAction}>
+            <Button type="submit" variant="destructive" className="w-full" disabled={isPending}>
               Confirmer la suppression
             </Button>
           </form>
