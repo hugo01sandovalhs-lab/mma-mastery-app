@@ -30,14 +30,20 @@ export default async function EditTrainingSessionPage({
 
   return (
     <AppShell>
-      <h1 className="mb-4 text-xl font-semibold">Modifier la séance</h1>
-      <TrainingForm
-        disciplines={disciplines}
-        skills={skills}
-        action={updateTrainingSession.bind(null, id)}
-        initialData={session}
-        submitLabel="Enregistrer les modifications"
-      />
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+            Modifier la séance
+          </h1>
+        </div>
+        <TrainingForm
+          disciplines={disciplines}
+          skills={skills}
+          action={updateTrainingSession.bind(null, id)}
+          initialData={session}
+          submitLabel="Enregistrer les modifications"
+        />
+      </div>
     </AppShell>
   );
 }

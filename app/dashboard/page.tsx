@@ -8,8 +8,8 @@ import {
   MessageCircleQuestion,
   Sparkles,
   Target,
-  Zap,
 } from "lucide-react";
+import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,6 @@ import {
   TRAINING_PLAN_ACTION_COPY,
   type PriorityLevel,
   type SkillRecommendation,
-  type TrainingPlanActionType,
   type TrainingPlanResult,
 } from "@/lib/domain/training-intelligence";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
@@ -35,22 +34,6 @@ import { getSkillsProgressSummary, type SkillProgressSummary } from "@/lib/useca
 const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   high: "Priorité haute",
   medium: "Priorité moyenne",
-};
-
-const ACTION_TYPE_LABELS: Record<TrainingPlanActionType, string> = {
-  REVIEW: "À clarifier",
-  DRILL: "Drilling",
-  LIVE_APPLICATION: "Application live",
-  SPARRING_FOCUS: "Focus sparring",
-  REINFORCE: "À raviver",
-};
-
-const ACTION_TYPE_ICONS: Record<TrainingPlanActionType, typeof Dumbbell> = {
-  REVIEW: MessageCircleQuestion,
-  DRILL: Dumbbell,
-  LIVE_APPLICATION: Zap,
-  SPARRING_FOCUS: Flame,
-  REINFORCE: Target,
 };
 
 function relativeDays(iso: string): string {

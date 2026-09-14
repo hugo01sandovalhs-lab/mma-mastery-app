@@ -155,6 +155,12 @@ export async function getTrainingIntelligence(): Promise<TrainingIntelligenceRes
  * that needs both the full recommendation list and the single-focus plan
  * (the dashboard) does not issue the underlying queries twice.
  */
+export async function getTrainingPlan(): Promise<TrainingPlanResult> {
+  const inputs = await loadSkillIntelligenceInputs();
+  if (inputs.length === 0) return { status: "insufficient_data" };
+  return buildTrainingPlanSuggestion(inputs);
+}
+
 export async function getTrainingIntelligenceBundle(): Promise<{
   intelligence: TrainingIntelligenceResult;
   plan: TrainingPlanResult;
