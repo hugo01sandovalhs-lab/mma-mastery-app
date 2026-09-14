@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Search, Target } from "lucide-react";
+import { Network, Search, Target } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,16 +65,21 @@ export default async function SkillsPage({
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-            Compétences
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {skills.length} compétence{skills.length > 1 ? "s" : ""} au catalogue
-            {trackedCount > 0
-              ? ` · ${trackedCount} suivie${trackedCount > 1 ? "s" : ""}`
-              : ""}
-          </p>
+        <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-1.5">
+            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+              Compétences
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {skills.length} compétence{skills.length > 1 ? "s" : ""} au catalogue
+              {trackedCount > 0
+                ? ` · ${trackedCount} suivie${trackedCount > 1 ? "s" : ""}`
+                : ""}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" render={<Link href="/skills/map" />} className="w-fit">
+            <Network /> Carte de maîtrise
+          </Button>
         </div>
 
         <form className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_200px_auto]">

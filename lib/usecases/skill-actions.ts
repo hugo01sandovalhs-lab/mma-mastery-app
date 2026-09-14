@@ -86,6 +86,40 @@ export type SkillRelationItem = {
   skill: { id: string; name: string; slug: string };
 };
 
+export type SkillMapEdge = {
+  fromSkillId: string;
+  toSkillId: string;
+  relationType: SkillRelationType;
+};
+
+export type SkillMapData = {
+  skills: SkillListItem[];
+  edges: SkillMapEdge[];
+};
+
+/**
+ * Full catalog + relation graph for the mastery map. Reuses `getSkills` for
+ * nodes (already 2 queries, no N+1) and adds a single query for every
+ * relation edge — no per-skill relation lookups.
+ */
+export async function getSkillMap(): Promise<SkillMapData> {
+  const supabase = await createClient();
+  const skills = await getSkills();
+
+  const { data, error } = await supabase
+    .from("skill_relations")
+    .select("from_skill_id, to_skill_id, relation_type");
+  if (error) throw new Error(error.message);
+
+  const edges = (data ?? []).map((r) => ({
+    fromSkillId: r.from_skill_id as string,
+    toSkillId: r.to_skill_id as string,
+    relationType: r.relation_type as SkillRelationType,
+  }));
+
+  return { skills, edges };
+}
+
 export type SkillHistoryItem =
   | {
       kind: "technique";
