@@ -82,9 +82,13 @@ Contrat `AIProvider` (`lib/domain/ai-coach.ts`): `generateCoachResponse(context,
 
 - VectorStore / RAG / citations sourcées: envisagé au Phase 0 initial, jamais implémenté. Si un besoin réel de recherche sémantique apparaît, le réévaluer avec une vraie justification produit plutôt que ressusciter le plan initial tel quel.
 - Provider IA cloud (Claude API ou autre): volontairement hors scope (docs/decisions/0005) — pas de coût récurrent, pas de clé à gérer.
-- Club, ClubMember, messagerie de club, Computer Vision (Video, VideoAnnotation): jamais entamés.
+- Club, ClubMember, messagerie de club, Computer Vision (Video, VideoAnnotation), Knowledge/Sequence model, Study workflow, paiements: scope complet documenté (pas construit) dans `docs/decisions/0007-v3-scope-roadmap.md`.
 - PWA: manifest + viewport ajoutés; pas d'icône d'app dédiée (192/512 PNG) — nécessite une décision de design, pas fabriquée ici. Pas de mode offline.
 - Recherche globale (command center type Raycast): non implémentée — évaluer le besoin réel avant d'ajouter une dépendance.
+
+## Design Lab
+
+`/design` — 6 directions graphiques V3 (Fight Lab, Fitness Pro, Linear Fight, Performance Data, Championship, Technical Academy) rejouées sur les mêmes composants shadcn via des tokens CSS scopés (`data-fight-theme`, registre `lib/design/themes.ts`). Switch persistant en `localStorage`, aucun thème choisi définitivement. Ne remplace pas le thème global de l'app.
 
 ## Décisions nécessitant validation
 
