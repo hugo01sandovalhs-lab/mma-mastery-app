@@ -110,14 +110,20 @@ export type TrainingSessionListItem = {
   date: string;
   session_type: SessionType;
   title: string | null;
+  duration_minutes: number | null;
+  rpe: number | null;
   discipline: { code: string; name: string };
+  techniques: { technique_name: string }[];
+  observations: { count: number }[];
 };
 
 export async function getTrainingSessions(): Promise<TrainingSessionListItem[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("training_sessions")
-    .select("id, date, session_type, title, discipline:disciplines(code, name)")
+    .select(
+      "id, date, session_type, title, duration_minutes, rpe, discipline:disciplines(code, name), techniques:session_techniques(technique_name), observations:session_observations(count)",
+    )
     .order("date", { ascending: false });
 
   if (error) throw new Error(error.message);

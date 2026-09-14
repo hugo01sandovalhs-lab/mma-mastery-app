@@ -1,20 +1,41 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PlusIcon } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Dumbbell,
+  Flame,
+  MessageCircleQuestion,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
-import type { PriorityLevel } from "@/lib/domain/training-intelligence";
-import { getTrainingSessions } from "@/lib/usecases/training-actions";
+import {
+  MASTERY_STAGES,
+  MASTERY_STAGE_LABELS,
+  type MasteryStage,
+} from "@/lib/domain/skill";
+import type { PriorityLevel, SkillRecommendation } from "@/lib/domain/training-intelligence";
+import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
 import { getTrainingIntelligence } from "@/lib/usecases/training-intelligence-actions";
+import { getSkillsProgressSummary, type SkillProgressSummary } from "@/lib/usecases/skill-actions";
 
 const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   high: "Priorité haute",
   medium: "Priorité moyenne",
 };
+
+function relativeDays(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "aujourd'hui";
+  if (days === 1) return "hier";
+  return `il y a ${days} jours`;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -23,101 +44,298 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const sessions = await getTrainingSessions();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const [sessions, intelligence, progressSummary] = await Promise.all([
+    getTrainingSessions(),
+    getTrainingIntelligence(),
+    getSkillsProgressSummary(),
+  ]);
+
   const recent = sessions.slice(0, 5);
-  const intelligence = await getTrainingIntelligence();
+  const highPriorityCount =
+    intelligence.status === "ok"
+      ? intelligence.recommendations.filter((r) => r.priority === "high").length
+      : 0;
 
   return (
     <AppShell>
-      <h1 className="mb-4 text-xl font-semibold">Tableau de bord</h1>
+      <div className="flex flex-col gap-8">
+        <Hero
+          displayName={profile?.display_name ?? null}
+          sessionCount={sessions.length}
+          lastSessionDate={sessions[0]?.date ?? null}
+          highPriorityCount={highPriorityCount}
+        />
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>À travailler maintenant</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {intelligence.status === "insufficient_data" ? (
-            <p className="text-muted-foreground text-sm">
-              Pas encore assez de données pour recommander un skill précis. Continuez à enregistrer vos
-              séances.
+        <FocusSection intelligence={intelligence} />
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
+          <RecentActivity sessions={recent} />
+          <ProgressionSection summary={progressSummary} />
+        </div>
+
+        <QuickActions />
+      </div>
+    </AppShell>
+  );
+}
+
+function Hero({
+  displayName,
+  sessionCount,
+  lastSessionDate,
+  highPriorityCount,
+}: {
+  displayName: string | null;
+  sessionCount: number;
+  lastSessionDate: string | null;
+  highPriorityCount: number;
+}) {
+  const status =
+    sessionCount === 0
+      ? "Commencez votre suivi d'entraînement."
+      : highPriorityCount > 0
+        ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""} à prioriser cette semaine.`
+        : lastSessionDate
+          ? `Dernière séance ${relativeDays(lastSessionDate)}.`
+          : "Continuez votre progression.";
+
+  return (
+    <div className="flex flex-col gap-4 border-b border-border pb-8 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-1.5">
+        <p className="text-sm font-medium text-muted-foreground">
+          {displayName ? `Bonjour, ${displayName}` : "Bonjour"}
+        </p>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{status}</h1>
+        {sessionCount > 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {sessionCount} séance{sessionCount > 1 ? "s" : ""} enregistrée{sessionCount > 1 ? "s" : ""} au total
+          </p>
+        ) : null}
+      </div>
+      <Button size="lg" render={<Link href="/training/new" />} className="w-fit">
+        <Dumbbell /> Nouvelle séance
+      </Button>
+    </div>
+  );
+}
+
+function FocusSection({
+  intelligence,
+}: {
+  intelligence: Awaited<ReturnType<typeof getTrainingIntelligence>>;
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="size-4 text-primary" />
+        <h2 className="font-heading text-lg font-semibold tracking-tight">À travailler maintenant</h2>
+      </div>
+
+      {intelligence.status === "insufficient_data" ? (
+        <Card>
+          <CardContent className="flex flex-col items-start gap-2 py-8">
+            <Target className="size-6 text-muted-foreground" />
+            <p className="font-medium">Pas encore assez de données pour recommander un skill</p>
+            <p className="max-w-md text-sm text-muted-foreground">
+              Enregistrez des séances avec les compétences travaillées, vos difficultés et vos
+              questions. Dès qu&apos;un skill montre un signal clair (difficulté récente, sparring en
+              retard, pratique arrêtée...), il apparaîtra ici avec une action concrète.
             </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {intelligence.recommendations.map((rec) => (
-                <Card key={rec.skillId} className="border-muted">
-                  <CardContent className="flex flex-col gap-2 py-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-medium">{rec.skillName}</span>
-                      <Badge variant={rec.priority === "high" ? "default" : "secondary"}>
-                        {PRIORITY_LABELS[rec.priority]}
-                      </Badge>
-                    </div>
-                    <div className="text-sm">
-                      <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">
-                        Pourquoi ?
-                      </p>
-                      <ul className="list-disc pl-4">
-                        {rec.reasons.map((reason, i) => (
-                          <li key={i}>{reason}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="text-sm">
-                      <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">
-                        À faire maintenant
-                      </p>
-                      <p>→ {rec.action}</p>
-                    </div>
-                    <Link
-                      href={`/skills/${rec.skillId}`}
-                      className="text-sm underline underline-offset-2"
-                    >
-                      Voir le skill
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Séances enregistrées</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{sessions.length}</CardContent>
-        </Card>
-        <Card className="flex flex-1 items-center justify-center">
-          <CardContent className="flex w-full items-center justify-center pt-6">
-            <Button render={<Link href="/training/new" />}>
-              <PlusIcon /> Nouvelle séance
+            <Button variant="outline" size="sm" render={<Link href="/training/new" />} className="mt-1">
+              Enregistrer une séance <ArrowRight />
             </Button>
           </CardContent>
         </Card>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {intelligence.recommendations.map((rec) => (
+            <FocusCard key={rec.skillId} rec={rec} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Séances récentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recent.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Aucune séance pour le moment.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {recent.map((s) => (
-                <li key={s.id}>
-                  <Link href={`/training/${s.id}`} className="text-sm underline underline-offset-2">
-                    {new Date(s.date).toLocaleDateString("fr-FR")} — {s.title || SESSION_TYPE_LABELS[s.session_type]}
+function FocusCard({ rec }: { rec: SkillRecommendation }) {
+  const isHigh = rec.priority === "high";
+  return (
+    <Card className="relative overflow-hidden">
+      <span
+        className={`absolute inset-y-0 left-0 w-1 ${isHigh ? "bg-primary" : "bg-muted-foreground/40"}`}
+      />
+      <CardContent className="flex flex-col gap-2.5 pl-5">
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-medium leading-snug">{rec.skillName}</span>
+          <Badge variant={isHigh ? "default" : "secondary"} className="shrink-0">
+            {PRIORITY_LABELS[rec.priority]}
+          </Badge>
+        </div>
+
+        <p className="line-clamp-2 text-sm text-muted-foreground">{rec.reasons[0]}</p>
+        {rec.reasons.length > 1 ? (
+          <p className="text-xs text-muted-foreground">+{rec.reasons.length - 1} autre(s) signal(aux)</p>
+        ) : null}
+
+        <p className="flex items-start gap-1.5 text-sm">
+          <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
+          <span>{rec.action}</span>
+        </p>
+
+        <Link
+          href={`/skills/${rec.skillId}`}
+          className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+        >
+          Voir le skill <ArrowRight className="size-3.5" />
+        </Link>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Progression</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        {summary.totalTracked === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aucune compétence suivie pour l&apos;instant. La progression apparaîtra dès que vous
+            enregistrerez des séances avec des techniques.
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-col gap-2">
+              {MASTERY_STAGES.filter((stage) => stage !== "unknown").map((stage) => (
+                <StageBar
+                  key={stage}
+                  stage={stage}
+                  count={summary.stageCounts[stage] ?? 0}
+                  total={summary.totalTracked}
+                />
+              ))}
+            </div>
+
+            {summary.disciplines.length > 0 ? (
+              <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+                {summary.disciplines.map((d) => (
+                  <Badge key={d.name} variant="outline">
+                    {d.name} · {d.count}
+                  </Badge>
+                ))}
+              </div>
+            ) : null}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function StageBar({ stage, count, total }: { stage: MasteryStage; count: number; total: number }) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-24 shrink-0 text-xs text-muted-foreground">{MASTERY_STAGE_LABELS[stage]}</span>
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="w-6 shrink-0 text-right text-xs font-medium">{count}</span>
+    </div>
+  );
+}
+
+function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Activité récente</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {sessions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Aucune séance pour le moment.</p>
+        ) : (
+          <ul className="flex flex-col">
+            {sessions.map((s, i) => {
+              const techniqueNames = s.techniques.map((t) => t.technique_name);
+              const observationCount = s.observations[0]?.count ?? 0;
+              return (
+                <li
+                  key={s.id}
+                  className={`relative flex gap-3 pb-5 pl-4 ${
+                    i < sessions.length - 1 ? "border-l border-border" : "border-l border-transparent"
+                  }`}
+                >
+                  <span className="absolute top-1 -left-[4.5px] size-2 rounded-full bg-primary" />
+                  <Link href={`/training/${s.id}`} className="flex-1 min-w-0 group/item">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium group-hover/item:underline">
+                        {s.title || SESSION_TYPE_LABELS[s.session_type]}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(s.date).toLocaleDateString("fr-FR")}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      <Badge variant="secondary">{s.discipline.name}</Badge>
+                      <Badge variant="outline">{SESSION_TYPE_LABELS[s.session_type]}</Badge>
+                      {observationCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <MessageCircleQuestion className="size-3" />
+                          {observationCount}
+                        </span>
+                      ) : null}
+                    </div>
+                    {techniqueNames.length > 0 ? (
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
+                        {techniqueNames.join(" · ")}
+                      </p>
+                    ) : null}
                   </Link>
                 </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-    </AppShell>
+              );
+            })}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function QuickActions() {
+  const actions = [
+    { href: "/training/new", label: "Nouvelle séance", icon: Dumbbell },
+    { href: "/skills", label: "Mes compétences", icon: Target },
+    { href: "/training", label: "Historique complet", icon: Flame },
+  ];
+
+  return (
+    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {actions.map((a) => {
+        const Icon = a.icon;
+        return (
+          <Link key={a.href} href={a.href}>
+            <Card className="transition-colors hover:bg-muted/50">
+              <CardContent className="flex items-center gap-3 py-4">
+                <Icon className="size-4 text-primary" />
+                <span className="text-sm font-medium">{a.label}</span>
+                <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        );
+      })}
+    </section>
   );
 }

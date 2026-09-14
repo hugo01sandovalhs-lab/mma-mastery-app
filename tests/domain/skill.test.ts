@@ -3,6 +3,7 @@ import {
   computeMasteryStage,
   skillInputSchema,
   skillRelationInputSchema,
+  summarizeSkillProgress,
   type SkillProgressDimensions,
 } from "@/lib/domain/skill";
 
@@ -144,5 +145,45 @@ describe("skillRelationInputSchema", () => {
         relation_type: "friendship",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("summarizeSkillProgress", () => {
+  it("returns an empty summary with no fabricated data when there are no skills", () => {
+    expect(summarizeSkillProgress([])).toEqual({
+      totalTracked: 0,
+      stageCounts: {},
+      disciplines: [],
+    });
+  });
+
+  it("buckets each skill under its actual computed stage, never a stored one", () => {
+    const summary = summarizeSkillProgress([
+      { progress: baseProgress, disciplineName: "MMA" },
+      { progress: { ...baseProgress, knowledge_level: 1 }, disciplineName: "MMA" },
+      { progress: { ...baseProgress, drilling_reps: 5, knowledge_level: 1 }, disciplineName: "Jiu-Jitsu" },
+    ]);
+
+    expect(summary.totalTracked).toBe(3);
+    expect(summary.stageCounts).toEqual({ unknown: 1, introduced: 1, drilling: 1 });
+  });
+
+  it("counts skills per discipline and sorts disciplines by count descending", () => {
+    const summary = summarizeSkillProgress([
+      { progress: baseProgress, disciplineName: "MMA" },
+      { progress: baseProgress, disciplineName: "MMA" },
+      { progress: baseProgress, disciplineName: "Boxe" },
+    ]);
+
+    expect(summary.disciplines).toEqual([
+      { name: "MMA", count: 2 },
+      { name: "Boxe", count: 1 },
+    ]);
+  });
+
+  it("omits a skill from the discipline breakdown when its discipline is unknown", () => {
+    const summary = summarizeSkillProgress([{ progress: baseProgress, disciplineName: null }]);
+    expect(summary.totalTracked).toBe(1);
+    expect(summary.disciplines).toEqual([]);
   });
 });

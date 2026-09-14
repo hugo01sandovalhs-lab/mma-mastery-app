@@ -161,3 +161,36 @@ export function computeMasteryStage(progress: SkillProgressDimensions): MasteryS
 
   return "unknown";
 }
+
+export type SkillProgressSummary = {
+  totalTracked: number;
+  stageCounts: Partial<Record<MasteryStage, number>>;
+  disciplines: { name: string; count: number }[];
+};
+
+/**
+ * Pure aggregation of raw skill_progress rows into dashboard-ready counts.
+ * Stage is always recomputed via `computeMasteryStage` (never trusts a cached
+ * column), so this stays consistent with Training Intelligence V1.
+ */
+export function summarizeSkillProgress(
+  items: { progress: SkillProgressDimensions; disciplineName: string | null }[],
+): SkillProgressSummary {
+  const stageCounts: Partial<Record<MasteryStage, number>> = {};
+  const disciplineCounts = new Map<string, number>();
+
+  for (const item of items) {
+    const stage = computeMasteryStage(item.progress);
+    stageCounts[stage] = (stageCounts[stage] ?? 0) + 1;
+
+    if (item.disciplineName) {
+      disciplineCounts.set(item.disciplineName, (disciplineCounts.get(item.disciplineName) ?? 0) + 1);
+    }
+  }
+
+  const disciplines = Array.from(disciplineCounts.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return { totalTracked: items.length, stageCounts, disciplines };
+}

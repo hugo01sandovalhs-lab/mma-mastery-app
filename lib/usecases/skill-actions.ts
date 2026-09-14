@@ -5,8 +5,10 @@ import {
   computeMasteryStage,
   skillInputSchema,
   skillRelationInputSchema,
+  summarizeSkillProgress,
   type SkillInput,
   type SkillProgressDimensions,
+  type SkillProgressSummary,
   type SkillRelationInput,
   type SkillRelationType,
 } from "@/lib/domain/skill";
@@ -192,6 +194,35 @@ export async function updateSkillProgress(
     { onConflict: "user_id,skill_id" },
   );
   if (error) throw new Error(error.message);
+}
+
+export type { SkillProgressSummary };
+
+/**
+ * One-query fetch of the signed-in user's skill progress, aggregated for
+ * dashboard display via the pure `summarizeSkillProgress` domain function.
+ */
+export async function getSkillsProgressSummary(): Promise<SkillProgressSummary> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return summarizeSkillProgress([]);
+
+  const { data, error } = await supabase
+    .from("skill_progress")
+    .select(
+      "knowledge_level, drilling_reps, live_application_count, sparring_attempt_count, sparring_success_count, consistency_score, pressure_performance_level, confidence_level, evidence_count, last_practiced_at, skill:skills(discipline:disciplines(name))",
+    )
+    .eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+
+  type Row = SkillProgressDimensions & { skill: { discipline: { name: string } | null } | null };
+  const rows = (data ?? []) as unknown as Row[];
+
+  return summarizeSkillProgress(
+    rows.map((row) => ({ progress: row, disciplineName: row.skill?.discipline?.name ?? null })),
+  );
 }
 
 /** Catalog write — service role only, never exposed to arbitrary users. */
