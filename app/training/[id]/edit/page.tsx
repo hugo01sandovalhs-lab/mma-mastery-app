@@ -7,6 +7,7 @@ import {
   getTrainingSession,
   updateTrainingSession,
 } from "@/lib/usecases/training-actions";
+import { getSkills } from "@/lib/usecases/skill-actions";
 
 export default async function EditTrainingSessionPage({
   params,
@@ -20,7 +21,11 @@ export default async function EditTrainingSessionPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [session, disciplines] = await Promise.all([getTrainingSession(id), getDisciplines()]);
+  const [session, disciplines, skills] = await Promise.all([
+    getTrainingSession(id),
+    getDisciplines(),
+    getSkills(),
+  ]);
   if (!session) notFound();
 
   return (
@@ -28,6 +33,7 @@ export default async function EditTrainingSessionPage({
       <h1 className="mb-4 text-xl font-semibold">Modifier la séance</h1>
       <TrainingForm
         disciplines={disciplines}
+        skills={skills}
         action={updateTrainingSession.bind(null, id)}
         initialData={session}
         submitLabel="Enregistrer les modifications"

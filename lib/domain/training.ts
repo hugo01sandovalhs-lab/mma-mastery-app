@@ -33,6 +33,7 @@ export type Discipline = z.infer<typeof disciplineSchema>;
 
 export const sessionTechniqueInputSchema = z.object({
   technique_name: z.string().trim().min(1, "Nom de technique requis").max(160),
+  skill_id: z.string().uuid().optional(),
   category: z
     .string()
     .trim()
@@ -51,6 +52,7 @@ export type SessionTechniqueInput = z.infer<typeof sessionTechniqueInputSchema>;
 export const sessionObservationInputSchema = z.object({
   type: observationTypeSchema,
   content: z.string().trim().min(1, "Contenu requis").max(2000),
+  related_skill_id: z.string().uuid().optional(),
 });
 export type SessionObservationInput = z.infer<typeof sessionObservationInputSchema>;
 

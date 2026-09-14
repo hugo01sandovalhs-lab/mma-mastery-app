@@ -6,6 +6,7 @@ import { UserMenu } from "@/components/user-menu";
 const NAV_LINKS = [
   { href: "/dashboard", label: "Accueil" },
   { href: "/training", label: "Entraînement" },
+  { href: "/skills", label: "Compétences" },
   { href: "/profile", label: "Profil" },
 ];
 

@@ -26,31 +26,40 @@ import {
 } from "@/lib/domain/training";
 import type { TrainingActionState } from "@/lib/usecases/training-actions";
 import type { TrainingSessionDetail } from "@/lib/usecases/training-actions";
+import type { SkillListItem } from "@/lib/usecases/skill-actions";
 
-type ObservationRow = { type: ObservationType; content: string };
+type ObservationRow = { type: ObservationType; content: string; related_skill_id?: string };
 
 type TrainingFormProps = {
   disciplines: Discipline[];
+  skills: SkillListItem[];
   action: (prevState: TrainingActionState, formData: FormData) => Promise<TrainingActionState>;
   initialData?: TrainingSessionDetail;
   submitLabel: string;
 };
 
-export function TrainingForm({ disciplines, action, initialData, submitLabel }: TrainingFormProps) {
+export function TrainingForm({ disciplines, skills, action, initialData, submitLabel }: TrainingFormProps) {
+  const skillByName = new Map(skills.map((s) => [s.name.trim().toLowerCase(), s.id]));
+  function resolveSkillId(name: string): string | undefined {
+    return skillByName.get(name.trim().toLowerCase());
+  }
   const initialState: TrainingActionState = { error: null };
   const [state, formAction, isPending] = useActionState(action, initialState);
 
   const [techniques, setTechniques] = useState<SessionTechniqueInput[]>(
     initialData?.techniques.map((t) => ({
       technique_name: t.technique_name,
+      skill_id: t.skill_id ?? undefined,
       category: t.category ?? undefined,
       notes: t.notes ?? undefined,
     })) ?? [],
   );
   const [observations, setObservations] = useState<ObservationRow[]>(
-    initialData?.observations.map((o) => ({ type: o.type, content: o.content })) ?? [
-      { type: "difficulty", content: "" },
-    ],
+    initialData?.observations.map((o) => ({
+      type: o.type,
+      content: o.content,
+      related_skill_id: o.related_skill_id ?? undefined,
+    })) ?? [{ type: "difficulty", content: "" }],
   );
 
   const techniquesJsonRef = useRef<HTMLInputElement>(null);
@@ -77,6 +86,11 @@ export function TrainingForm({ disciplines, action, initialData, submitLabel }: 
     <form action={formAction} onSubmit={handleSubmit} className="flex flex-col gap-6">
       <input ref={techniquesJsonRef} type="hidden" name="techniques_json" />
       <input ref={observationsJsonRef} type="hidden" name="observations_json" />
+      <datalist id="skills-datalist">
+        {skills.map((s) => (
+          <option key={s.id} value={s.name} />
+        ))}
+      </datalist>
 
       <Card>
         <CardHeader>
@@ -199,14 +213,23 @@ export function TrainingForm({ disciplines, action, initialData, submitLabel }: 
               <div className="flex flex-1 flex-col gap-2">
                 <Input
                   aria-label="Nom de la technique"
-                  placeholder="Ex: Armbar depuis closed guard"
+                  placeholder="Rechercher une compétence ou saisir un nom libre"
+                  list="skills-datalist"
                   value={t.technique_name}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const technique_name = e.target.value;
                     setTechniques((prev) =>
-                      prev.map((row, idx) => (idx === i ? { ...row, technique_name: e.target.value } : row)),
-                    )
-                  }
+                      prev.map((row, idx) =>
+                        idx === i
+                          ? { ...row, technique_name, skill_id: resolveSkillId(technique_name) }
+                          : row,
+                      ),
+                    );
+                  }}
                 />
+                {t.skill_id ? (
+                  <p className="text-muted-foreground text-xs">Compétence du catalogue liée.</p>
+                ) : null}
                 <Input
                   aria-label="Catégorie"
                   placeholder="Catégorie (optionnel)"
@@ -278,6 +301,18 @@ export function TrainingForm({ disciplines, action, initialData, submitLabel }: 
                       prev.map((row, idx) => (idx === i ? { ...row, content: e.target.value } : row)),
                     )
                   }
+                />
+                <Input
+                  aria-label="Compétence liée (optionnel)"
+                  placeholder="Compétence liée (optionnel)"
+                  list="skills-datalist"
+                  defaultValue={skills.find((s) => s.id === o.related_skill_id)?.name ?? ""}
+                  onChange={(e) => {
+                    const related_skill_id = resolveSkillId(e.target.value);
+                    setObservations((prev) =>
+                      prev.map((row, idx) => (idx === i ? { ...row, related_skill_id } : row)),
+                    );
+                  }}
                 />
               </div>
               <Button

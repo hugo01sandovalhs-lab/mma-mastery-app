@@ -75,6 +75,13 @@ export default async function TrainingSessionDetailPage({
                     {t.category ? (
                       <span className="text-muted-foreground"> — {t.category}</span>
                     ) : null}
+                    {t.skill_id ? (
+                      <Link href={`/skills/${t.skill_id}`}>
+                        <Badge variant="secondary" className="ml-2">
+                          {t.skill?.name ?? "Compétence"}
+                        </Badge>
+                      </Link>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -94,6 +101,13 @@ export default async function TrainingSessionDetailPage({
                     {OBSERVATION_TYPE_LABELS[o.type]}
                   </Badge>
                   <p className="whitespace-pre-wrap">{o.content}</p>
+                  {o.related_skill_id ? (
+                    <Link href={`/skills/${o.related_skill_id}`}>
+                      <Badge variant="secondary" className="mt-1">
+                        {o.skill?.name ?? "Compétence"}
+                      </Badge>
+                    </Link>
+                  ) : null}
                 </li>
               ))}
             </ul>

@@ -133,8 +133,21 @@ export type TrainingSessionDetail = {
   rpe: number | null;
   notes: string | null;
   discipline: { id: string; code: string; name: string };
-  techniques: { id: string; technique_name: string; category: string | null; notes: string | null }[];
-  observations: { id: string; type: ObservationType; content: string }[];
+  techniques: {
+    id: string;
+    technique_name: string;
+    skill_id: string | null;
+    skill: { name: string } | null;
+    category: string | null;
+    notes: string | null;
+  }[];
+  observations: {
+    id: string;
+    type: ObservationType;
+    content: string;
+    related_skill_id: string | null;
+    skill: { name: string } | null;
+  }[];
 };
 
 export async function getTrainingSession(id: string): Promise<TrainingSessionDetail | null> {
@@ -142,7 +155,7 @@ export async function getTrainingSession(id: string): Promise<TrainingSessionDet
   const { data, error } = await supabase
     .from("training_sessions")
     .select(
-      "id, date, session_type, title, duration_minutes, rpe, notes, discipline:disciplines(id, code, name), techniques:session_techniques(id, technique_name, category, notes), observations:session_observations(id, type, content)",
+      "id, date, session_type, title, duration_minutes, rpe, notes, discipline:disciplines(id, code, name), techniques:session_techniques(id, technique_name, skill_id, category, notes, skill:skills(name)), observations:session_observations(id, type, content, related_skill_id, skill:skills(name))",
     )
     .eq("id", id)
     .maybeSingle();

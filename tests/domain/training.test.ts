@@ -93,6 +93,20 @@ describe("trainingSessionInputSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts a technique linked to a skill and an observation linked to a skill", () => {
+    const skillId = "5fa85f64-5717-4562-b3fc-2c963f66afa6";
+    const result = trainingSessionInputSchema.safeParse({
+      ...baseInput,
+      techniques: [{ technique_name: "Double leg", skill_id: skillId }],
+      observations: [{ type: "difficulty", content: "x", related_skill_id: skillId }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.techniques[0].skill_id).toBe(skillId);
+      expect(result.data.observations[0].related_skill_id).toBe(skillId);
+    }
+  });
+
   it("rejects an invalid discipline_id", () => {
     const result = trainingSessionInputSchema.safeParse({
       ...baseInput,

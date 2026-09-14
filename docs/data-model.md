@@ -26,17 +26,22 @@ Géré par `auth.users` (Supabase). Pas de table applicative dédiée.
 - `id` PK
 - `discipline_id` FK → Discipline, NOT NULL, index
 - `name` text NOT NULL
+- `slug` text NOT NULL, UNIQUE(`discipline_id`, `slug`)
 - `description` text nullable
-- `parent_id` FK → Skill(id) nullable (hiérarchie simple position→technique, complémentaire à SkillRelation)
-- `created_at`
+- `category` text nullable (namespace libre par discipline, ex: `takedown`, `guard`, `punch`)
+- `created_at`, `updated_at`
 - Index: (`discipline_id`)
 
+Pas de `parent_id`: la hiérarchie ("Double Leg dépend de Level Change") est un cas particulier de `SkillRelation` (`relation_type = prerequisite`), pas une colonne séparée. Voir `docs/decisions/0004`.
+
 ### SkillRelation
-Many-to-many auto-référencée sur Skill, typée.
+Many-to-many auto-référencée sur Skill, typée — le Skill System est un graphe, pas un arbre.
 - `id` PK
 - `from_skill_id` FK → Skill, NOT NULL, index
 - `to_skill_id` FK → Skill, NOT NULL, index
-- `relation_type` enum: `prerequisite | counter | followup | variation`
+- `relation_type` enum: `prerequisite | counter | variation | follow_up | transition | related`
+- `metadata` jsonb nullable — attributs additionnels non structurés (ex: contexte d'usage)
+- CHECK(`from_skill_id` <> `to_skill_id`)
 - UNIQUE(`from_skill_id`, `to_skill_id`, `relation_type`)
 - Extensible: nouvelles valeurs d'enum sans migration structurelle.
 
@@ -100,12 +105,13 @@ Citation complète reconstruite par jointure `Embedding → SearchDocument → R
 Many-to-many Session ↔ Skill, avec attributs.
 - `id` PK
 - `session_id` FK → TrainingSession, NOT NULL, index
-- `skill_id` FK → Skill, NOT NULL, index
-- `note` text nullable
-- `outcome` enum: `success | partial | fail | na`
+- `technique_name` text NOT NULL — texte libre saisi par l'utilisateur (Phase 2, conservé)
+- `skill_id` FK → Skill, nullable, index — lien vers le catalogue quand une correspondance existe (Phase 3, `docs/decisions/0003` et `0004`)
+- `category` text nullable
+- `notes` text nullable
 - `created_at`
 - Cardinalité: 1 Session → N SessionTechnique, 1 Skill → N SessionTechnique (many-to-many via cette table)
-- Alimente `SkillProgress.evidence_count` et `last_practiced_at` (recalcul en use case, pas trigger SQL)
+- Alimente `SkillProgress.evidence_count` et `last_practiced_at` (recalcul en use case, pas trigger SQL) — uniquement pour les lignes avec `skill_id` renseigné
 
 ### SessionObservation
 Remplace l'entité `Difficulty` initialement prévue. Généralisée pour rester extensible (plusieurs observations par session, plusieurs types) sans être une table à finalité unique.
