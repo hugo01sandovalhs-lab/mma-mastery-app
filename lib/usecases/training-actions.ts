@@ -1,0 +1,159 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/infra/db/supabase-server";
+import {
+  trainingSessionInputSchema,
+  type Discipline,
+  type ObservationType,
+  type SessionType,
+} from "@/lib/domain/training";
+
+export type TrainingActionState = { error: string | null };
+
+function parseFormInput(formData: FormData) {
+  const durationRaw = String(formData.get("duration_minutes") ?? "").trim();
+  const rpeRaw = String(formData.get("rpe") ?? "").trim();
+
+  let techniques: unknown[] = [];
+  let observations: unknown[] = [];
+  try {
+    techniques = JSON.parse(String(formData.get("techniques_json") ?? "[]"));
+    observations = JSON.parse(String(formData.get("observations_json") ?? "[]"));
+  } catch {
+    // left empty; zod validation below will reject
+  }
+
+  return trainingSessionInputSchema.safeParse({
+    date: String(formData.get("date") ?? ""),
+    discipline_id: String(formData.get("discipline_id") ?? ""),
+    session_type: String(formData.get("session_type") ?? ""),
+    title: String(formData.get("title") ?? ""),
+    duration_minutes: durationRaw ? Number(durationRaw) : null,
+    rpe: rpeRaw ? Number(rpeRaw) : null,
+    notes: String(formData.get("notes") ?? ""),
+    techniques,
+    observations,
+  });
+}
+
+export async function createTrainingSession(
+  _prevState: TrainingActionState,
+  formData: FormData,
+): Promise<TrainingActionState> {
+  const parsed = parseFormInput(formData);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+  }
+  const input = parsed.data;
+
+  const supabase = await createClient();
+  const { data: sessionId, error } = await supabase.rpc("create_training_session", {
+    p_date: input.date,
+    p_discipline_id: input.discipline_id,
+    p_session_type: input.session_type,
+    p_title: input.title ?? null,
+    p_duration_minutes: input.duration_minutes ?? null,
+    p_rpe: input.rpe ?? null,
+    p_notes: input.notes ?? null,
+    p_techniques: input.techniques,
+    p_observations: input.observations,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect(`/training/${sessionId as string}`);
+}
+
+export async function updateTrainingSession(
+  sessionId: string,
+  _prevState: TrainingActionState,
+  formData: FormData,
+): Promise<TrainingActionState> {
+  const parsed = parseFormInput(formData);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+  }
+  const input = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_training_session", {
+    p_session_id: sessionId,
+    p_date: input.date,
+    p_discipline_id: input.discipline_id,
+    p_session_type: input.session_type,
+    p_title: input.title ?? null,
+    p_duration_minutes: input.duration_minutes ?? null,
+    p_rpe: input.rpe ?? null,
+    p_notes: input.notes ?? null,
+    p_techniques: input.techniques,
+    p_observations: input.observations,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect(`/training/${sessionId}`);
+}
+
+export async function deleteTrainingSession(sessionId: string): Promise<void> {
+  const supabase = await createClient();
+  await supabase.from("training_sessions").delete().eq("id", sessionId);
+  redirect("/training");
+}
+
+export type TrainingSessionListItem = {
+  id: string;
+  date: string;
+  session_type: SessionType;
+  title: string | null;
+  discipline: { code: string; name: string };
+};
+
+export async function getTrainingSessions(): Promise<TrainingSessionListItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("training_sessions")
+    .select("id, date, session_type, title, discipline:disciplines(code, name)")
+    .order("date", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as TrainingSessionListItem[];
+}
+
+export type TrainingSessionDetail = {
+  id: string;
+  date: string;
+  session_type: SessionType;
+  title: string | null;
+  duration_minutes: number | null;
+  rpe: number | null;
+  notes: string | null;
+  discipline: { id: string; code: string; name: string };
+  techniques: { id: string; technique_name: string; category: string | null; notes: string | null }[];
+  observations: { id: string; type: ObservationType; content: string }[];
+};
+
+export async function getTrainingSession(id: string): Promise<TrainingSessionDetail | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("training_sessions")
+    .select(
+      "id, date, session_type, title, duration_minutes, rpe, notes, discipline:disciplines(id, code, name), techniques:session_techniques(id, technique_name, category, notes), observations:session_observations(id, type, content)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data as unknown as TrainingSessionDetail | null;
+}
+
+export async function getDisciplines(): Promise<Discipline[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("disciplines").select("id, code, name").order("name");
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
