@@ -32,7 +32,7 @@ const defaultProgress: SkillProgressDimensions = {
  * uses). The session date is the most faithful signal for "when was this
  * skill actually trained".
  */
-async function loadSkillIntelligenceInputs(): Promise<SkillIntelligenceInput[]> {
+export async function loadSkillIntelligenceInputs(): Promise<SkillIntelligenceInput[]> {
   const supabase = await createClient();
   const {
     data: { user },

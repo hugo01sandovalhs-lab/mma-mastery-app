@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Dumbbell, PlusIcon } from "lucide-react";
+import { BookOpen, Dumbbell, PlusIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,9 +35,14 @@ export default async function TrainingListPage() {
               {sessions.length > 1 ? "s" : ""}
             </p>
           </div>
-          <Button size="lg" render={<Link href="/training/new" />} className="w-fit">
-            <PlusIcon /> Nouvelle séance
-          </Button>
+          <div className="flex w-fit gap-2">
+            <Button variant="outline" size="lg" render={<Link href="/training/review" />}>
+              <BookOpen /> À revoir
+            </Button>
+            <Button size="lg" render={<Link href="/training/new" />}>
+              <PlusIcon /> Nouvelle séance
+            </Button>
+          </div>
         </div>
 
         {sessions.length === 0 ? (

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import {
   ArrowRight,
   ArrowUpRight,
+  BookOpen,
   Dumbbell,
   Flame,
   MessageCircleQuestion,
@@ -420,11 +421,12 @@ function QuickActions() {
   const actions = [
     { href: "/training/new", label: "Nouvelle séance", icon: Dumbbell },
     { href: "/skills", label: "Mes compétences", icon: Target },
+    { href: "/training/review", label: "À revoir", icon: BookOpen },
     { href: "/training", label: "Historique complet", icon: Flame },
   ];
 
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {actions.map((a) => {
         const Icon = a.icon;
         return (
