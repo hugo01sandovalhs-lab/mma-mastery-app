@@ -3,9 +3,11 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import type { SkillProgressDimensions } from "@/lib/domain/skill";
 import {
   buildTrainingIntelligence,
+  buildTrainingPlanSuggestion,
   type SkillIntelligenceInput,
   type SkillObservationSignal,
   type TrainingIntelligenceResult,
+  type TrainingPlanResult,
 } from "@/lib/domain/training-intelligence";
 
 const defaultProgress: SkillProgressDimensions = {
@@ -30,12 +32,12 @@ const defaultProgress: SkillProgressDimensions = {
  * uses). The session date is the most faithful signal for "when was this
  * skill actually trained".
  */
-export async function getTrainingIntelligence(): Promise<TrainingIntelligenceResult> {
+async function loadSkillIntelligenceInputs(): Promise<SkillIntelligenceInput[]> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { status: "insufficient_data" };
+  if (!user) return [];
 
   const [{ data: progressRows }, { data: techniqueRows }, { data: observationRows }] =
     await Promise.all([
@@ -113,7 +115,7 @@ export async function getTrainingIntelligence(): Promise<TrainingIntelligenceRes
   }
 
   const skillIds = Array.from(skillNames.keys());
-  if (skillIds.length === 0) return { status: "insufficient_data" };
+  if (skillIds.length === 0) return [];
 
   const { data: relationRows } = await supabase
     .from("skill_relations")
@@ -132,7 +134,7 @@ export async function getTrainingIntelligence(): Promise<TrainingIntelligenceRes
     prerequisitesBySkill.set(row.from_skill_id, list);
   }
 
-  const inputs: SkillIntelligenceInput[] = skillIds.map((skillId) => ({
+  return skillIds.map((skillId) => ({
     skillId,
     skillName: skillNames.get(skillId) as string,
     progress: progressBySkill.get(skillId) ?? defaultProgress,
@@ -140,6 +142,26 @@ export async function getTrainingIntelligence(): Promise<TrainingIntelligenceRes
     lastPracticedAt: lastPracticedBySkill.get(skillId) ?? null,
     prerequisiteNames: prerequisitesBySkill.get(skillId) ?? [],
   }));
+}
 
+export async function getTrainingIntelligence(): Promise<TrainingIntelligenceResult> {
+  const inputs = await loadSkillIntelligenceInputs();
+  if (inputs.length === 0) return { status: "insufficient_data" };
   return buildTrainingIntelligence(inputs);
+}
+
+/**
+ * Training Intelligence V1 + V2 computed from a single fetch, so a caller
+ * that needs both the full recommendation list and the single-focus plan
+ * (the dashboard) does not issue the underlying queries twice.
+ */
+export async function getTrainingIntelligenceBundle(): Promise<{
+  intelligence: TrainingIntelligenceResult;
+  plan: TrainingPlanResult;
+}> {
+  const inputs = await loadSkillIntelligenceInputs();
+  if (inputs.length === 0) {
+    return { intelligence: { status: "insufficient_data" }, plan: { status: "insufficient_data" } };
+  }
+  return { intelligence: buildTrainingIntelligence(inputs), plan: buildTrainingPlanSuggestion(inputs) };
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { SkillProgressDimensions } from "@/lib/domain/skill";
 import {
   buildTrainingIntelligence,
+  buildTrainingPlanSuggestion,
   MAX_RECOMMENDATIONS,
   type SkillIntelligenceInput,
 } from "@/lib/domain/training-intelligence";
@@ -192,5 +193,94 @@ describe("buildTrainingIntelligence", () => {
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
     expect(result.recommendations[0].reasons[0]).toContain("Genou qui lâche");
+  });
+});
+
+describe("buildTrainingPlanSuggestion", () => {
+  it("returns insufficient_data when there is no data at all", () => {
+    expect(buildTrainingPlanSuggestion([], NOW)).toEqual({ status: "insufficient_data" });
+  });
+
+  it("returns insufficient_data when no skill clears the recommendation threshold", () => {
+    const result = buildTrainingPlanSuggestion([skillInput()], NOW);
+    expect(result.status).toBe("insufficient_data");
+  });
+
+  it("classifies a recent difficulty as a REVIEW action", () => {
+    const result = buildTrainingPlanSuggestion(
+      [
+        skillInput({
+          observations: [{ type: "difficulty", content: "Perd l'équilibre", occurredAt: daysAgo(1) }],
+        }),
+      ],
+      NOW,
+    );
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.plan.actionType).toBe("REVIEW");
+    expect(result.plan.focusSkillName).toBe("Double Leg");
+    expect(result.plan.evidence.length).toBeGreaterThan(0);
+  });
+
+  it("classifies heavy drilling with no live application as LIVE_APPLICATION", () => {
+    const result = buildTrainingPlanSuggestion(
+      [skillInput({ progress: { ...baseProgress, drilling_reps: 10, live_application_count: 0 } })],
+      NOW,
+    );
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.plan.actionType).toBe("LIVE_APPLICATION");
+  });
+
+  it("classifies low sparring success as SPARRING_FOCUS", () => {
+    const result = buildTrainingPlanSuggestion(
+      [skillInput({ progress: { ...baseProgress, sparring_attempt_count: 5, sparring_success_count: 1 } })],
+      NOW,
+    );
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.plan.actionType).toBe("SPARRING_FOCUS");
+  });
+
+  it("picks the single highest-scoring skill as the focus, not every candidate", () => {
+    const weak = skillInput({
+      skillId: "skill-weak",
+      skillName: "Jab",
+      observations: [{ type: "question", content: "Distance?", occurredAt: daysAgo(1) }],
+    });
+    const strong = skillInput({
+      skillId: "skill-strong",
+      skillName: "Double Leg",
+      observations: [{ type: "difficulty", content: "Genou qui lâche", occurredAt: daysAgo(1) }],
+      progress: { ...baseProgress, drilling_reps: 10, live_application_count: 0 },
+    });
+    const result = buildTrainingPlanSuggestion([weak, strong], NOW);
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.plan.focusSkillId).toBe("skill-strong");
+  });
+
+  it("carries prerequisite names as relatedSkills without inventing new ones", () => {
+    const result = buildTrainingPlanSuggestion(
+      [
+        skillInput({
+          observations: [{ type: "difficulty", content: "x", occurredAt: daysAgo(1) }],
+          prerequisiteNames: ["Level Change"],
+        }),
+      ],
+      NOW,
+    );
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(result.plan.relatedSkills).toEqual(["Level Change"]);
+  });
+
+  it("is deterministic for the same input", () => {
+    const inputs = [
+      skillInput({ observations: [{ type: "difficulty", content: "x", occurredAt: daysAgo(1) }] }),
+    ];
+    const a = buildTrainingPlanSuggestion(inputs, NOW);
+    const b = buildTrainingPlanSuggestion(inputs, NOW);
+    expect(a).toEqual(b);
   });
 });

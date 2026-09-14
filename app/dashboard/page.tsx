@@ -8,6 +8,7 @@ import {
   MessageCircleQuestion,
   Sparkles,
   Target,
+  Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -20,14 +21,36 @@ import {
   MASTERY_STAGE_LABELS,
   type MasteryStage,
 } from "@/lib/domain/skill";
-import type { PriorityLevel, SkillRecommendation } from "@/lib/domain/training-intelligence";
+import {
+  TRAINING_PLAN_ACTION_COPY,
+  type PriorityLevel,
+  type SkillRecommendation,
+  type TrainingPlanActionType,
+  type TrainingPlanResult,
+} from "@/lib/domain/training-intelligence";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
-import { getTrainingIntelligence } from "@/lib/usecases/training-intelligence-actions";
+import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { getSkillsProgressSummary, type SkillProgressSummary } from "@/lib/usecases/skill-actions";
 
 const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   high: "Priorité haute",
   medium: "Priorité moyenne",
+};
+
+const ACTION_TYPE_LABELS: Record<TrainingPlanActionType, string> = {
+  REVIEW: "À clarifier",
+  DRILL: "Drilling",
+  LIVE_APPLICATION: "Application live",
+  SPARRING_FOCUS: "Focus sparring",
+  REINFORCE: "À raviver",
+};
+
+const ACTION_TYPE_ICONS: Record<TrainingPlanActionType, typeof Dumbbell> = {
+  REVIEW: MessageCircleQuestion,
+  DRILL: Dumbbell,
+  LIVE_APPLICATION: Zap,
+  SPARRING_FOCUS: Flame,
+  REINFORCE: Target,
 };
 
 function relativeDays(iso: string): string {
@@ -50,9 +73,9 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const [sessions, intelligence, progressSummary] = await Promise.all([
+  const [sessions, { intelligence, plan }, progressSummary] = await Promise.all([
     getTrainingSessions(),
-    getTrainingIntelligence(),
+    getTrainingIntelligenceBundle(),
     getSkillsProgressSummary(),
   ]);
 
@@ -72,7 +95,9 @@ export default async function DashboardPage() {
           highPriorityCount={highPriorityCount}
         />
 
-        <FocusSection intelligence={intelligence} />
+        <NextSessionPlan plan={plan} />
+
+        <FocusSection intelligence={intelligence} plan={plan} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
           <RecentActivity sessions={recent} />
@@ -125,19 +150,103 @@ function Hero({
   );
 }
 
-function FocusSection({
-  intelligence,
-}: {
-  intelligence: Awaited<ReturnType<typeof getTrainingIntelligence>>;
-}) {
+function NextSessionPlan({ plan }: { plan: TrainingPlanResult }) {
+  if (plan.status !== "ok") return null;
+
+  const { plan: p } = plan;
+  const Icon = ACTION_TYPE_ICONS[p.actionType];
+  const copy = TRAINING_PLAN_ACTION_COPY[p.actionType];
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <Sparkles className="size-4 text-primary" />
-        <h2 className="font-heading text-lg font-semibold tracking-tight">À travailler maintenant</h2>
+        <h2 className="font-heading text-lg font-semibold tracking-tight">Pour ta prochaine séance</h2>
       </div>
 
-      {intelligence.status === "insufficient_data" ? (
+      <Card className="relative overflow-hidden">
+        <span className="absolute inset-y-0 left-0 w-1 bg-primary" />
+        <CardContent className="flex flex-col gap-5 pl-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-muted-foreground">Focus principal</span>
+              <Link
+                href={`/skills/${p.focusSkillId}`}
+                className="font-heading text-xl font-semibold tracking-tight hover:underline"
+              >
+                {p.focusSkillName}
+              </Link>
+            </div>
+            <Badge variant="default" className="flex items-center gap-1.5">
+              <Icon className="size-3.5" />
+              {ACTION_TYPE_LABELS[p.actionType]}
+            </Badge>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Pourquoi</span>
+            <ul className="flex flex-col gap-1">
+              {p.reasons.map((reason, i) => (
+                <li key={i} className="text-sm">
+                  {reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-3">
+            <PlanStep label="Drill recommandé" text={copy.drillHint} />
+            <PlanStep label="Pendant le live" text={copy.liveWatchFor} />
+            <PlanStep label="À observer après" text={copy.postObserve} />
+          </div>
+
+          {p.relatedSkills.length > 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Prérequis liés: {p.relatedSkills.join(", ")}
+            </p>
+          ) : null}
+
+          <Link
+            href={`/skills/${p.focusSkillId}`}
+            className="inline-flex w-fit items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+          >
+            Voir le skill <ArrowRight className="size-3.5" />
+          </Link>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function PlanStep({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <p className="text-sm">{text}</p>
+    </div>
+  );
+}
+
+function FocusSection({
+  intelligence,
+  plan,
+}: {
+  intelligence: Awaited<ReturnType<typeof getTrainingIntelligenceBundle>>["intelligence"];
+  plan: TrainingPlanResult;
+}) {
+  const focusSkillId = plan.status === "ok" ? plan.plan.focusSkillId : null;
+  const otherRecommendations =
+    intelligence.status === "ok"
+      ? intelligence.recommendations.filter((r) => r.skillId !== focusSkillId)
+      : [];
+
+  if (intelligence.status === "insufficient_data") {
+    return (
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Target className="size-4 text-primary" />
+          <h2 className="font-heading text-lg font-semibold tracking-tight">À travailler maintenant</h2>
+        </div>
         <Card>
           <CardContent className="flex flex-col items-start gap-2 py-8">
             <Target className="size-6 text-muted-foreground" />
@@ -152,13 +261,24 @@ function FocusSection({
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {intelligence.recommendations.map((rec) => (
-            <FocusCard key={rec.skillId} rec={rec} />
-          ))}
-        </div>
-      )}
+      </section>
+    );
+  }
+
+  if (otherRecommendations.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Target className="size-4 text-primary" />
+        <h2 className="font-heading text-lg font-semibold tracking-tight">Autres priorités</h2>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {otherRecommendations.map((rec) => (
+          <FocusCard key={rec.skillId} rec={rec} />
+        ))}
+      </div>
     </section>
   );
 }
