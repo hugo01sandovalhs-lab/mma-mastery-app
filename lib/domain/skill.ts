@@ -169,6 +169,27 @@ export type SkillProgressSummary = {
 };
 
 /**
+ * Three-way read on how much signal exists behind a single progress metric.
+ * Used to render metrics honestly instead of showing every dimension as if
+ * it were equally measured (docs requirement: never fake a low/zero metric
+ * as meaningful data).
+ */
+export const METRIC_LEVELS = ["none", "low", "available"] as const;
+export type MetricLevel = (typeof METRIC_LEVELS)[number];
+
+/**
+ * Classifies a raw metric value (count or bounded score) into none/low/available.
+ * `availableAt` is the value at which the metric is considered well-evidenced;
+ * anything between 0 (exclusive) and that threshold reads as "low data" rather
+ * than a real signal.
+ */
+export function metricLevel(value: number | null, availableAt: number): MetricLevel {
+  if (value === null || value <= 0) return "none";
+  if (value < availableAt) return "low";
+  return "available";
+}
+
+/**
  * Pure aggregation of raw skill_progress rows into dashboard-ready counts.
  * Stage is always recomputed via `computeMasteryStage` (never trusts a cached
  * column), so this stays consistent with Training Intelligence V1.

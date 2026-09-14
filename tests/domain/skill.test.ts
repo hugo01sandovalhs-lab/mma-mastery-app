@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computeMasteryStage,
+  metricLevel,
   skillInputSchema,
   skillRelationInputSchema,
   summarizeSkillProgress,
@@ -145,6 +146,28 @@ describe("skillRelationInputSchema", () => {
         relation_type: "friendship",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("metricLevel", () => {
+  it("returns none for zero", () => {
+    expect(metricLevel(0, 5)).toBe("none");
+  });
+
+  it("returns none for null", () => {
+    expect(metricLevel(null, 5)).toBe("none");
+  });
+
+  it("returns low below the available threshold", () => {
+    expect(metricLevel(2, 5)).toBe("low");
+  });
+
+  it("returns available at the threshold", () => {
+    expect(metricLevel(5, 5)).toBe("available");
+  });
+
+  it("returns available above the threshold", () => {
+    expect(metricLevel(9, 5)).toBe("available");
   });
 });
 

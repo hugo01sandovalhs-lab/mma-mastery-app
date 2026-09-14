@@ -6,6 +6,7 @@ import {
   skillInputSchema,
   skillRelationInputSchema,
   summarizeSkillProgress,
+  type MasteryStage,
   type SkillInput,
   type SkillProgressDimensions,
   type SkillProgressSummary,
@@ -19,8 +20,15 @@ export type SkillListItem = {
   slug: string;
   category: string | null;
   discipline: { id: string; code: string; name: string };
+  stage: MasteryStage;
+  lastPracticedAt: string | null;
 };
 
+/**
+ * Fetches the catalog (1 query) then merges in the signed-in user's progress
+ * (1 query for all their skill_progress rows) so each card shows a real,
+ * derived mastery stage — never N+1 per skill.
+ */
 export async function getSkills(filters?: {
   disciplineId?: string;
   search?: string;
@@ -40,7 +48,36 @@ export async function getSkills(filters?: {
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return (data ?? []) as unknown as SkillListItem[];
+  const skills = (data ?? []) as unknown as Omit<SkillListItem, "stage" | "lastPracticedAt">[];
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || skills.length === 0) {
+    return skills.map((s) => ({ ...s, stage: "unknown" as const, lastPracticedAt: null }));
+  }
+
+  const { data: progressRows, error: progressError } = await supabase
+    .from("skill_progress")
+    .select(
+      "skill_id, knowledge_level, drilling_reps, live_application_count, sparring_attempt_count, sparring_success_count, consistency_score, pressure_performance_level, confidence_level, evidence_count, last_practiced_at",
+    )
+    .eq("user_id", user.id);
+  if (progressError) throw new Error(progressError.message);
+
+  type ProgressRow = SkillProgressDimensions & { skill_id: string };
+  const progressBySkill = new Map(
+    ((progressRows ?? []) as unknown as ProgressRow[]).map((p) => [p.skill_id, p]),
+  );
+
+  return skills.map((s) => {
+    const progress = progressBySkill.get(s.id);
+    return {
+      ...s,
+      stage: progress ? computeMasteryStage(progress) : "unknown",
+      lastPracticedAt: progress?.last_practiced_at ?? null,
+    };
+  });
 }
 
 export type SkillRelationItem = {
@@ -48,6 +85,26 @@ export type SkillRelationItem = {
   relation_type: SkillRelationType;
   skill: { id: string; name: string; slug: string };
 };
+
+export type SkillHistoryItem =
+  | {
+      kind: "technique";
+      id: string;
+      date: string;
+      sessionId: string;
+      sessionTitle: string | null;
+      techniqueName: string;
+      notes: string | null;
+    }
+  | {
+      kind: "observation";
+      id: string;
+      date: string;
+      sessionId: string;
+      sessionTitle: string | null;
+      observationType: "difficulty" | "question" | "insight" | "success";
+      content: string;
+    };
 
 export type SkillDetail = {
   id: string;
@@ -64,7 +121,10 @@ export type SkillDetail = {
     observationCount: number;
     lastPracticedAt: string | null;
   };
+  history: SkillHistoryItem[];
 };
+
+const SKILL_HISTORY_LIMIT = 12;
 
 export async function getSkill(id: string): Promise<SkillDetail | null> {
   const supabase = await createClient();
@@ -77,7 +137,7 @@ export async function getSkill(id: string): Promise<SkillDetail | null> {
   if (error) throw new Error(error.message);
   if (!skill) return null;
 
-  const [{ data: relationsFrom }, { data: relationsTo }, { data: progress }, { data: techniques }] =
+  const [{ data: relationsFrom }, { data: relationsTo }, { data: progress }, { data: techniques }, { data: observations }] =
     await Promise.all([
       supabase
         .from("skill_relations")
@@ -88,23 +148,66 @@ export async function getSkill(id: string): Promise<SkillDetail | null> {
         .select("id, relation_type, skill:from_skill_id(id, name, slug)")
         .eq("to_skill_id", id),
       supabase.from("skill_progress").select("*").eq("skill_id", id).maybeSingle(),
-      supabase.from("session_techniques").select("session_id, created_at").eq("skill_id", id),
+      supabase
+        .from("session_techniques")
+        .select("id, technique_name, notes, session:training_sessions(id, date, title)")
+        .eq("skill_id", id),
+      supabase
+        .from("session_observations")
+        .select("id, type, content, session:training_sessions(id, date, title)")
+        .eq("related_skill_id", id),
     ]);
 
-  const { count: observationCount } = await supabase
-    .from("session_observations")
-    .select("id", { count: "exact", head: true })
-    .eq("related_skill_id", id);
+  type SessionRef = { id: string; date: string; title: string | null };
+  type TechniqueRow = { id: string; technique_name: string; notes: string | null; session: SessionRef | null };
+  type ObservationRow = {
+    id: string;
+    type: "difficulty" | "question" | "insight" | "success";
+    content: string;
+    session: SessionRef | null;
+  };
 
-  const ownTechniques = (techniques ?? []) as unknown as {
-    session_id: string;
-    created_at: string;
-  }[];
-  const sessionCount = new Set(ownTechniques.map((t) => t.session_id)).size;
-  const lastPracticedAt =
-    ownTechniques.length > 0
-      ? ownTechniques.reduce((latest, t) => (t.created_at > latest ? t.created_at : latest), ownTechniques[0].created_at)
-      : null;
+  const ownTechniques = (techniques ?? []) as unknown as TechniqueRow[];
+  const ownObservations = (observations ?? []) as unknown as ObservationRow[];
+
+  const sessionIds = new Set<string>();
+  let lastPracticedAt: string | null = null;
+  for (const t of ownTechniques) {
+    if (!t.session) continue;
+    sessionIds.add(t.session.id);
+    if (!lastPracticedAt || t.session.date > lastPracticedAt) lastPracticedAt = t.session.date;
+  }
+
+  const history: SkillHistoryItem[] = [
+    ...ownTechniques
+      .filter((t) => t.session)
+      .map(
+        (t): SkillHistoryItem => ({
+          kind: "technique",
+          id: t.id,
+          date: t.session!.date,
+          sessionId: t.session!.id,
+          sessionTitle: t.session!.title,
+          techniqueName: t.technique_name,
+          notes: t.notes,
+        }),
+      ),
+    ...ownObservations
+      .filter((o) => o.session)
+      .map(
+        (o): SkillHistoryItem => ({
+          kind: "observation",
+          id: o.id,
+          date: o.session!.date,
+          sessionId: o.session!.id,
+          sessionTitle: o.session!.title,
+          observationType: o.type,
+          content: o.content,
+        }),
+      ),
+  ]
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    .slice(0, SKILL_HISTORY_LIMIT);
 
   const defaultProgress: SkillProgressDimensions & { mastery_stage_cache: string | null } = {
     knowledge_level: 0,
@@ -131,10 +234,11 @@ export async function getSkill(id: string): Promise<SkillDetail | null> {
     relationsTo: (relationsTo ?? []) as unknown as SkillRelationItem[],
     progress: progress ? (progress as unknown as typeof defaultProgress) : defaultProgress,
     stats: {
-      sessionCount,
-      observationCount: observationCount ?? 0,
+      sessionCount: sessionIds.size,
+      observationCount: ownObservations.length,
       lastPracticedAt,
     },
+    history,
   };
 }
 
