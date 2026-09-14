@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, LayoutDashboard, Target, User } from "lucide-react";
+import { Dumbbell, LayoutDashboard, Sparkles, Target, User } from "lucide-react";
 import { cn } from "cn";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
   { href: "/training", label: "Entraînement", icon: Dumbbell },
   { href: "/skills", label: "Compétences", icon: Target },
+  { href: "/coach", label: "Coach", icon: Sparkles },
   { href: "/profile", label: "Profil", icon: User },
 ];
 

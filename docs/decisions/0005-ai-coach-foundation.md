@@ -37,14 +37,26 @@ modèle "sait" quelque chose qui n'est pas dans ses données.
   déterministes existants ni à `buildCoachContext()`.
 - Pas de nouvelle table, pas de nouvelle dépendance npm.
 
-## Reste à faire (hors scope de cette fondation)
-- Aucune UI n'expose encore le coach: tant que le seul provider est le
-  fallback déterministe, une page dédiée n'apporterait rien de plus que les
-  pages Training Intelligence / Review existantes.
-- Pas de gestion de question libre en langage naturel: `question` est accepté
-  par l'interface mais ignoré par `DeterministicCoachProvider` (aucune
-  capacité de compréhension sans modèle réel).
-- Si un provider réel est ajouté plus tard: décider du stockage de la clé
-  d'API (variable d'environnement serveur uniquement), du budget/rate-limit,
-  et de la politique de repli vers `DeterministicCoachProvider` en cas
-  d'erreur ou d'absence de configuration.
+## Mise à jour — provider Ollama + UI (voir ce commit)
+- `OllamaCoachProvider` (`lib/infra/ai/ollama-provider.ts`) implémente
+  `AIProvider` via `fetch` brut vers une instance Ollama locale
+  (`OLLAMA_BASE_URL`/`OLLAMA_MODEL`, variables serveur uniquement, jamais lues
+  côté client). Non instancié si ces variables sont absentes — le fallback
+  déterministe reste le comportement par défaut sans configuration.
+- `getCoachResponse()` (`lib/usecases/ai-coach-actions.ts`) résout le
+  provider et retombe sur `DeterministicCoachProvider` au moindre échec
+  (réseau, timeout, HTTP non-ok, réponse vide) — un Ollama absent ou cassé ne
+  casse jamais le coach.
+- Le texte généré par le modèle est renvoyé uniquement comme `summary`
+  (jamais comme `recommendations`), car une recommandation générée ne peut
+  pas être vérifiée contre un `basedOnFactIndexes` réel — la séparation
+  OBSERVED/INFERRED/HYPOTHESIS reste honnête.
+- Page `/coach` ajoutée: affiche la réponse, le provider actif
+  ("Règles déterministes" vs "Modèle local"), les faits sources
+  (dépliables), et un formulaire de question libre + suggestions.
+
+## Reste à faire
+- Pas de vraie compréhension de la question par le fallback déterministe
+  (toujours ignorée) — seul le provider Ollama en tient compte.
+- Pas de provider hébergé (API cloud) — volontairement hors scope (voir
+  Contexte: pas d'intégration cloud payante).
