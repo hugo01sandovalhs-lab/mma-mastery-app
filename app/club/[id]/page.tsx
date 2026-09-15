@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, CalendarClock, LayoutDashboard, Trophy } from "lucide-react";
+import { ArrowLeft, CalendarClock, LayoutDashboard, Megaphone, Trophy } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { CLUB_ROLE_LABELS, hasClubRoleAtLeast } from "@/lib/domain/club";
 import { getClub } from "@/lib/usecases/club-actions";
+import { getUnreadAnnouncementCount } from "@/lib/usecases/club-announcement-actions";
 import { InviteForm } from "@/components/club/invite-form";
 import { MemberRow } from "@/components/club/member-row";
 import { GroupForm } from "@/components/club/group-form";
@@ -22,6 +23,8 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
 
   const club = await getClub(id);
   if (!club) notFound();
+
+  const unreadAnnouncements = await getUnreadAnnouncementCount(id);
 
   const canManageMembers = hasClubRoleAtLeast(club.myRole, "ADMIN");
   const canManageGroups = hasClubRoleAtLeast(club.myRole, "COACH");
@@ -51,6 +54,13 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
               className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
               <Trophy className="size-3.5" /> Événements
+            </Link>
+            <Link
+              href={`/club/${club.id}/announcements`}
+              className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <Megaphone className="size-3.5" /> Annonces
+              {unreadAnnouncements > 0 ? <Badge variant="default">{unreadAnnouncements}</Badge> : null}
             </Link>
             {canSeeAdmin ? (
               <Link
