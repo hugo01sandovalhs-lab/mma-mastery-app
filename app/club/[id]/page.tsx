@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, CalendarClock } from "lucide-react";
+import { ArrowLeft, CalendarClock, LayoutDashboard } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +25,7 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
 
   const canManageMembers = hasClubRoleAtLeast(club.myRole, "ADMIN");
   const canManageGroups = hasClubRoleAtLeast(club.myRole, "COACH");
+  const canSeeAdmin = hasClubRoleAtLeast(club.myRole, "COACH");
 
   return (
     <AppShell>
@@ -38,12 +39,22 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{club.name}</h1>
             <Badge variant="outline">{CLUB_ROLE_LABELS[club.myRole]}</Badge>
           </div>
-          <Link
-            href={`/club/${club.id}/classes`}
-            className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <CalendarClock className="size-3.5" /> Cours et présence
-          </Link>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link
+              href={`/club/${club.id}/classes`}
+              className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <CalendarClock className="size-3.5" /> Cours et présence
+            </Link>
+            {canSeeAdmin ? (
+              <Link
+                href={`/club/${club.id}/admin`}
+                className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <LayoutDashboard className="size-3.5" /> Administration
+              </Link>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -51,7 +62,13 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
           {canManageMembers ? <InviteForm clubId={club.id} /> : null}
           <div className="flex flex-col gap-2">
             {club.members.map((m) => (
-              <MemberRow key={m.id} member={m} clubId={club.id} canManage={canManageMembers} />
+              <MemberRow
+                key={m.id}
+                member={m}
+                clubId={club.id}
+                canManage={canManageMembers}
+                detailHref={canSeeAdmin ? `/club/${club.id}/members/${m.user_id}` : undefined}
+              />
             ))}
           </div>
         </div>

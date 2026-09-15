@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { ChevronDownIcon, ChevronUpIcon, TrashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,20 +16,30 @@ export function MemberRow({
   member,
   clubId,
   canManage,
+  detailHref,
 }: {
   member: ClubMemberItem;
   clubId: string;
   canManage: boolean;
+  detailHref?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const isOwner = member.role === "OWNER";
   const roleIndex = CLUB_ROLES.indexOf(member.role);
   const maxIndex = CLUB_ROLES.indexOf(MAX_ASSIGNABLE_ROLE);
 
+  const name = <span className="truncate font-medium">{member.display_name ?? "Membre"}</span>;
+
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
       <div className="flex min-w-0 flex-col gap-1">
-        <span className="truncate font-medium">{member.display_name ?? "Membre"}</span>
+        {detailHref ? (
+          <Link href={detailHref} className="hover:underline">
+            {name}
+          </Link>
+        ) : (
+          name
+        )}
         <Badge variant="outline" className="w-fit">
           {CLUB_ROLE_LABELS[member.role]}
         </Badge>
