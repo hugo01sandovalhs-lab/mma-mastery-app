@@ -9,6 +9,7 @@ import {
   Flag,
   Flame,
   LibraryIcon,
+  type LucideIcon,
   MessageCircleQuestion,
   SearchIcon,
   Sparkles,
@@ -16,7 +17,7 @@ import {
   TrendingUp,
   UsersRound,
 } from "lucide-react";
-import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
+import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
 import { ChampionshipHero } from "@/components/championship/hero";
 import { ChampionshipMetricCard } from "@/components/championship/metric-card";
@@ -46,6 +47,12 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   medium: "Priorité moyenne",
 };
 
+const PHOTOS = {
+  focus: "/mma-mastery-photos/pexels-pavel-danilyuk-6296015.jpg",
+  session: "/mma-mastery-photos/pexels-mariano-di-luch-679379189-38571271.jpg",
+  club: "/mma-mastery-photos/pexels-heloisa-freitas-734111-1608099.jpg",
+} as const;
+
 function relativeDays(iso: string): string {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
   if (days <= 0) return "aujourd'hui";
@@ -53,7 +60,20 @@ function relativeDays(iso: string): string {
   return `il y a ${days} jours`;
 }
 
-export default async function DashboardPage() {
+// Test temporaire des deux variantes hero: ?hero=a (défaut) ou ?hero=b
+const HERO_PHOTOS = {
+  a: "/mma-mastery-photos/pexels-shkrabaanthony-4398347.jpg",
+  b: "/mma-mastery-photos/pexels-cottonbro-4761782.jpg",
+} as const;
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ hero?: string }>;
+}) {
+  const { hero } = await searchParams;
+  const heroImageSrc = hero === "b" ? HERO_PHOTOS.b : HERO_PHOTOS.a;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -88,49 +108,25 @@ export default async function DashboardPage() {
 
   return (
     <DashboardShell>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <Hero
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
           lastSessionDate={sessions[0]?.date ?? null}
           highPriorityCount={highPriorityCount}
+          imageSrc={heroImageSrc}
         />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <ChampionshipMetricCard
-            icon={Target}
-            eyebrow="Focus principal"
-            value={plan.status === "ok" ? plan.plan.focusSkillName : "Aucun focus"}
-            subtitle={plan.status === "ok" ? ACTION_TYPE_LABELS[plan.plan.actionType] : undefined}
-          />
-          <ChampionshipMetricCard
-            icon={CalendarClock}
-            eyebrow="Priorités actives"
-            value={
-              highPriorityCount > 0
-                ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""}`
-                : "Aucune priorité"
-            }
-            subtitle={highPriorityCount > 0 ? "à travailler cette semaine" : undefined}
-          />
-          <ChampionshipMetricCard
-            icon={TrendingUp}
-            eyebrow="Progression globale"
-            ring={proficientPct}
-            insufficientData={progressSummary.totalTracked === 0}
-          />
+        <StatRow plan={plan} highPriorityCount={highPriorityCount} proficientPct={proficientPct} insufficientData={progressSummary.totalTracked === 0} />
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.15fr]">
+          <ProgressionSection summary={progressSummary} />
+          <RecentActivity sessions={recent} />
         </div>
-
-        <ClubActivitySection summary={clubSummary} />
-
-        <NextSessionPlan plan={plan} />
 
         <FocusSection intelligence={intelligence} plan={plan} />
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr]">
-          <RecentActivity sessions={recent} />
-          <ProgressionSection summary={progressSummary} />
-        </div>
+        <ClubCard summary={clubSummary} />
 
         <QuickActions />
       </div>
@@ -143,11 +139,13 @@ function Hero({
   sessionCount,
   lastSessionDate,
   highPriorityCount,
+  imageSrc,
 }: {
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
   highPriorityCount: number;
+  imageSrc: string;
 }) {
   const status =
     sessionCount === 0
@@ -159,7 +157,12 @@ function Hero({
           : "Continuez votre progression.";
 
   return (
-    <ChampionshipHero eyebrow={displayName ? `Bonjour, ${displayName}` : "Bonjour"} headline={status}>
+    <ChampionshipHero
+      eyebrow={displayName ? `Bonjour, ${displayName}` : "Bonjour"}
+      headline={status}
+      imageSrc={imageSrc}
+      imageAlt="Combattant en garde, salle d'entraînement"
+    >
       <div className="flex flex-wrap items-center gap-4">
         {sessionCount > 0 ? (
           <p className="max-w-sm text-sm text-[oklch(0.85_0.01_80)]">
@@ -174,152 +177,64 @@ function Hero({
   );
 }
 
-function ClubActivitySection({ summary }: { summary: MemberClubSummary | null }) {
-  if (!summary) return null;
+function StatRow({
+  plan,
+  highPriorityCount,
+  proficientPct,
+  insufficientData,
+}: {
+  plan: TrainingPlanResult;
+  highPriorityCount: number;
+  proficientPct: number;
+  insufficientData: boolean;
+}) {
+  const hasPlan = plan.status === "ok";
+  const p = hasPlan ? plan.plan : null;
+  const copy = p ? TRAINING_PLAN_ACTION_COPY[p.actionType] : null;
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <UsersRound className="size-4 text-primary" />
-        <h2 className="font-heading text-lg font-extrabold tracking-tight">Mon club</h2>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr]">
-        <Card className="rounded-2xl border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Prochains cours
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {summary.upcomingClasses.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucun cours planifié dans les 7 prochains jours.</p>
-            ) : (
-              <ul className="flex flex-col gap-3">
-                {summary.upcomingClasses.map((c) => (
-                  <li key={c.session_id} className="flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-medium">{c.class_name}</span>
-                      <span className="truncate text-xs text-muted-foreground">{c.club_name}</span>
-                    </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {new Date(c.starts_at).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Présence &amp; groupes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Présence (30 derniers jours)</span>
-              <Badge variant="outline">
-                {summary.attendance.marked > 0 ? `${summary.attendance.rate}%` : "N/A"}
-              </Badge>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {summary.groupNames.length === 0 ? (
-                <span className="text-sm text-muted-foreground">Aucun groupe.</span>
-              ) : (
-                summary.groupNames.map((name) => (
-                  <Badge key={name} variant="secondary">
-                    {name}
-                  </Badge>
-                ))
-              )}
-            </div>
-            <Link href="/club" className="inline-flex w-fit items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline">
-              Voir mes clubs <ArrowRight className="size-3.5" />
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ChampionshipMetricCard
+        eyebrow="Focus du jour"
+        value={p ? p.focusSkillName : "Aucun focus"}
+        subtitle={p ? p.reasons[0] : undefined}
+        photoSrc={p ? PHOTOS.focus : undefined}
+        photoAlt="Technique travaillée"
+        icon={p ? undefined : Target}
+      />
+      <ChampionshipMetricCard
+        eyebrow="Prochaine séance"
+        value={p ? ACTION_TYPE_LABELS[p.actionType] : "À planifier"}
+        subtitle={copy?.drillHint}
+        photoSrc={p ? PHOTOS.session : undefined}
+        photoAlt="Prochaine séance"
+        icon={p ? undefined : CalendarClock}
+      />
+      <ChampionshipMetricCard
+        icon={Sparkles}
+        eyebrow="Priorités actives"
+        value={
+          highPriorityCount > 0
+            ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""}`
+            : "Aucune priorité"
+        }
+        subtitle={highPriorityCount > 0 ? "à travailler cette semaine" : undefined}
+      />
+      <ChampionshipMetricCard
+        icon={TrendingUp}
+        eyebrow="Progression globale"
+        ring={proficientPct}
+        insufficientData={insufficientData}
+      />
+    </div>
   );
 }
 
-function NextSessionPlan({ plan }: { plan: TrainingPlanResult }) {
-  if (plan.status !== "ok") return null;
-
-  const { plan: p } = plan;
-  const Icon = ACTION_TYPE_ICONS[p.actionType];
-  const copy = TRAINING_PLAN_ACTION_COPY[p.actionType];
-
+function SectionHeading({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <Sparkles className="size-4 text-primary" />
-        <h2 className="font-heading text-lg font-extrabold tracking-tight">Pour ta prochaine séance</h2>
-      </div>
-
-      <Card className="rounded-2xl border-border bg-card">
-        <CardContent className="flex flex-col gap-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Focus principal
-              </span>
-              <Link
-                href={`/skills/${p.focusSkillId}`}
-                className="font-heading text-xl font-extrabold tracking-tight hover:underline"
-              >
-                {p.focusSkillName}
-              </Link>
-            </div>
-            <Badge variant="default" className="flex items-center gap-1.5">
-              <Icon className="size-3.5" />
-              {ACTION_TYPE_LABELS[p.actionType]}
-            </Badge>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Pourquoi</span>
-            <ul className="flex flex-col gap-1">
-              {p.reasons.map((reason, i) => (
-                <li key={i} className="text-sm">
-                  {reason}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-3">
-            <PlanStep label="Drill recommandé" text={copy.drillHint} />
-            <PlanStep label="Pendant le live" text={copy.liveWatchFor} />
-            <PlanStep label="À observer après" text={copy.postObserve} />
-          </div>
-
-          {p.relatedSkills.length > 0 ? (
-            <p className="text-xs text-muted-foreground">
-              Prérequis liés: {p.relatedSkills.join(", ")}
-            </p>
-          ) : null}
-
-          <Link
-            href={`/skills/${p.focusSkillId}`}
-            className="inline-flex w-fit items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
-          >
-            Voir le skill <ArrowRight className="size-3.5" />
-          </Link>
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
-function PlanStep({ label, text }: { label: string; text: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <p className="text-sm">{text}</p>
+    <div className="flex items-center gap-1.5">
+      <Icon className="size-3.5 text-primary" aria-hidden="true" />
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
     </div>
   );
 }
@@ -340,12 +255,9 @@ function FocusSection({
   if (intelligence.status === "insufficient_data") {
     return (
       <section className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <Target className="size-4 text-primary" />
-          <h2 className="font-heading text-lg font-extrabold tracking-tight">À travailler maintenant</h2>
-        </div>
+        <SectionHeading icon={Target} label="À travailler maintenant" />
         <Card className="rounded-2xl border-border bg-card">
-          <CardContent className="flex flex-col items-start gap-2 py-8">
+          <CardContent className="flex flex-col items-start gap-2 py-6">
             <Target className="size-6 text-muted-foreground" />
             <p className="font-medium">Pas encore assez de données pour recommander un skill</p>
             <p className="max-w-md text-sm text-muted-foreground">
@@ -366,10 +278,7 @@ function FocusSection({
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <Target className="size-4 text-primary" />
-        <h2 className="font-heading text-lg font-extrabold tracking-tight">Autres priorités</h2>
-      </div>
+      <SectionHeading icon={Target} label="Autres priorités" />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {otherRecommendations.map((rec) => (
@@ -384,27 +293,27 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
   const isHigh = rec.priority === "high";
   return (
     <Card className="rounded-2xl border-border bg-card">
-      <CardContent className="flex flex-col gap-2.5">
+      <CardContent className="flex flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
-          <span className="font-medium leading-snug">{rec.skillName}</span>
+          <span className="text-sm font-medium leading-snug">{rec.skillName}</span>
           <Badge variant={isHigh ? "default" : "secondary"} className="shrink-0">
             {PRIORITY_LABELS[rec.priority]}
           </Badge>
         </div>
 
-        <p className="line-clamp-2 text-sm text-muted-foreground">{rec.reasons[0]}</p>
+        <p className="line-clamp-2 text-xs text-muted-foreground">{rec.reasons[0]}</p>
         {rec.reasons.length > 1 ? (
-          <p className="text-xs text-muted-foreground">+{rec.reasons.length - 1} autre(s) signal(aux)</p>
+          <p className="text-[11px] text-muted-foreground">+{rec.reasons.length - 1} autre(s) signal(aux)</p>
         ) : null}
 
-        <p className="flex items-start gap-1.5 text-sm">
+        <p className="flex items-start gap-1.5 text-xs">
           <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
           <span>{rec.action}</span>
         </p>
 
         <Link
           href={`/skills/${rec.skillId}`}
-          className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+          className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
         >
           Voir le skill <ArrowRight className="size-3.5" />
         </Link>
@@ -416,12 +325,13 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
 function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
   return (
     <Card className="rounded-2xl border-border bg-card">
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <TrendingUp className="size-3.5 text-primary" />
           Progression
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+      <CardContent className="flex flex-col gap-4">
         {summary.totalTracked === 0 ? (
           <p className="text-sm text-muted-foreground">
             Aucune compétence suivie pour l&apos;instant. La progression apparaîtra dès que vous
@@ -441,7 +351,7 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
             </div>
 
             {summary.disciplines.length > 0 ? (
-              <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
                 {summary.disciplines.map((d) => (
                   <Badge key={d.name} variant="outline">
                     {d.name} · {d.count}
@@ -475,8 +385,9 @@ function StageBar({ stage, count, total }: { stage: MasteryStage; count: number;
 function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   return (
     <Card className="rounded-2xl border-border bg-card">
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <Flame className="size-3.5 text-primary" />
           Activité récente
         </CardTitle>
       </CardHeader>
@@ -491,11 +402,11 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
               return (
                 <li
                   key={s.id}
-                  className={`flex gap-3 pb-5 ${
+                  className={`flex gap-3 pb-3.5 ${
                     i < sessions.length - 1 ? "border-b border-border/60 mb-1" : ""
                   }`}
                 >
-                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold uppercase text-primary-foreground">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-extrabold uppercase text-primary-foreground">
                     {s.discipline.name.slice(0, 2)}
                   </span>
                   <Link href={`/training/${s.id}`} className="flex-1 min-w-0 group/item">
@@ -533,6 +444,80 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   );
 }
 
+function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
+  if (!summary) return null;
+
+  const attendanceMeta =
+    summary.attendance.marked > 0 ? `${summary.attendance.rate}% de présence · 30 j` : "Pas encore de données";
+
+  return (
+    <Card className="rounded-2xl border-border bg-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <UsersRound className="size-3.5 text-primary" />
+          Mon club
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr_1fr]">
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PHOTOS.club}
+            alt="Membre du club en entraînement"
+            className="size-11 shrink-0 rounded-full object-cover ring-2 ring-primary/20"
+            style={{ objectPosition: "80% center" }}
+          />
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="truncate text-sm font-bold">{summary.groupNames[0] ?? "Voir mes clubs"}</span>
+            <span className="text-xs text-muted-foreground">{attendanceMeta}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Prochains cours
+          </span>
+          {summary.upcomingClasses.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Aucun cours dans les 7 prochains jours.</p>
+          ) : (
+            <ul className="flex flex-col gap-1.5">
+              {summary.upcomingClasses.slice(0, 3).map((c) => (
+                <li key={c.session_id} className="flex items-center justify-between gap-2">
+                  <span className="truncate text-xs font-medium">{c.class_name}</span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {new Date(c.starts_at).toLocaleString("fr-FR", { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Groupes</span>
+          <div className="flex flex-wrap gap-1.5">
+            {summary.groupNames.length === 0 ? (
+              <span className="text-xs text-muted-foreground">Aucun groupe.</span>
+            ) : (
+              summary.groupNames.map((name) => (
+                <Badge key={name} variant="secondary">
+                  {name}
+                </Badge>
+              ))
+            )}
+          </div>
+          <Link
+            href="/club"
+            className="mt-auto inline-flex w-fit items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
+          >
+            Voir mes clubs <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function QuickActions() {
   const actions = [
     { href: "/training/new", label: "Nouvelle séance", icon: Dumbbell },
@@ -545,16 +530,15 @@ function QuickActions() {
   ];
 
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-7">
       {actions.map((a) => {
         const Icon = a.icon;
         return (
           <Link key={a.href} href={a.href} className="group">
-            <Card className="rounded-2xl border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary hover:shadow-md">
-              <CardContent className="flex items-center gap-3 py-4">
+            <Card className="rounded-xl border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary hover:shadow-md">
+              <CardContent className="flex flex-col items-start gap-2 p-3">
                 <Icon className="size-4 text-primary" />
-                <span className="text-sm font-medium">{a.label}</span>
-                <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
+                <span className="text-xs font-medium leading-tight">{a.label}</span>
               </CardContent>
             </Card>
           </Link>
