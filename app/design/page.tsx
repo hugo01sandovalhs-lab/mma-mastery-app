@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import { DESIGN_THEMES, generateThemeCss } from "@/lib/design/themes";
-import { ThemeSwitcher } from "./theme-switcher";
-import { Showcase } from "./showcase";
+import { generateThemeCss } from "@/lib/design/themes";
+import { DesignLabClient } from "./design-lab-client";
 
 export const metadata: Metadata = {
   title: "Design Lab — MMA Mastery",
-  description: "Comparaison des directions graphiques V3 avant décision finale.",
+  description: "6 directions graphiques V3 réellement distinctes, mêmes données.",
 };
-
-const LAB_ID = "design-lab-surface";
 
 export default function DesignLabPage() {
   return (
@@ -18,17 +15,12 @@ export default function DesignLabPage() {
         <div className="mx-auto mb-6 max-w-5xl">
           <h1 className="mb-1 text-xl font-semibold text-white">Design Lab</h1>
           <p className="mb-4 text-sm text-neutral-400">
-            6 directions graphiques V3 sur les mêmes composants. Choix visuel non figé —
-            switch ci-dessous, persisté localement.
+            6 directions graphiques V3 sur les mêmes données et composants métier.
+            Choix visuel non figé — switch ci-dessous, persisté localement.
           </p>
-          <ThemeSwitcher targetId={LAB_ID} />
         </div>
-        <div
-          id={LAB_ID}
-          data-fight-theme={DESIGN_THEMES[0].id}
-          className="mx-auto max-w-5xl rounded-2xl bg-background p-4 sm:p-6"
-        >
-          <Showcase />
+        <div className="mx-auto max-w-5xl">
+          <DesignLabClient />
         </div>
       </div>
     </>

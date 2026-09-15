@@ -21,12 +21,18 @@ parallèle.
 
 ## Ce qui a été livré cette session
 
-- `/design` — Design Lab: 6 thèmes (Fight Lab, Fitness Pro, Linear
-  Fight, Performance Data, Championship, Technical Academy) appliqués
-  aux mêmes composants shadcn existants via des tokens CSS scoping
-  (`data-fight-theme`), switch persistant en `localStorage`. Aucun
-  thème n'a été choisi définitivement — décision visuelle à prendre
-  séparément. Registre: `lib/design/themes.ts`.
+- `/design` — Design Lab reconstruit: 6 directions artistiques
+  réellement distinctes (Fight Operations, Championship / Fight Camp,
+  Athlete Editorial, Fight Academy, Fight Science, Fight Journal),
+  conformes à `docs/design-references/`. Chaque direction est un
+  composant de layout séparé (`app/design/directions/*.tsx` — nav,
+  hero, densité, typographie propres) consommant le **même** jeu de
+  données démo (`lib/design/lab-data.ts`) et les mêmes primitives
+  shadcn — pas de duplication de page métier. Palette/tokens par
+  direction: `lib/design/themes.ts` (`data-fight-theme` scoping).
+  Switch client (`design-lab-client.tsx`) persistant en
+  `localStorage`, responsive. Aucune direction n'a été choisie
+  définitivement — décision visuelle à prendre séparément.
 
 ## P1 — Knowledge / Sequence model (à construire ensuite)
 
