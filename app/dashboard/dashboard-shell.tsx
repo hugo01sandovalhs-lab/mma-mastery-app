@@ -35,12 +35,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div data-fight-theme="championship" className="min-h-screen bg-background text-foreground">
       <style dangerouslySetInnerHTML={{ __html: generateThemeCss() }} />
-      <div className="mx-auto flex w-full max-w-7xl gap-4 p-4 pb-24 sm:p-6 md:pb-6 lg:gap-5 lg:p-7">
-        <div className="hidden shrink-0 md:sticky md:top-6 md:block md:self-start">
+      <div className="mx-auto flex w-full max-w-7xl gap-4 p-4 pb-24 sm:p-5 md:pb-5 lg:gap-5 lg:p-6">
+        <div className="hidden shrink-0 md:sticky md:top-5 md:block md:h-[calc(100vh-2.5rem)] md:self-start">
           <ChampionshipSidebar items={NAV_ITEMS} activeHref="/dashboard" wordmark="MMA MASTERY" />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
           <header className="flex items-center justify-between md:justify-end">
             <Link href="/dashboard" className="font-extrabold tracking-tight md:hidden">
               MMA MASTERY

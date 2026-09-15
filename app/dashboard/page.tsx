@@ -12,7 +12,6 @@ import {
   type LucideIcon,
   MessageCircleQuestion,
   SearchIcon,
-  Sparkles,
   Target,
   TrendingUp,
   UsersRound,
@@ -21,16 +20,13 @@ import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
 import { ChampionshipHero } from "@/components/championship/hero";
 import { ChampionshipMetricCard } from "@/components/championship/metric-card";
+import { ProgressRing } from "@/components/championship/progress-ring";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
-import {
-  MASTERY_STAGES,
-  MASTERY_STAGE_LABELS,
-  type MasteryStage,
-} from "@/lib/domain/skill";
+import { MASTERY_STAGES, MASTERY_STAGE_LABELS } from "@/lib/domain/skill";
 import {
   TRAINING_PLAN_ACTION_COPY,
   type PriorityLevel,
@@ -117,7 +113,7 @@ export default async function DashboardPage({
           imageSrc={heroImageSrc}
         />
 
-        <StatRow plan={plan} highPriorityCount={highPriorityCount} proficientPct={proficientPct} insufficientData={progressSummary.totalTracked === 0} />
+        <StatRow plan={plan} proficientPct={proficientPct} progressSummary={progressSummary} />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.15fr]">
           <ProgressionSection summary={progressSummary} />
@@ -179,21 +175,20 @@ function Hero({
 
 function StatRow({
   plan,
-  highPriorityCount,
   proficientPct,
-  insufficientData,
+  progressSummary,
 }: {
   plan: TrainingPlanResult;
-  highPriorityCount: number;
   proficientPct: number;
-  insufficientData: boolean;
+  progressSummary: SkillProgressSummary;
 }) {
   const hasPlan = plan.status === "ok";
   const p = hasPlan ? plan.plan : null;
   const copy = p ? TRAINING_PLAN_ACTION_COPY[p.actionType] : null;
+  const insufficientData = progressSummary.totalTracked === 0;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       <ChampionshipMetricCard
         eyebrow="Focus du jour"
         value={p ? p.focusSkillName : "Aucun focus"}
@@ -210,23 +205,51 @@ function StatRow({
         photoAlt="Prochaine séance"
         icon={p ? undefined : CalendarClock}
       />
-      <ChampionshipMetricCard
-        icon={Sparkles}
-        eyebrow="Priorités actives"
-        value={
-          highPriorityCount > 0
-            ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""}`
-            : "Aucune priorité"
-        }
-        subtitle={highPriorityCount > 0 ? "à travailler cette semaine" : undefined}
-      />
-      <ChampionshipMetricCard
-        icon={TrendingUp}
-        eyebrow="Progression globale"
-        ring={proficientPct}
-        insufficientData={insufficientData}
-      />
+      <ProgressionCompactCard summary={progressSummary} ring={proficientPct} insufficientData={insufficientData} />
     </div>
+  );
+}
+
+function ProgressionCompactCard({
+  summary,
+  ring,
+  insufficientData,
+}: {
+  summary: SkillProgressSummary;
+  ring: number;
+  insufficientData: boolean;
+}) {
+  const stages = MASTERY_STAGES.filter((s) => s !== "unknown" && s !== "introduced");
+  return (
+    <Card className="rounded-2xl border-border bg-card">
+      <CardContent className="flex items-center gap-4 p-4">
+        <ProgressRing value={ring} size={56} strokeWidth={5} insufficientData={insufficientData} />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Progression globale
+          </span>
+          {insufficientData ? (
+            <span className="text-xs text-muted-foreground">Pas encore de données</span>
+          ) : (
+            stages.map((stage) => {
+              const count = summary.stageCounts[stage] ?? 0;
+              const pct = summary.totalTracked > 0 ? Math.round((count / summary.totalTracked) * 100) : 0;
+              return (
+                <div key={stage} className="flex items-center gap-1.5">
+                  <span className="w-14 shrink-0 truncate text-[10px] text-muted-foreground">
+                    {MASTERY_STAGE_LABELS[stage]}
+                  </span>
+                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="w-4 shrink-0 text-right text-[10px] font-bold">{count}</span>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -323,55 +346,49 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
 }
 
 function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
+  const proficientCount = (summary.stageCounts.consistent ?? 0) + (summary.stageCounts.mastered ?? 0);
+  const proficientPct =
+    summary.totalTracked > 0 ? Math.round((proficientCount / summary.totalTracked) * 100) : 0;
+
   return (
     <Card className="rounded-2xl border-border bg-card">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <TrendingUp className="size-3.5 text-primary" />
-          Progression
+          Progression détaillée
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent>
         {summary.totalTracked === 0 ? (
           <p className="text-sm text-muted-foreground">
             Aucune compétence suivie pour l&apos;instant. La progression apparaîtra dès que vous
             enregistrerez des séances avec des techniques.
           </p>
         ) : (
-          <>
-            <div className="flex flex-col gap-2">
-              {MASTERY_STAGES.filter((stage) => stage !== "unknown").map((stage) => (
-                <StageBar
-                  key={stage}
-                  stage={stage}
-                  count={summary.stageCounts[stage] ?? 0}
-                  total={summary.totalTracked}
-                />
-              ))}
+          <div className="flex items-center gap-5">
+            <ProgressRing value={proficientPct} size={80} strokeWidth={7} />
+            <div className="flex flex-1 flex-col gap-2">
+              {summary.disciplines.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Aucune discipline suivie.</p>
+              ) : (
+                summary.disciplines.slice(0, 5).map((d) => (
+                  <DisciplineBar key={d.name} name={d.name} count={d.count} total={summary.totalTracked} />
+                ))
+              )}
             </div>
-
-            {summary.disciplines.length > 0 ? (
-              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                {summary.disciplines.map((d) => (
-                  <Badge key={d.name} variant="outline">
-                    {d.name} · {d.count}
-                  </Badge>
-                ))}
-              </div>
-            ) : null}
-          </>
+          </div>
         )}
       </CardContent>
     </Card>
   );
 }
 
-function StageBar({ stage, count, total }: { stage: MasteryStage; count: number; total: number }) {
+function DisciplineBar({ name, count, total }: { name: string; count: number; total: number }) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="w-24 shrink-0 text-xs text-muted-foreground">{MASTERY_STAGE_LABELS[stage]}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+      <span className="w-24 shrink-0 truncate text-xs text-muted-foreground">{name}</span>
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-primary transition-[width] duration-500"
           style={{ width: `${pct}%` }}

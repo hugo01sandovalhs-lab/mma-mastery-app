@@ -18,7 +18,7 @@ export function ChampionshipHero({
   return (
     <div
       className={cn(
-        "relative isolate flex min-h-[190px] flex-col justify-end overflow-hidden rounded-2xl bg-[oklch(0.14_0_0)] p-5 sm:min-h-[220px] sm:p-6 md:min-h-[240px] md:p-8",
+        "relative isolate flex min-h-[170px] flex-col justify-end overflow-hidden rounded-2xl bg-[oklch(0.14_0_0)] p-5 sm:min-h-[190px] sm:p-6 md:min-h-[210px] md:p-7",
         className
       )}
     >
@@ -98,7 +98,7 @@ export function ChampionshipHero({
             {eyebrow}
           </span>
         ) : null}
-        <h2 className="max-w-lg text-2xl font-black uppercase leading-[0.98] tracking-tight text-[oklch(0.78_0.13_82)] sm:text-3xl md:text-4xl">
+        <h2 className="max-w-lg text-xl font-black uppercase leading-[0.98] tracking-tight text-[oklch(0.78_0.13_82)] sm:text-2xl md:text-3xl">
           {headline}
         </h2>
         {children}
