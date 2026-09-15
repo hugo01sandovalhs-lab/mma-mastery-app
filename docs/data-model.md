@@ -176,16 +176,68 @@ Extensibilité: nouvelle dimension = `ALTER TABLE ADD COLUMN` nullable, aucune m
 - Index: (`user_id`, `status`)
 - `getUpcomingGoals()` (échéance ≤14 jours ou dépassée, statut `active`) alimente le Dashboard et l'AI Coach
 
+## Compétition (owner-only — docs/decisions/0009)
+
+### Athlete
+Roster personnel d'adversaires/partenaires. Pas un catalogue partagé (pas de
+tooling de modération), même choix que `Resource` (0008).
+- `id` PK
+- `user_id` FK, NOT NULL, index
+- `name` text NOT NULL
+- `federation` text nullable
+- `discipline_id` FK → Discipline, nullable
+- `notes` text nullable
+- `created_at`, `updated_at`
+- UNIQUE(`user_id`, lower(`name`))
+
+### Match
+Métadonnées d'une compétition. Ne duplique pas le log de techniques:
+référence optionnellement la `TrainingSession` (`session_type = 'competition'`)
+qui a loggé les techniques réellement appliquées.
+- `id` PK
+- `user_id` FK, NOT NULL, index
+- `discipline_id` FK → Discipline, NOT NULL
+- `athlete_id` FK → Athlete, nullable
+- `training_session_id` FK → TrainingSession, nullable
+- `event_name` text nullable
+- `date` date NOT NULL
+- `result` enum: `win | loss | draw | no_contest`, nullable
+- `method` text nullable
+- `notes` text nullable
+- `created_at`, `updated_at`
+- Index: (`user_id`, `date` desc)
+
+### Sequence
+Breakdown vidéo d'une compétition (ou standalone). Jamais de vidéo
+réhébergée — uniquement URL + timestamp optionnel (début/fin) vers la
+source, même règle que `Resource`.
+- `id` PK
+- `user_id` FK, NOT NULL, index
+- `match_id` FK → Match, nullable
+- `title` text NOT NULL
+- `source_url` text nullable
+- `timestamp_start`, `timestamp_end` int nullable (>= 0, fin >= début)
+- `notes` text nullable
+- `created_at`, `updated_at`
+
+### SequenceSkill
+Jonction many-to-many Sequence ↔ Skill (RLS owner-only via la séquence
+parente, comme `SessionTechnique`).
+- `id` PK
+- `sequence_id` FK → Sequence, NOT NULL, index
+- `skill_id` FK → Skill, NOT NULL, index
+- UNIQUE(`sequence_id`, `skill_id`)
+
 ## Récapitulatif RLS
 
 | Table | RLS |
 |---|---|
-| Profile, TrainingSession, SessionTechnique*, SessionObservation*, SkillProgress, Goal, Resource, UserBookmark, StudyQueueItem, SkillNote | owner via `user_id = auth.uid()` (*via parent FK) |
+| Profile, TrainingSession, SessionTechnique*, SessionObservation*, SkillProgress, Goal, Resource, UserBookmark, StudyQueueItem, SkillNote, Athlete, Match, Sequence, SequenceSkill* | owner via `user_id = auth.uid()` (*via parent FK) |
 | Discipline, Skill, SkillRelation | lecture publique, écriture service role |
 
 ## Différé — non créé à ce stade
 
 - `Achievement`, `UserAchievement`, `XPEvent`, `Metric`: gamification/métriques physiques envisagées initialement, aucune table créée — pas de moteur de gamification dans l'app réelle.
 - `Conversation`, `Message`, `SearchDocument`, `Embedding`: RAG/historique de conversation IA envisagés initialement, jamais construits (docs/architecture.md — pas de pgvector, pas de provider cloud). Le Coach actuel (docs/decisions/0005) est sans état, pas de table de conversation.
-- `Sequence`, `SequenceTag`, `SequenceSkill`, `Match`/`Event`, `Athlete`: modèle "séquence issue d'un combat" documenté dans `docs/decisions/0007` (P1), pas construit — deuxième système à part entière, hors scope du lot 0008.
+- `SequenceTag`: tagging libre sur `Sequence`, documenté dans `docs/decisions/0007`, pas construit — `SequenceSkill` (lien vers le catalogue) couvre le besoin de ce lot.
 - `Club`, `ClubMember`, groupes, messagerie de club, `Class`, `ClassSession`, `Attendance`, QR check-in, `CoachFeedback`/`AthleteGoal` côté club, compétition (gameplan/post-fight review), `Video`, `VideoAnnotation`, paiements: architecture cible documentée dans `docs/decisions/0007`, aucune table créée.
