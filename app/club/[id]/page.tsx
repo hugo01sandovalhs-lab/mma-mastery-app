@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CalendarClock } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +38,12 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{club.name}</h1>
             <Badge variant="outline">{CLUB_ROLE_LABELS[club.myRole]}</Badge>
           </div>
+          <Link
+            href={`/club/${club.id}/classes`}
+            className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <CalendarClock className="size-3.5" /> Cours et présence
+          </Link>
         </div>
 
         <div className="flex flex-col gap-3">
