@@ -5,8 +5,11 @@ import {
   ArrowUpRight,
   BookOpen,
   Dumbbell,
+  Flag,
   Flame,
+  LibraryIcon,
   MessageCircleQuestion,
+  SearchIcon,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -423,6 +426,9 @@ function QuickActions() {
     { href: "/skills", label: "Mes compétences", icon: Target },
     { href: "/training/review", label: "À revoir", icon: BookOpen },
     { href: "/training", label: "Historique complet", icon: Flame },
+    { href: "/goals", label: "Objectifs", icon: Flag },
+    { href: "/study", label: "File d'étude", icon: LibraryIcon },
+    { href: "/search", label: "Recherche", icon: SearchIcon },
   ];
 
   return (

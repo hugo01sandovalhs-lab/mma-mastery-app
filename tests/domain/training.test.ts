@@ -107,6 +107,45 @@ describe("trainingSessionInputSchema", () => {
     }
   });
 
+  it("accepts a sparring technique with outcome, partner and pressure level", () => {
+    const result = trainingSessionInputSchema.safeParse({
+      ...baseInput,
+      techniques: [
+        {
+          technique_name: "Armbar depuis closed guard",
+          outcome: "success",
+          partner_name: "Alex",
+          pressure_level: 4,
+          problem: "Timing trop lent",
+        },
+      ],
+      observations: [{ type: "difficulty", content: "x" }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.techniques[0].outcome).toBe("success");
+      expect(result.data.techniques[0].pressure_level).toBe(4);
+    }
+  });
+
+  it("rejects an invalid technique outcome", () => {
+    const result = trainingSessionInputSchema.safeParse({
+      ...baseInput,
+      techniques: [{ technique_name: "Double leg", outcome: "draw" }],
+      observations: [{ type: "difficulty", content: "x" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a pressure level outside 1-5", () => {
+    const result = trainingSessionInputSchema.safeParse({
+      ...baseInput,
+      techniques: [{ technique_name: "Double leg", pressure_level: 6 }],
+      observations: [{ type: "difficulty", content: "x" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects an invalid discipline_id", () => {
     const result = trainingSessionInputSchema.safeParse({
       ...baseInput,

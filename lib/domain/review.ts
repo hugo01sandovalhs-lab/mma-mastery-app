@@ -1,5 +1,10 @@
 import { computeMasteryStage, MASTERY_STAGE_LABELS } from "./skill";
-import { RECENCY_WINDOW_DAYS, STALE_PRACTICE_DAYS, type SkillIntelligenceInput } from "./training-intelligence";
+import {
+  MIN_DRILLING_REPS_FOR_TRANSFER_SIGNAL,
+  RECENCY_WINDOW_DAYS,
+  STALE_PRACTICE_DAYS,
+  type SkillIntelligenceInput,
+} from "./training-intelligence";
 
 /**
  * Learning/review loop: a flat, explainable "to review" list built directly
@@ -10,7 +15,7 @@ import { RECENCY_WINDOW_DAYS, STALE_PRACTICE_DAYS, type SkillIntelligenceInput }
  * developing.
  */
 
-export const REVIEW_ITEM_TYPES = ["question", "difficulty", "stale", "developing"] as const;
+export const REVIEW_ITEM_TYPES = ["question", "difficulty", "stale", "developing", "never_applied"] as const;
 export type ReviewItemType = (typeof REVIEW_ITEM_TYPES)[number];
 
 export const REVIEW_ITEM_TYPE_LABELS: Record<ReviewItemType, string> = {
@@ -18,6 +23,7 @@ export const REVIEW_ITEM_TYPE_LABELS: Record<ReviewItemType, string> = {
   difficulty: "Difficulté signalée",
   stale: "Pratique arrêtée",
   developing: "En développement",
+  never_applied: "Jamais appliqué",
 };
 
 export type ReviewItem = {
@@ -54,6 +60,7 @@ export function buildReviewQueue(
   const difficulties: ReviewItem[] = [];
   const stale: ReviewItem[] = [];
   const developing: ReviewItem[] = [];
+  const neverApplied: ReviewItem[] = [];
 
   for (const input of inputs) {
     for (const obs of input.observations) {
@@ -88,6 +95,20 @@ export function buildReviewQueue(
         occurredAt: null,
       });
     }
+
+    if (
+      input.progress.drilling_reps >= MIN_DRILLING_REPS_FOR_TRANSFER_SIGNAL &&
+      input.progress.live_application_count === 0 &&
+      input.progress.sparring_attempt_count === 0
+    ) {
+      neverApplied.push({
+        skillId: input.skillId,
+        skillName: input.skillName,
+        type: "never_applied",
+        detail: `${input.progress.drilling_reps} répétitions en drilling, jamais appliqué en live ou en sparring`,
+        occurredAt: input.lastPracticedAt,
+      });
+    }
   }
 
   const byRecency = (a: ReviewItem, b: ReviewItem) => {
@@ -100,5 +121,6 @@ export function buildReviewQueue(
     ...difficulties.sort(byRecency).slice(0, limitPerType),
     ...stale.sort(byRecency).slice(0, limitPerType),
     ...developing.sort(byRecency).slice(0, limitPerType),
+    ...neverApplied.sort(byRecency).slice(0, limitPerType),
   ];
 }

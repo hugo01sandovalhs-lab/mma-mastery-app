@@ -24,6 +24,14 @@ vi.mock("@/lib/usecases/review-actions", () => ({
   getReviewQueue: vi.fn(async () => []),
 }));
 
+vi.mock("@/lib/usecases/goals-actions", () => ({
+  getUpcomingGoals: vi.fn(async () => []),
+}));
+
+vi.mock("@/lib/usecases/knowledge-actions", () => ({
+  getStudyQueue: vi.fn(async () => []),
+}));
+
 const ORIGINAL_ENV = { ...process.env };
 
 afterEach(() => {

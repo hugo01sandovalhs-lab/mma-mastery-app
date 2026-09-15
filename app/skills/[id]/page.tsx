@@ -31,6 +31,18 @@ import {
 } from "@/lib/domain/training-intelligence";
 import { getSkill, type SkillDetail, type SkillHistoryItem, type SkillRelationItem } from "@/lib/usecases/skill-actions";
 import { getTrainingIntelligence } from "@/lib/usecases/training-intelligence-actions";
+import {
+  getResourcesForSkill,
+  getSkillNotes,
+  isBookmarked,
+  isInStudyQueue,
+  type ResourceListItem,
+  type SkillNote,
+} from "@/lib/usecases/knowledge-actions";
+import { SkillActionsBar } from "@/components/skills/skill-actions-bar";
+import { SkillNotesSection } from "@/components/skills/skill-notes-section";
+import { ResourceRow } from "@/components/study/resource-row";
+import { ResourceForm } from "@/components/study/resource-form";
 
 const STAGE_DESCRIPTIONS: Record<MasteryStage, string> = {
   unknown: "Pas encore de donnée enregistrée sur cette compétence.",
@@ -74,7 +86,13 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
   const skill = await getSkill(id);
   if (!skill) notFound();
 
-  const intelligence = await getTrainingIntelligence();
+  const [intelligence, notes, resources, bookmarked, queued] = await Promise.all([
+    getTrainingIntelligence(),
+    getSkillNotes(id),
+    getResourcesForSkill(id),
+    isBookmarked("skill", id),
+    isInStudyQueue(id),
+  ]);
   const recommendation =
     intelligence.status === "ok" ? intelligence.recommendations.find((r) => r.skillId === id) : undefined;
 
@@ -94,6 +112,10 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
 
         <Hero skill={skill} stage={stage} stageIndex={stageIndex} maxIndex={maxIndex} />
 
+        <div className="-mt-4">
+          <SkillActionsBar skillId={skill.id} initiallyBookmarked={bookmarked} alreadyQueued={queued} />
+        </div>
+
         <WhatIKnowSection skill={skill} stage={stage} />
 
         <ProgressionSection skill={skill} />
@@ -101,6 +123,8 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
         <RelationsSection skill={skill} />
 
         <NextActionSection recommendation={recommendation} stage={stage} />
+
+        <NotesAndResourcesSection skillId={skill.id} notes={notes} resources={resources} />
 
         <HistorySection history={skill.history} />
       </div>
@@ -373,6 +397,41 @@ function NextActionSection({
           </CardContent>
         </Card>
       )}
+    </section>
+  );
+}
+
+function NotesAndResourcesSection({
+  skillId,
+  notes,
+  resources,
+}: {
+  skillId: string;
+  notes: SkillNote[];
+  resources: ResourceListItem[];
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="font-heading text-lg font-semibold tracking-tight">Notes & ressources</h2>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-3">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase">Notes personnelles</h3>
+          <SkillNotesSection skillId={skillId} notes={notes} />
+        </div>
+        <div className="flex flex-col gap-3">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase">Ressources externes</h3>
+          {resources.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aucune ressource liée pour l&apos;instant.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {resources.map((r) => (
+                <ResourceRow key={r.id} resource={r} />
+              ))}
+            </div>
+          )}
+          <ResourceForm skills={[]} fixedSkillId={skillId} />
+        </div>
+      </div>
     </section>
   );
 }

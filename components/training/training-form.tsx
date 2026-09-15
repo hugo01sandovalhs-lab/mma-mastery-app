@@ -17,12 +17,15 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   OBSERVATION_TYPE_LABELS,
   OBSERVATION_TYPES,
+  SESSION_TECHNIQUE_OUTCOME_LABELS,
+  SESSION_TECHNIQUE_OUTCOMES,
   SESSION_TYPE_LABELS,
   SESSION_TYPES,
   hasRequiredObservation,
   type Discipline,
   type ObservationType,
   type SessionTechniqueInput,
+  type SessionType,
 } from "@/lib/domain/training";
 import type { TrainingActionState } from "@/lib/usecases/training-actions";
 import type { TrainingSessionDetail } from "@/lib/usecases/training-actions";
@@ -46,12 +49,19 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
   const initialState: TrainingActionState = { error: null };
   const [state, formAction, isPending] = useActionState(action, initialState);
 
+  const [sessionType, setSessionType] = useState<SessionType>(initialData?.session_type ?? "class");
+  const isSparring = sessionType === "sparring";
+
   const [techniques, setTechniques] = useState<SessionTechniqueInput[]>(
     initialData?.techniques.map((t) => ({
       technique_name: t.technique_name,
       skill_id: t.skill_id ?? undefined,
       category: t.category ?? undefined,
       notes: t.notes ?? undefined,
+      outcome: t.outcome ?? undefined,
+      partner_name: t.partner_name ?? undefined,
+      pressure_level: t.pressure_level ?? undefined,
+      problem: t.problem ?? undefined,
     })) ?? [],
   );
   const [observations, setObservations] = useState<ObservationRow[]>(
@@ -132,7 +142,8 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
             <Label htmlFor="session_type">Type de séance</Label>
             <Select
               name="session_type"
-              defaultValue={initialData?.session_type ?? "class"}
+              value={sessionType}
+              onValueChange={(value) => setSessionType(value as SessionType)}
               items={SESSION_TYPES.map((t) => ({ value: t, label: SESSION_TYPE_LABELS[t] }))}
             >
               <SelectTrigger id="session_type" className="w-full">
@@ -198,7 +209,18 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
             variant="outline"
             size="sm"
             onClick={() =>
-              setTechniques((prev) => [...prev, { technique_name: "", category: "", notes: "" }])
+              setTechniques((prev) => [
+                ...prev,
+                {
+                  technique_name: "",
+                  category: "",
+                  notes: "",
+                  outcome: undefined,
+                  partner_name: "",
+                  pressure_level: undefined,
+                  problem: "",
+                },
+              ])
             }
           >
             <PlusIcon /> Ajouter
@@ -240,6 +262,75 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                     )
                   }
                 />
+                {isSparring ? (
+                  <div className="grid grid-cols-1 gap-2 border-t border-border pt-2 sm:grid-cols-2">
+                    <Select
+                      value={t.outcome ?? "__none"}
+                      onValueChange={(value) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) =>
+                            idx === i
+                              ? { ...row, outcome: value === "__none" ? undefined : (value as SessionTechniqueInput["outcome"]) }
+                              : row,
+                          ),
+                        )
+                      }
+                      items={[
+                        { value: "__none", label: "Résultat non noté" },
+                        ...SESSION_TECHNIQUE_OUTCOMES.map((o) => ({ value: o, label: SESSION_TECHNIQUE_OUTCOME_LABELS[o] })),
+                      ]}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none">Résultat non noté</SelectItem>
+                        {SESSION_TECHNIQUE_OUTCOMES.map((o) => (
+                          <SelectItem key={o} value={o}>
+                            {SESSION_TECHNIQUE_OUTCOME_LABELS[o]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      aria-label="Partenaire"
+                      placeholder="Partenaire (optionnel)"
+                      value={t.partner_name ?? ""}
+                      onChange={(e) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) => (idx === i ? { ...row, partner_name: e.target.value } : row)),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label="Niveau de pression (1-5)"
+                      placeholder="Pression (1-5, optionnel)"
+                      type="number"
+                      min={1}
+                      max={5}
+                      value={t.pressure_level ?? ""}
+                      onChange={(e) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) =>
+                            idx === i
+                              ? { ...row, pressure_level: e.target.value ? Number(e.target.value) : undefined }
+                              : row,
+                          ),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label="Problème rencontré"
+                      placeholder="Problème rencontré (optionnel)"
+                      value={t.problem ?? ""}
+                      onChange={(e) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) => (idx === i ? { ...row, problem: e.target.value } : row)),
+                        )
+                      }
+                    />
+                  </div>
+                ) : null}
               </div>
               <Button
                 type="button"

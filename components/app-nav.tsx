@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, LayoutDashboard, Sparkles, Target, User } from "lucide-react";
+import { BookOpen, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, User } from "lucide-react";
 import { cn } from "cn";
 
 const NAV_LINKS = [
@@ -11,6 +11,12 @@ const NAV_LINKS = [
   { href: "/skills", label: "Compétences", icon: Target },
   { href: "/coach", label: "Coach", icon: Sparkles },
   { href: "/profile", label: "Profil", icon: User },
+];
+
+const SIDEBAR_ONLY_LINKS = [
+  { href: "/study", label: "Étude", icon: BookOpen },
+  { href: "/goals", label: "Objectifs", icon: Flag },
+  { href: "/search", label: "Recherche", icon: Search },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -22,7 +28,7 @@ export function SidebarNav() {
 
   return (
     <nav className="flex flex-col gap-1">
-      {NAV_LINKS.map((link) => {
+      {[...NAV_LINKS, ...SIDEBAR_ONLY_LINKS].map((link) => {
         const active = isActive(pathname, link.href);
         const Icon = link.icon;
         return (

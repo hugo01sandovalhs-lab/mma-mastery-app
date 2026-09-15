@@ -34,11 +34,14 @@ Règle: aucun accès DB ni appel IA direct depuis un composant UI. Toute logique
   /dashboard            "que travailler aujourd'hui" (Training Intelligence V2)
   /coach                AI Coach — réponse + faits sources + question libre
   /training             historique, /new (saisie séance), /[id] (+ /edit), /review (learning review loop)
-  /skills               liste, /map (skill graph), /[id] (détail + progression)
+  /skills               liste, /map (skill graph), /[id] (détail + progression + notes/ressources)
+  /study                file d'étude, favoris, ressources externes (docs/decisions/0008)
+  /goals                objectifs court/moyen/long terme liés aux compétences
+  /search               recherche globale (skills, séances, observations, objectifs, ressources)
   /profile, /login, /signup
 /components
   /ui                   primitives shadcn (button, card, badge, dialog, ...)
-  /training, /coach      composants métier par domaine
+  /training, /coach, /skills, /study, /goals   composants métier par domaine
 /lib
   /domain               types, règles métier pures, calculs dérivés — zéro dépendance DB/réseau
   /usecases             orchestration server-only ("use server" pour les actions appelées du client)
@@ -69,9 +72,10 @@ Contrat `AIProvider` (`lib/domain/ai-coach.ts`): `generateCoachResponse(context,
 
 ## RLS — principe (vérifié dans les migrations)
 
-- Tables user-owned (`profiles`, `training_sessions`, `session_techniques`, `session_observations`, `skill_progress`): RLS `user_id = auth.uid()`, directe ou via la table parente.
-- Tables catalogue partagé (`disciplines`, `skills`, `skill_relations`): lecture publique, pas d'écriture utilisateur direct.
+- Tables user-owned (`profiles`, `training_sessions`, `session_techniques`, `session_observations`, `skill_progress`, `goals`, `resources`, `user_bookmarks`, `study_queue_items`, `skill_notes`): RLS `user_id = auth.uid()`, directe ou via la table parente.
+- Tables catalogue partagé (`disciplines`, `skills`, `skill_relations`): lecture publique, pas d'écriture utilisateur direct. `resources` n'est **pas** un catalogue partagé malgré la ressemblance avec `Resource` dans `data-model.md`: chaque utilisateur curates ses propres liens (docs/decisions/0008), pas de modération/service-role.
 - Fonctions RPC (`create_training_session`, `update_training_session`): `security invoker`, scoping `auth.uid()` explicite — jamais `security definer` pour du code touchant des données utilisateur.
+- `sync_skill_progress_for_skill()` (trigger sur `session_techniques`): dérive `drilling_reps`/`live_application_count`/`sparring_attempt_count`/`sparring_success_count`/`evidence_count`/`last_practiced_at` à partir du `session_type` réel et de la colonne `outcome` (sparring uniquement). Voir docs/decisions/0006 et 0008.
 
 ## Stratégie d'évolution du schéma
 
@@ -82,9 +86,9 @@ Contrat `AIProvider` (`lib/domain/ai-coach.ts`): `generateCoachResponse(context,
 
 - VectorStore / RAG / citations sourcées: envisagé au Phase 0 initial, jamais implémenté. Si un besoin réel de recherche sémantique apparaît, le réévaluer avec une vraie justification produit plutôt que ressusciter le plan initial tel quel.
 - Provider IA cloud (Claude API ou autre): volontairement hors scope (docs/decisions/0005) — pas de coût récurrent, pas de clé à gérer.
-- Club, ClubMember, messagerie de club, Computer Vision (Video, VideoAnnotation), Knowledge/Sequence model, Study workflow, paiements: scope complet documenté (pas construit) dans `docs/decisions/0007-v3-scope-roadmap.md`.
+- Club, ClubMember, messagerie de club, groupes, Classes/Calendrier/Attendance/QR check-in, Coach Dashboard, Compétition (gameplan/post-fight review), Computer Vision (Video, VideoAnnotation), modèle Sequence/Match/Athlete, paiements: scope complet documenté (pas construit) dans `docs/decisions/0007-v3-scope-roadmap.md`, inchangé par `docs/decisions/0008`.
 - PWA: manifest + viewport ajoutés; pas d'icône d'app dédiée (192/512 PNG) — nécessite une décision de design, pas fabriquée ici. Pas de mode offline.
-- Recherche globale (command center type Raycast): non implémentée — évaluer le besoin réel avant d'ajouter une dépendance.
+- Recherche globale type command center (Raycast/Cmd+K): `/search` (docs/decisions/0008) reste une page dédiée avec formulaire GET, pas une palette de commande — évaluer le besoin réel avant d'ajouter cette couche UI.
 
 ## Design Lab
 

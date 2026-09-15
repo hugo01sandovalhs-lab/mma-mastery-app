@@ -1,6 +1,8 @@
-# MMA Mastery App — Modèle de données (Phases 1-7)
+# MMA Mastery App — Modèle de données
 
 Convention: tous les PK sont `uuid default gen_random_uuid()`. Tous les `created_at` sont `timestamptz default now()`. `updated_at` présent uniquement sur tables mutables, maintenu par trigger `set_updated_at`. RLS = Row Level Security Postgres. "Owner" = filtre RLS appliqué.
+
+Ce document décrit uniquement les tables **réellement créées** (voir `supabase/migrations/`). Les sections `Goal` et `Resource` ci-dessous reflètent leur forme réelle (docs/decisions/0008), différente de ce qui avait été esquissé initialement. Tout ce qui n'a pas de migration correspondante est listé dans "Différé" en bas de page — ne pas s'y fier comme si c'était construit.
 
 ## Identité
 
@@ -45,48 +47,52 @@ Many-to-many auto-référencée sur Skill, typée — le Skill System est un gra
 - UNIQUE(`from_skill_id`, `to_skill_id`, `relation_type`)
 - Extensible: nouvelles valeurs d'enum sans migration structurelle.
 
-### Achievement
-- `id` PK
-- `code` text UNIQUE
-- `title`, `description` text
-- `criteria` jsonb — condition de déblocage, interprétée par le moteur gamification (pas de logique SQL)
+## Base de connaissance (owner-only — docs/decisions/0008)
+
+Contrairement à `Skill`/`Discipline`, ces tables ne sont **pas** un catalogue
+partagé: chaque utilisateur possède ses propres lignes (RLS `user_id =
+auth.uid()`), sans étape de modération/service-role.
 
 ### Resource
-Base de connaissance externe (vidéos, articles, chaînes).
+Lien externe curaté par l'utilisateur (vidéo, article, chaîne, cours). Jamais
+de vidéo réhébergée — uniquement URL + timestamp optionnel vers la source.
 - `id` PK
+- `user_id` FK → auth.users, NOT NULL, index
 - `type` enum: `video | article | channel | course`
 - `title` text NOT NULL
-- `author` text nullable — nom auteur/chaîne
+- `author` text nullable
 - `url` text NOT NULL
-- `published_at` date nullable
-- `discipline_id` FK → Discipline nullable
-- `created_at`
-- Index: (`discipline_id`), (`type`)
+- `skill_id` FK → Skill, nullable, index
+- `timestamp_seconds` int nullable (>= 0)
+- `notes` text nullable
+- `created_at`, `updated_at`
 
-## Provenance / RAG
-
-### SearchDocument
-Chunk de contenu indexable, lié ou non à une Resource.
+### UserBookmark
+Cible polymorphe (comme `XPEvent.source_id` plus bas), pas de FK stricte sur `target_id`.
 - `id` PK
-- `resource_id` FK → Resource, nullable (contenu interne possible sans source externe)
+- `user_id` FK, NOT NULL, index
+- `target_type` enum: `skill | resource`
+- `target_id` uuid NOT NULL
+- `created_at`
+- UNIQUE(`user_id`, `target_type`, `target_id`)
+
+### StudyQueueItem
+- `id` PK
+- `user_id` FK, NOT NULL, index
+- `skill_id` FK → Skill, NOT NULL
+- `status` enum: `queued | studying | studied`
+- `notes` text nullable
+- `studied_at` timestamptz nullable — posé quand `status` passe à `studied`
+- `created_at`, `updated_at`
+- UNIQUE(`user_id`, `skill_id`)
+
+### SkillNote
+Notes personnelles libres sur une compétence, hors séance (distinct de `SessionObservation`).
+- `id` PK
+- `user_id` FK, NOT NULL, index
+- `skill_id` FK → Skill, NOT NULL, index
 - `content` text NOT NULL
-- `chunk_index` int default 0
-- `source_locator` jsonb nullable — ex `{ "timestamp_seconds": 142 }` pour vidéo, `{ "page": 3 }` pour article
-- `metadata` jsonb — champs additionnels de citation non structurés
-- `created_at`
-- Index: (`resource_id`)
-- Cardinalité: 1 Resource → N SearchDocument
-
-### Embedding
-- `id` PK
-- `document_id` FK → SearchDocument, NOT NULL, index
-- `model_version` text NOT NULL
-- `vector` vector(N) — pgvector, N selon modèle
-- `created_at`
-- UNIQUE(`document_id`, `model_version`) — permet ré-embedding sans perdre historique
-- Index: HNSW ou ivfflat sur `vector` (créé en migration dédiée selon volume)
-
-Citation complète reconstruite par jointure `Embedding → SearchDocument → Resource`: type, titre, auteur, URL, date, `source_locator` (timestamp/page). Aucun champ de citation n'est dupliqué ailleurs — source unique de vérité.
+- `created_at`, `updated_at`
 
 ## Entraînement (owner-only, RLS user_id = auth.uid())
 
@@ -102,16 +108,22 @@ Citation complète reconstruite par jointure `Embedding → SearchDocument → R
 - Index: (`user_id`, `date` desc)
 
 ### SessionTechnique
-Many-to-many Session ↔ Skill, avec attributs.
+Many-to-many Session ↔ Skill, avec attributs. Une ligne dont la séance parente
+a `session_type = 'sparring'` **est** un round de sparring — pas de table
+`SparringRound` séparée (docs/decisions/0008).
 - `id` PK
 - `session_id` FK → TrainingSession, NOT NULL, index
 - `technique_name` text NOT NULL — texte libre saisi par l'utilisateur (Phase 2, conservé)
 - `skill_id` FK → Skill, nullable, index — lien vers le catalogue quand une correspondance existe (Phase 3, `docs/decisions/0003` et `0004`)
 - `category` text nullable
 - `notes` text nullable
+- `outcome` enum `success | failure`, nullable — sparring uniquement; non renseigné ailleurs
+- `partner_name` text nullable — sparring uniquement
+- `pressure_level` smallint (1-5) nullable — sparring uniquement
+- `problem` text nullable — sparring uniquement
 - `created_at`
 - Cardinalité: 1 Session → N SessionTechnique, 1 Skill → N SessionTechnique (many-to-many via cette table)
-- Alimente `SkillProgress.evidence_count` et `last_practiced_at` (recalcul en use case, pas trigger SQL) — uniquement pour les lignes avec `skill_id` renseigné
+- Alimente `SkillProgress` par trigger DB (`sync_skill_progress_for_skill`, docs/decisions/0006/0008), pas en use case — uniquement pour les lignes avec `skill_id` renseigné
 
 ### SessionObservation
 Remplace l'entité `Difficulty` initialement prévue. Généralisée pour rester extensible (plusieurs observations par session, plusieurs types) sans être une table à finalité unique.
@@ -133,10 +145,10 @@ Remplace l'enum rigide à 6 stages. Modèle multidimensionnel, source de vérit�
 - `skill_id` FK → Skill, NOT NULL, index
 - UNIQUE(`user_id`, `skill_id`)
 - `knowledge_level` smallint (0-5) — compréhension théorique, saisie manuelle
-- `drilling_reps` int default 0 — compteur cumulé
-- `live_application_count` int default 0
-- `sparring_attempt_count` int default 0
-- `sparring_success_count` int default 0
+- `drilling_reps` int default 0 — compteur cumulé depuis `SessionTechnique` où la séance est `class`/`drilling`
+- `live_application_count` int default 0 — depuis `SessionTechnique` où la séance est `competition`
+- `sparring_attempt_count` int default 0 — depuis `SessionTechnique` où la séance est `sparring` ET `outcome` renseigné
+- `sparring_success_count` int default 0 — sous-ensemble ci-dessus avec `outcome = 'success'`
 - `consistency_score` float nullable — calculé (ex: fréquence de pratique sur fenêtre glissante), recalculé par use case
 - `pressure_performance_level` smallint (0-5) nullable
 - `confidence_level` smallint (0-5) nullable — auto-évalué par l'utilisateur
@@ -149,7 +161,7 @@ Remplace l'enum rigide à 6 stages. Modèle multidimensionnel, source de vérit�
 
 Extensibilité: nouvelle dimension = `ALTER TABLE ADD COLUMN` nullable, aucune migration des relations existantes, aucun impact sur `SessionTechnique`/`Skill`. La fonction `computeMasteryStage` est le seul endroit à modifier pour faire évoluer les critères de maîtrise.
 
-## Objectifs et gamification (owner-only sauf catalogue)
+## Objectifs (owner-only — docs/decisions/0008)
 
 ### Goal
 - `id` PK
@@ -157,66 +169,23 @@ Extensibilité: nouvelle dimension = `ALTER TABLE ADD COLUMN` nullable, aucune m
 - `horizon` enum: `short | medium | long`
 - `title` text NOT NULL
 - `description` text nullable
-- `discipline_id` FK nullable
-- `skill_id` FK nullable
-- `target_metric` text nullable (référence libre à un type de Metric)
+- `skill_id` FK → Skill, nullable — pas de `discipline_id` séparé, le lien vers un skill porte déjà la discipline
 - `status` enum: `active | done | abandoned`
 - `due_date` date nullable
 - `created_at`, `updated_at`
-
-### UserAchievement
-Many-to-many User ↔ Achievement.
-- `id` PK
-- `user_id` FK, NOT NULL, index
-- `achievement_id` FK → Achievement, NOT NULL, index
-- `unlocked_at` timestamptz NOT NULL
-- UNIQUE(`user_id`, `achievement_id`)
-
-### XPEvent
-Journal append-only, jamais de update.
-- `id` PK
-- `user_id` FK, NOT NULL, index
-- `amount` int NOT NULL
-- `source_type` enum: `session | goal | achievement | streak`
-- `source_id` uuid nullable — référence polymorphe (pas de FK stricte, documentée)
-- `created_at`
-- Index: (`user_id`, `created_at` desc) — agrégation niveau/XP total
-
-### Metric
-Extensible pour cardio/physique futur, type ouvert dès le départ.
-- `id` PK
-- `user_id` FK, NOT NULL, index
-- `type` text (namespace libre, ex: `cardio.hr_avg`, `bodyweight`)
-- `value` numeric NOT NULL
-- `unit` text nullable
-- `recorded_at` timestamptz NOT NULL
-- `created_at`
-- Index: (`user_id`, `type`, `recorded_at`)
-
-## Coaching IA (owner-only)
-
-### Conversation
-- `id` PK
-- `user_id` FK, NOT NULL, index
-- `title` text nullable
-- `created_at`, `updated_at`
-
-### Message
-- `id` PK
-- `conversation_id` FK → Conversation, NOT NULL, index
-- `role` enum: `user | assistant | system`
-- `content` text NOT NULL
-- `citations` jsonb nullable — `[{ resource_id, title, author, url, published_at?, source_locator? }]`, obligatoire non-vide si contexte RAG utilisé (invariant en use case, voir architecture.md)
-- `created_at`
-- Index: (`conversation_id`, `created_at`)
+- Index: (`user_id`, `status`)
+- `getUpcomingGoals()` (échéance ≤14 jours ou dépassée, statut `active`) alimente le Dashboard et l'AI Coach
 
 ## Récapitulatif RLS
 
 | Table | RLS |
 |---|---|
-| Profile, TrainingSession, SessionTechnique*, SessionObservation*, SkillProgress, Goal, UserAchievement, XPEvent, Metric, Conversation, Message* | owner via `user_id = auth.uid()` (*via parent FK) |
-| Discipline, Skill, SkillRelation, Achievement, Resource, SearchDocument, Embedding | lecture publique, écriture service role |
+| Profile, TrainingSession, SessionTechnique*, SessionObservation*, SkillProgress, Goal, Resource, UserBookmark, StudyQueueItem, SkillNote | owner via `user_id = auth.uid()` (*via parent FK) |
+| Discipline, Skill, SkillRelation | lecture publique, écriture service role |
 
 ## Différé — non créé à ce stade
 
-`Club`, `ClubMember`, table de messagerie de club, `Video`, `VideoAnnotation`: conceptuellement prévus (Phases 8-9), aucune table créée avant la phase correspondante.
+- `Achievement`, `UserAchievement`, `XPEvent`, `Metric`: gamification/métriques physiques envisagées initialement, aucune table créée — pas de moteur de gamification dans l'app réelle.
+- `Conversation`, `Message`, `SearchDocument`, `Embedding`: RAG/historique de conversation IA envisagés initialement, jamais construits (docs/architecture.md — pas de pgvector, pas de provider cloud). Le Coach actuel (docs/decisions/0005) est sans état, pas de table de conversation.
+- `Sequence`, `SequenceTag`, `SequenceSkill`, `Match`/`Event`, `Athlete`: modèle "séquence issue d'un combat" documenté dans `docs/decisions/0007` (P1), pas construit — deuxième système à part entière, hors scope du lot 0008.
+- `Club`, `ClubMember`, groupes, messagerie de club, `Class`, `ClassSession`, `Attendance`, QR check-in, `CoachFeedback`/`AthleteGoal` côté club, compétition (gameplan/post-fight review), `Video`, `VideoAnnotation`, paiements: architecture cible documentée dans `docs/decisions/0007`, aucune table créée.

@@ -7,6 +7,7 @@ import {
   HelpCircle,
   MessageCircleQuestion,
   Sprout,
+  Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ const TYPE_ICONS: Record<ReviewItemType, typeof HelpCircle> = {
   difficulty: Flame,
   stale: Sprout,
   developing: BookOpen,
+  never_applied: Zap,
 };
 
 export default async function ReviewPage() {
@@ -31,7 +33,7 @@ export default async function ReviewPage() {
 
   const items = await getReviewQueue();
   const groups: { type: ReviewItemType; items: ReviewItem[] }[] = (
-    ["question", "difficulty", "stale", "developing"] as const
+    ["question", "difficulty", "never_applied", "stale", "developing"] as const
   )
     .map((type) => ({ type, items: items.filter((i) => i.type === type) }))
     .filter((g) => g.items.length > 0);

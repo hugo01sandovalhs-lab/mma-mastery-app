@@ -4,6 +4,8 @@ import { DeterministicCoachProvider } from "@/lib/infra/ai/deterministic-provide
 import { OllamaCoachProvider } from "@/lib/infra/ai/ollama-provider";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { getReviewQueue } from "@/lib/usecases/review-actions";
+import { getUpcomingGoals } from "@/lib/usecases/goals-actions";
+import { getStudyQueue } from "@/lib/usecases/knowledge-actions";
 
 const defaultProvider: AIProvider = new DeterministicCoachProvider();
 
@@ -26,9 +28,11 @@ function resolveProvider(): AIProvider {
  * new query path, no fact invented for the occasion.
  */
 export async function buildCoachContext(): Promise<CoachContext> {
-  const [{ intelligence, plan }, reviewItems] = await Promise.all([
+  const [{ intelligence, plan }, reviewItems, upcomingGoals, studyQueue] = await Promise.all([
     getTrainingIntelligenceBundle(),
     getReviewQueue(),
+    getUpcomingGoals(),
+    getStudyQueue(),
   ]);
 
   const facts: CoachFact[] = [];
@@ -60,6 +64,22 @@ export async function buildCoachContext(): Promise<CoachContext> {
       kind: "OBSERVED",
       statement: `${item.skillName}: ${item.detail}`,
       skillId: item.skillId,
+    });
+  }
+
+  for (const goal of upcomingGoals) {
+    facts.push({
+      kind: "OBSERVED",
+      statement: `Objectif "${goal.title}"${goal.due_date ? ` — échéance ${goal.due_date}` : ""}`,
+      skillId: goal.skill?.id,
+    });
+  }
+
+  const queued = studyQueue.filter((i) => i.status !== "studied");
+  if (queued.length > 0) {
+    facts.push({
+      kind: "OBSERVED",
+      statement: `${queued.length} compétence(s) en file d'étude non terminée(s)`,
     });
   }
 

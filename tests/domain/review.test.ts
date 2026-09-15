@@ -83,6 +83,28 @@ describe("buildReviewQueue", () => {
     expect(result[0].type).toBe("developing");
   });
 
+  it("surfaces a skill drilled a lot but never applied live or in sparring", () => {
+    const result = buildReviewQueue(
+      [skillInput({ progress: { ...baseProgress, drilling_reps: 10 }, lastPracticedAt: daysAgo(1) })],
+      NOW,
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("never_applied");
+  });
+
+  it("does not flag never_applied once a skill has a live or sparring attempt", () => {
+    const result = buildReviewQueue(
+      [
+        skillInput({
+          progress: { ...baseProgress, drilling_reps: 10, live_application_count: 1 },
+          lastPracticedAt: daysAgo(1),
+        }),
+      ],
+      NOW,
+    );
+    expect(result.filter((r) => r.type === "never_applied")).toHaveLength(0);
+  });
+
   it("does not flag a skill that is regularly practiced and mastered", () => {
     const result = buildReviewQueue(
       [

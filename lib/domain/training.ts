@@ -10,6 +10,15 @@ export type ObservationType = z.infer<typeof observationTypeSchema>;
 
 export const REQUIRED_OBSERVATION_TYPES = new Set<ObservationType>(["difficulty", "question"]);
 
+export const SESSION_TECHNIQUE_OUTCOMES = ["success", "failure"] as const;
+export const sessionTechniqueOutcomeSchema = z.enum(SESSION_TECHNIQUE_OUTCOMES);
+export type SessionTechniqueOutcome = z.infer<typeof sessionTechniqueOutcomeSchema>;
+
+export const SESSION_TECHNIQUE_OUTCOME_LABELS: Record<SessionTechniqueOutcome, string> = {
+  success: "Réussi",
+  failure: "Échoué",
+};
+
 export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
   class: "Cours",
   drilling: "Drilling",
@@ -44,6 +53,21 @@ export const sessionTechniqueInputSchema = z.object({
     .string()
     .trim()
     .max(2000)
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+  /** Only meaningful when the parent session's type is `sparring` (docs/decisions/0008). */
+  outcome: sessionTechniqueOutcomeSchema.optional(),
+  partner_name: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+  pressure_level: z.number().int().min(1).max(5).optional().nullable(),
+  problem: z
+    .string()
+    .trim()
+    .max(500)
     .optional()
     .transform((v) => (v ? v : undefined)),
 });
