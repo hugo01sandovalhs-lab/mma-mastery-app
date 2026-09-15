@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users } from "lucide-react";
 import { cn } from "cn";
 
 const NAV_LINKS = [
@@ -14,6 +14,7 @@ const NAV_LINKS = [
 ];
 
 const SIDEBAR_ONLY_LINKS = [
+  { href: "/calendar", label: "Calendrier", icon: CalendarDays },
   { href: "/study", label: "Étude", icon: BookOpen },
   { href: "/goals", label: "Objectifs", icon: Flag },
   { href: "/competition", label: "Compétition", icon: Trophy },
