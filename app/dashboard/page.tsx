@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
+  CalendarClock,
   Dumbbell,
   Flag,
   Flame,
@@ -12,6 +13,7 @@ import {
   SearchIcon,
   Sparkles,
   Target,
+  TrendingUp,
 } from "lucide-react";
 import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
@@ -93,18 +95,27 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <ChampionshipMetricCard
+            icon={Target}
             eyebrow="Focus principal"
             value={plan.status === "ok" ? plan.plan.focusSkillName : "Aucun focus"}
+            subtitle={plan.status === "ok" ? ACTION_TYPE_LABELS[plan.plan.actionType] : undefined}
           />
           <ChampionshipMetricCard
+            icon={CalendarClock}
             eyebrow="Priorités actives"
             value={
               highPriorityCount > 0
                 ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""}`
                 : "Aucune priorité"
             }
+            subtitle={highPriorityCount > 0 ? "à travailler cette semaine" : undefined}
           />
-          <ChampionshipMetricCard eyebrow="Progression globale" ring={proficientPct} />
+          <ChampionshipMetricCard
+            icon={TrendingUp}
+            eyebrow="Progression globale"
+            ring={proficientPct}
+            insufficientData={progressSummary.totalTracked === 0}
+          />
         </div>
 
         <NextSessionPlan plan={plan} />
@@ -403,11 +414,13 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
               return (
                 <li
                   key={s.id}
-                  className={`relative flex gap-3 pb-5 pl-4 ${
-                    i < sessions.length - 1 ? "border-l border-border" : "border-l border-transparent"
+                  className={`flex gap-3 pb-5 ${
+                    i < sessions.length - 1 ? "border-b border-border/60 mb-1" : ""
                   }`}
                 >
-                  <span className="absolute top-1 -left-[4.5px] size-2 rounded-full bg-primary" />
+                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold uppercase text-primary-foreground">
+                    {s.discipline.name.slice(0, 2)}
+                  </span>
                   <Link href={`/training/${s.id}`} className="flex-1 min-w-0 group/item">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium group-hover/item:underline">
@@ -459,12 +472,12 @@ function QuickActions() {
       {actions.map((a) => {
         const Icon = a.icon;
         return (
-          <Link key={a.href} href={a.href}>
-            <Card className="rounded-2xl border-border bg-card transition-colors hover:bg-secondary">
+          <Link key={a.href} href={a.href} className="group">
+            <Card className="rounded-2xl border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary hover:shadow-md">
               <CardContent className="flex items-center gap-3 py-4">
                 <Icon className="size-4 text-primary" />
                 <span className="text-sm font-medium">{a.label}</span>
-                <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+                <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
               </CardContent>
             </Card>
           </Link>
