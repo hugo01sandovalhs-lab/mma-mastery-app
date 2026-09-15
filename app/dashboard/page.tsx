@@ -14,7 +14,9 @@ import {
   Target,
 } from "lucide-react";
 import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
-import { AppShell } from "@/components/app-shell";
+import { DashboardShell } from "@/app/dashboard/dashboard-shell";
+import { ChampionshipHero } from "@/components/championship/hero";
+import { ChampionshipMetricCard } from "@/components/championship/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,9 +74,16 @@ export default async function DashboardPage() {
       ? intelligence.recommendations.filter((r) => r.priority === "high").length
       : 0;
 
+  const proficientCount =
+    (progressSummary.stageCounts.consistent ?? 0) + (progressSummary.stageCounts.mastered ?? 0);
+  const proficientPct =
+    progressSummary.totalTracked > 0
+      ? Math.round((proficientCount / progressSummary.totalTracked) * 100)
+      : 0;
+
   return (
-    <AppShell>
-      <div className="flex flex-col gap-8">
+    <DashboardShell>
+      <div className="flex flex-col gap-6">
         <Hero
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
@@ -82,18 +91,34 @@ export default async function DashboardPage() {
           highPriorityCount={highPriorityCount}
         />
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <ChampionshipMetricCard
+            eyebrow="Focus principal"
+            value={plan.status === "ok" ? plan.plan.focusSkillName : "Aucun focus"}
+          />
+          <ChampionshipMetricCard
+            eyebrow="Priorités actives"
+            value={
+              highPriorityCount > 0
+                ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""}`
+                : "Aucune priorité"
+            }
+          />
+          <ChampionshipMetricCard eyebrow="Progression globale" ring={proficientPct} />
+        </div>
+
         <NextSessionPlan plan={plan} />
 
         <FocusSection intelligence={intelligence} plan={plan} />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr]">
           <RecentActivity sessions={recent} />
           <ProgressionSection summary={progressSummary} />
         </div>
 
         <QuickActions />
       </div>
-    </AppShell>
+    </DashboardShell>
   );
 }
 
@@ -118,22 +143,18 @@ function Hero({
           : "Continuez votre progression.";
 
   return (
-    <div className="flex flex-col gap-4 border-b border-border pb-8 sm:flex-row sm:items-end sm:justify-between">
-      <div className="flex flex-col gap-1.5">
-        <p className="text-sm font-medium text-muted-foreground">
-          {displayName ? `Bonjour, ${displayName}` : "Bonjour"}
-        </p>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{status}</h1>
+    <ChampionshipHero eyebrow={displayName ? `Bonjour, ${displayName}` : "Bonjour"} headline={status}>
+      <div className="flex flex-wrap items-center gap-4">
         {sessionCount > 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-sm text-sm text-[oklch(0.85_0.01_80)]">
             {sessionCount} séance{sessionCount > 1 ? "s" : ""} enregistrée{sessionCount > 1 ? "s" : ""} au total
           </p>
         ) : null}
+        <Button size="lg" render={<Link href="/training/new" />} className="w-fit">
+          <Dumbbell /> Nouvelle séance
+        </Button>
       </div>
-      <Button size="lg" render={<Link href="/training/new" />} className="w-fit">
-        <Dumbbell /> Nouvelle séance
-      </Button>
-    </div>
+    </ChampionshipHero>
   );
 }
 
@@ -148,18 +169,19 @@ function NextSessionPlan({ plan }: { plan: TrainingPlanResult }) {
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <Sparkles className="size-4 text-primary" />
-        <h2 className="font-heading text-lg font-semibold tracking-tight">Pour ta prochaine séance</h2>
+        <h2 className="font-heading text-lg font-extrabold tracking-tight">Pour ta prochaine séance</h2>
       </div>
 
-      <Card className="relative overflow-hidden">
-        <span className="absolute inset-y-0 left-0 w-1 bg-primary" />
-        <CardContent className="flex flex-col gap-5 pl-5">
+      <Card className="rounded-2xl border-border bg-card">
+        <CardContent className="flex flex-col gap-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-muted-foreground">Focus principal</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Focus principal
+              </span>
               <Link
                 href={`/skills/${p.focusSkillId}`}
-                className="font-heading text-xl font-semibold tracking-tight hover:underline"
+                className="font-heading text-xl font-extrabold tracking-tight hover:underline"
               >
                 {p.focusSkillName}
               </Link>
@@ -232,9 +254,9 @@ function FocusSection({
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <Target className="size-4 text-primary" />
-          <h2 className="font-heading text-lg font-semibold tracking-tight">À travailler maintenant</h2>
+          <h2 className="font-heading text-lg font-extrabold tracking-tight">À travailler maintenant</h2>
         </div>
-        <Card>
+        <Card className="rounded-2xl border-border bg-card">
           <CardContent className="flex flex-col items-start gap-2 py-8">
             <Target className="size-6 text-muted-foreground" />
             <p className="font-medium">Pas encore assez de données pour recommander un skill</p>
@@ -258,7 +280,7 @@ function FocusSection({
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <Target className="size-4 text-primary" />
-        <h2 className="font-heading text-lg font-semibold tracking-tight">Autres priorités</h2>
+        <h2 className="font-heading text-lg font-extrabold tracking-tight">Autres priorités</h2>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -273,11 +295,8 @@ function FocusSection({
 function FocusCard({ rec }: { rec: SkillRecommendation }) {
   const isHigh = rec.priority === "high";
   return (
-    <Card className="relative overflow-hidden">
-      <span
-        className={`absolute inset-y-0 left-0 w-1 ${isHigh ? "bg-primary" : "bg-muted-foreground/40"}`}
-      />
-      <CardContent className="flex flex-col gap-2.5 pl-5">
+    <Card className="rounded-2xl border-border bg-card">
+      <CardContent className="flex flex-col gap-2.5">
         <div className="flex items-start justify-between gap-2">
           <span className="font-medium leading-snug">{rec.skillName}</span>
           <Badge variant={isHigh ? "default" : "secondary"} className="shrink-0">
@@ -308,9 +327,11 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
 
 function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
   return (
-    <Card>
+    <Card className="rounded-2xl border-border bg-card">
       <CardHeader>
-        <CardTitle>Progression</CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Progression
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         {summary.totalTracked === 0 ? (
@@ -358,16 +379,18 @@ function StageBar({ stage, count, total }: { stage: MasteryStage; count: number;
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-6 shrink-0 text-right text-xs font-medium">{count}</span>
+      <span className="w-6 shrink-0 text-right text-xs font-extrabold">{count}</span>
     </div>
   );
 }
 
 function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   return (
-    <Card>
+    <Card className="rounded-2xl border-border bg-card">
       <CardHeader>
-        <CardTitle>Activité récente</CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Activité récente
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {sessions.length === 0 ? (
@@ -437,7 +460,7 @@ function QuickActions() {
         const Icon = a.icon;
         return (
           <Link key={a.href} href={a.href}>
-            <Card className="transition-colors hover:bg-muted/50">
+            <Card className="rounded-2xl border-border bg-card transition-colors hover:bg-secondary">
               <CardContent className="flex items-center gap-3 py-4">
                 <Icon className="size-4 text-primary" />
                 <span className="text-sm font-medium">{a.label}</span>

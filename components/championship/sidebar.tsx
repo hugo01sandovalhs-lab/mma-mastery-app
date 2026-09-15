@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 
@@ -30,8 +31,10 @@ export function ChampionshipSidebar({
           const active = item.href === activeHref;
           const Icon = item.icon;
           return (
-            <span
+            <Link
               key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
                 active
@@ -41,7 +44,7 @@ export function ChampionshipSidebar({
             >
               <Icon className="size-4 shrink-0" />
               {item.label}
-            </span>
+            </Link>
           );
         })}
       </nav>
