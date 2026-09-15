@@ -18,8 +18,6 @@ import {
 } from "lucide-react";
 import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
-import { ChampionshipHero } from "@/components/championship/hero";
-import { ChampionshipMetricCard } from "@/components/championship/metric-card";
 import { ProgressRing } from "@/components/championship/progress-ring";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,8 +42,10 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 };
 
 const PHOTOS = {
-  focus: "/mma-mastery-photos/pexels-pavel-danilyuk-6296015.jpg",
-  session: "/mma-mastery-photos/pexels-mariano-di-luch-679379189-38571271.jpg",
+  focus: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg",
+  session: "/mma-mastery-photos/pexels-cottonbro-4761779.jpg",
+  progress: "/mma-mastery-photos/pexels-mjlo-28550403.jpg",
+  activity: "/mma-mastery-photos/pexels-pavel-danilyuk-6296015.jpg",
   club: "/mma-mastery-photos/pexels-heloisa-freitas-734111-1608099.jpg",
 } as const;
 
@@ -56,19 +56,20 @@ function relativeDays(iso: string): string {
   return `il y a ${days} jours`;
 }
 
-// Test temporaire des deux variantes hero: ?hero=a (défaut) ou ?hero=b
-const HERO_PHOTOS = {
-  a: "/mma-mastery-photos/pexels-shkrabaanthony-4398347.jpg",
-  b: "/mma-mastery-photos/pexels-cottonbro-4761782.jpg",
+const HEROES = {
+  cage: "/mma-mastery-photos/pexels-shkrabaanthony-4398347.jpg",
+  light: "/mma-mastery-photos/pexels-cottonbro-4761780.jpg",
+  ring: "/mma-mastery-photos/pexels-cottonbro-4761790.jpg",
 } as const;
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ hero?: string }>;
+  searchParams: Promise<{ hero?: keyof typeof HEROES }>;
 }) {
   const { hero } = await searchParams;
-  const heroImageSrc = hero === "b" ? HERO_PHOTOS.b : HERO_PHOTOS.a;
+  const activeHero = hero && hero in HEROES ? hero : "cage";
+  const heroImageSrc = HEROES[activeHero];
 
   const supabase = await createClient();
   const {
@@ -104,27 +105,31 @@ export default async function DashboardPage({
 
   return (
     <DashboardShell>
-      <div className="flex flex-col gap-5">
+      <div className="championship-dashboard">
         <Hero
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
           lastSessionDate={sessions[0]?.date ?? null}
           highPriorityCount={highPriorityCount}
           imageSrc={heroImageSrc}
+          activeHero={activeHero}
         />
 
+        <div className="championship-grid">
         <StatRow plan={plan} proficientPct={proficientPct} progressSummary={progressSummary} />
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.15fr]">
+        <div className="championship-details">
           <ProgressionSection summary={progressSummary} />
           <RecentActivity sessions={recent} />
         </div>
 
-        <FocusSection intelligence={intelligence} plan={plan} />
-
-        <ClubCard summary={clubSummary} />
+        <div className="championship-support">
+          <FocusSection intelligence={intelligence} plan={plan} />
+          <ClubCard summary={clubSummary} />
+        </div>
 
         <QuickActions />
+        </div>
       </div>
     </DashboardShell>
   );
@@ -136,12 +141,14 @@ function Hero({
   lastSessionDate,
   highPriorityCount,
   imageSrc,
+  activeHero,
 }: {
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
   highPriorityCount: number;
   imageSrc: string;
+  activeHero: keyof typeof HEROES;
 }) {
   const status =
     sessionCount === 0
@@ -153,23 +160,39 @@ function Hero({
           : "Continuez votre progression.";
 
   return (
-    <ChampionshipHero
-      eyebrow={displayName ? `Bonjour, ${displayName}` : "Bonjour"}
-      headline={status}
-      imageSrc={imageSrc}
-      imageAlt="Combattant en garde, salle d'entraînement"
-    >
-      <div className="flex flex-wrap items-center gap-4">
-        {sessionCount > 0 ? (
-          <p className="max-w-sm text-sm text-[oklch(0.85_0.01_80)]">
-            {sessionCount} séance{sessionCount > 1 ? "s" : ""} enregistrée{sessionCount > 1 ? "s" : ""} au total
-          </p>
-        ) : null}
-        <Button size="lg" render={<Link href="/training/new" />} className="w-fit">
-          <Dumbbell /> Nouvelle séance
-        </Button>
+    <section className="championship-hero" aria-label="Votre entraînement">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={imageSrc} alt="Combattant en garde dans la cage" className="championship-fighter" />
+      <div className="championship-hero-tools">
+        <Link href="/search" aria-label="Rechercher"><SearchIcon size={16} /></Link>
+        <Link href="/goals" aria-label="Mes objectifs"><Flag size={16} /></Link>
+        <Link href="/training" aria-label="Historique des séances"><CalendarClock size={16} /></Link>
       </div>
-    </ChampionshipHero>
+      <div className="championship-hero-copy">
+        <p>{displayName ? `Bonjour, ${displayName}` : "Votre espace d’entraînement"}</p>
+        <h1>La discipline<br />forge les<br />champions.</h1>
+        <p className="championship-status">{status}</p>
+      </div>
+      <nav className="championship-hero-views" aria-label="Choisir un cadrage hero">
+        {[
+          ["cage", "Cage"],
+          ["light", "Lumière"],
+          ["ring", "Ring"],
+        ].map(([id, label]) => (
+          <Link
+            key={id}
+            href={`/dashboard?hero=${id}`}
+            aria-current={activeHero === id ? "page" : undefined}
+          >
+            {label}
+          </Link>
+        ))}
+      </nav>
+      <div className="championship-hero-footer">
+        <span>{sessionCount > 0 ? `${sessionCount} séance${sessionCount > 1 ? "s" : ""} enregistrée${sessionCount > 1 ? "s" : ""}` : "Votre parcours commence ici"}</span>
+        <Button size="sm" render={<Link href="/training/new" />}><Dumbbell /> Nouvelle séance</Button>
+      </div>
+    </section>
   );
 }
 
@@ -188,25 +211,54 @@ function StatRow({
   const insufficientData = progressSummary.totalTracked === 0;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <ChampionshipMetricCard
-        eyebrow="Focus du jour"
-        value={p ? p.focusSkillName : "Aucun focus"}
-        subtitle={p ? p.reasons[0] : undefined}
-        photoSrc={p ? PHOTOS.focus : undefined}
-        photoAlt="Technique travaillée"
-        icon={p ? undefined : Target}
+    <div className="championship-stats">
+      <ImageMetricPanel
+        label="Focus du jour"
+        imageSrc={PHOTOS.focus}
+        imageAlt="Travail au pao"
+        href={p ? `/skills/${p.focusSkillId}` : "/training/new"}
+        title={p ? p.focusSkillName : "Définir mon focus"}
+        detail={p ? p.reasons[0] : "Enregistrez une séance pour identifier vos priorités."}
       />
-      <ChampionshipMetricCard
-        eyebrow="Prochaine séance"
-        value={p ? ACTION_TYPE_LABELS[p.actionType] : "À planifier"}
-        subtitle={copy?.drillHint}
-        photoSrc={p ? PHOTOS.session : undefined}
-        photoAlt="Prochaine séance"
-        icon={p ? undefined : CalendarClock}
+      <ImageMetricPanel
+        label="Prochaine séance"
+        imageSrc={PHOTOS.session}
+        imageAlt="Travail au sol"
+        href="/training/new"
+        title={p ? ACTION_TYPE_LABELS[p.actionType] : "Planifier une séance"}
+        detail={copy?.drillHint ?? "Choisissez les techniques de votre prochain entraînement."}
       />
       <ProgressionCompactCard summary={progressSummary} ring={proficientPct} insufficientData={insufficientData} />
     </div>
+  );
+}
+
+function ImageMetricPanel({
+  label,
+  imageSrc,
+  imageAlt,
+  href,
+  title,
+  detail,
+}: {
+  label: string;
+  imageSrc: string;
+  imageAlt: string;
+  href: string;
+  title: React.ReactNode;
+  detail: React.ReactNode;
+}) {
+  return (
+    <Link href={href} className="championship-image-panel">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={imageSrc} alt={imageAlt} />
+      <span className="championship-image-panel-copy">
+        <span className="championship-image-panel-label">{label}</span>
+        <strong>{title}</strong>
+        <small>{detail}</small>
+      </span>
+      <ArrowUpRight className="championship-image-panel-arrow" aria-hidden="true" />
+    </Link>
   );
 }
 
@@ -223,11 +275,12 @@ function ProgressionCompactCard({
   return (
     <Card className="rounded-2xl border-border bg-card">
       <CardContent className="flex items-center gap-4 p-4">
-        <ProgressRing value={ring} size={56} strokeWidth={5} insufficientData={insufficientData} />
+        {insufficientData ? <Target className="size-9 shrink-0 text-muted-foreground" aria-hidden="true" /> : <ProgressRing value={ring} size={72} strokeWidth={5} />}
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Progression globale
           </span>
+          {!insufficientData && <span className="text-[10px] text-muted-foreground">{ring}% régulières ou maîtrisées · {summary.totalTracked} suivies</span>}
           {insufficientData ? (
             <span className="text-xs text-muted-foreground">Pas encore de données</span>
           ) : (
@@ -282,11 +335,9 @@ function FocusSection({
         <Card className="rounded-2xl border-border bg-card">
           <CardContent className="flex flex-col items-start gap-2 py-6">
             <Target className="size-6 text-muted-foreground" />
-            <p className="font-medium">Pas encore assez de données pour recommander un skill</p>
+            <p className="font-medium">Votre prochain focus se construit ici</p>
             <p className="max-w-md text-sm text-muted-foreground">
-              Enregistrez des séances avec les compétences travaillées, vos difficultés et vos
-              questions. Dès qu&apos;un skill montre un signal clair (difficulté récente, sparring en
-              retard, pratique arrêtée...), il apparaîtra ici avec une action concrète.
+              Enregistrez les techniques et difficultés de vos séances pour obtenir des recommandations adaptées.
             </p>
             <Button variant="outline" size="sm" render={<Link href="/training/new" />} className="mt-1">
               Enregistrer une séance <ArrowRight />
@@ -351,19 +402,27 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
     summary.totalTracked > 0 ? Math.round((proficientCount / summary.totalTracked) * 100) : 0;
 
   return (
-    <Card className="rounded-2xl border-border bg-card">
-      <CardHeader className="pb-2">
+    <Card className="championship-progress-panel rounded-2xl border-border bg-card">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={PHOTOS.progress} alt="Cage éclairée avant l'entraînement" />
+      <div className="championship-progress-shade" aria-hidden="true" />
+      <CardHeader className="relative z-10 pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <TrendingUp className="size-3.5 text-primary" />
           Progression détaillée
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         {summary.totalTracked === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Aucune compétence suivie pour l&apos;instant. La progression apparaîtra dès que vous
-            enregistrerez des séances avec des techniques.
-          </p>
+          <div className="championship-progress-empty">
+            <strong>Construisez votre carte de progression.</strong>
+            <p>
+              Ajoutez les techniques travaillées à vos séances pour suivre chaque discipline.
+            </p>
+            <Button size="sm" render={<Link href="/training/new" />}>
+              Ajouter une séance <ArrowRight />
+            </Button>
+          </div>
         ) : (
           <div className="flex items-center gap-5">
             <ProgressRing value={proficientPct} size={80} strokeWidth={7} />
@@ -401,13 +460,17 @@ function DisciplineBar({ name, count, total }: { name: string; count: number; to
 
 function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   return (
-    <Card className="rounded-2xl border-border bg-card">
-      <CardHeader className="pb-2">
+    <Card className="championship-activity-panel rounded-2xl border-border bg-card">
+      <div className="championship-activity-cover">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={PHOTOS.activity} alt="Séance de sparring" />
+        <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Flame className="size-3.5 text-primary" />
-          Activité récente
+          Dernières activités
         </CardTitle>
-      </CardHeader>
+        </CardHeader>
+      </div>
       <CardContent>
         {sessions.length === 0 ? (
           <p className="text-sm text-muted-foreground">Aucune séance pour le moment.</p>
@@ -547,7 +610,7 @@ function QuickActions() {
   ];
 
   return (
-    <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-7">
+    <section className="championship-shortcuts">
       {actions.map((a) => {
         const Icon = a.icon;
         return (

@@ -6,6 +6,7 @@ export interface ChampionshipNavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  imageSrc?: string;
 }
 
 export function ChampionshipSidebar({
@@ -36,14 +37,19 @@ export function ChampionshipSidebar({
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-200",
-                active
+                "relative isolate flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-200",
+                item.imageSrc && "championship-nav-photo",
+                active && !item.imageSrc
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  : !item.imageSrc && "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
-              <Icon className="size-4 shrink-0" />
-              {item.label}
+              {item.imageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.imageSrc} alt="" aria-hidden="true" />
+              ) : null}
+              <Icon className="relative z-10 size-4 shrink-0" />
+              <span className="relative z-10">{item.label}</span>
             </Link>
           );
         })}
