@@ -14,6 +14,7 @@ import {
   Sparkles,
   Target,
   TrendingUp,
+  UsersRound,
 } from "lucide-react";
 import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
@@ -38,6 +39,7 @@ import {
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { getSkillsProgressSummary, type SkillProgressSummary } from "@/lib/usecases/skill-actions";
+import { getMemberClubSummary, type MemberClubSummary } from "@/lib/usecases/member-club-actions";
 
 const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   high: "Priorité haute",
@@ -64,10 +66,11 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const [sessions, { intelligence, plan }, progressSummary] = await Promise.all([
+  const [sessions, { intelligence, plan }, progressSummary, clubSummary] = await Promise.all([
     getTrainingSessions(),
     getTrainingIntelligenceBundle(),
     getSkillsProgressSummary(),
+    getMemberClubSummary(),
   ]);
 
   const recent = sessions.slice(0, 5);
@@ -118,6 +121,8 @@ export default async function DashboardPage() {
           />
         </div>
 
+        <ClubActivitySection summary={clubSummary} />
+
         <NextSessionPlan plan={plan} />
 
         <FocusSection intelligence={intelligence} plan={plan} />
@@ -166,6 +171,78 @@ function Hero({
         </Button>
       </div>
     </ChampionshipHero>
+  );
+}
+
+function ClubActivitySection({ summary }: { summary: MemberClubSummary | null }) {
+  if (!summary) return null;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <UsersRound className="size-4 text-primary" />
+        <h2 className="font-heading text-lg font-extrabold tracking-tight">Mon club</h2>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr]">
+        <Card className="rounded-2xl border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Prochains cours
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {summary.upcomingClasses.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun cours planifié dans les 7 prochains jours.</p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {summary.upcomingClasses.map((c) => (
+                  <li key={c.session_id} className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-medium">{c.class_name}</span>
+                      <span className="truncate text-xs text-muted-foreground">{c.club_name}</span>
+                    </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(c.starts_at).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Présence &amp; groupes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Présence (30 derniers jours)</span>
+              <Badge variant="outline">
+                {summary.attendance.marked > 0 ? `${summary.attendance.rate}%` : "N/A"}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {summary.groupNames.length === 0 ? (
+                <span className="text-sm text-muted-foreground">Aucun groupe.</span>
+              ) : (
+                summary.groupNames.map((name) => (
+                  <Badge key={name} variant="secondary">
+                    {name}
+                  </Badge>
+                ))
+              )}
+            </div>
+            <Link href="/club" className="inline-flex w-fit items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline">
+              Voir mes clubs <ArrowRight className="size-3.5" />
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   );
 }
 
