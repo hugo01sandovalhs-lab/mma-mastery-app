@@ -1,7 +1,7 @@
-# Direction artistique — checkpoint du 16 septembre 2026
+# Direction artistique — finalisation du 16 septembre 2026
 
-Arrêt demandé par l'utilisateur : checkpoint uniquement, aucun développement supplémentaire.
-La finalisation globale n'est pas déclarée terminée.
+La passe Championship est terminée. Le mapping photo existant a été conservé après
+contrôle des recadrages, espacements et comportements responsive.
 
 ## Travail enregistré
 
@@ -29,15 +29,15 @@ Alternatives observées : Bruno `5424557` grappling vertical / `5521149` individ
 - Puis session authentifiée devenue disponible : QA réelle desktop Entraînement, Compétences (28 entrées réelles), Coach et Compétition. Filtre Compétences → MMA vérifié : 5 résultats réels. Menu déroulant clair et lisible. Erreurs Base UI des liens corrigées et rôle de lien revérifié.
 - Aucune donnée créée pour la QA ; aucun formulaire métier soumis.
 
-## À reprendre uniquement sur nouvelle demande
+## Vérifications finales
 
-1. Compléter la QA **authentifiée** : dashboard et une page secondaire au minimum ; mobile/tablette sur pages réelles, états disponibles, menus et absence d'erreurs console.
-2. Finir le rapport photo détaillé (discipline, nombre d'athlètes, ambiance/contraste, espace texte, cadrage desktop/mobile pour chaque fichier).
-3. Exécuter tests pertinents/complets, typecheck, lint et build sur l'état final ; corriger seulement les régressions constatées.
-4. Vérifier la présentation après ces contrôles et produire le rapport final demandé initialement.
+- QA authentifiée des onze pages principales en desktop, tablette 820 px et mobile 390 px : aucun débordement, bloc photo nul ou image cassée.
+- Dashboard, profil et calendrier inspectés visuellement avec données réelles ; menu mobile et compositions photo cohérents.
+- Suite complète : 18 fichiers / 146 tests passés.
+- Typecheck, lint et build de production passés.
 
 ## État local à préserver
 
-Les fichiers non suivis déjà présents au début sont laissés intacts : `.agents/`, galerie `app/design/photos/`, `components/championship/section-photo.tsx`, références Caldwell/README et photos non utilisées. Seules les photos nécessaires au mapping et aux panneaux modifiés sont ajoutées au commit. Ces éléments préexistants ne constituent pas des modifications inachevées de ce checkpoint.
+Les fichiers non suivis déjà présents au début sont laissés intacts : `.agents/`, galerie `app/design/photos/`, références Caldwell/README et photos non utilisées. Ces éléments préexistants ne constituent pas des modifications inachevées de cette passe.
 
-Serveur de développement lancé sur `http://localhost:3002` (session d'exécution 97612). Aucun déploiement ni push effectué. Pas de blocker connu ; la mission est suspendue à la demande de l'utilisateur.
+Aucun serveur de développement ne reste lancé. Aucun déploiement ni push effectué. Aucun blocker connu.
