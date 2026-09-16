@@ -13,10 +13,10 @@ type Session = { id: string; date: string; title: string | null };
 export function PhotoGallery({ photos, sessions }: { photos: Photo[]; sessions: Session[] }) {
   const [state, action, pending] = useActionState(uploadTrainingPhoto, { error: null });
   return <div className="grid gap-6">
-    <form action={action} className="grid gap-4 rounded-md border bg-card p-5 sm:grid-cols-2">
+    <form action={action} className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 rounded-md border bg-card p-5 sm:grid-cols-2">
       <div className="grid gap-2"><Label htmlFor="photo">Photo</Label><Input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required /></div>
       <div className="grid gap-2"><Label htmlFor="caption">Légende</Label><Input id="caption" name="caption" maxLength={240} /></div>
-      <div className="grid gap-2"><Label htmlFor="session_id">Séance liée</Label><select id="session_id" name="session_id" className="h-10 rounded-md border bg-card px-3 text-sm"><option value="">Aucune</option>{sessions.map((session) => <option key={session.id} value={session.id}>{new Date(session.date).toLocaleDateString("fr-FR")} · {session.title || "Séance"}</option>)}</select></div>
+      <div className="grid min-w-0 gap-2"><Label htmlFor="session_id">Séance liée</Label><select id="session_id" name="session_id" className="h-10 w-full min-w-0 rounded-md border bg-card px-3 text-sm"><option value="">Aucune</option>{sessions.map((session) => <option key={session.id} value={session.id}>{new Date(session.date).toLocaleDateString("fr-FR")} · {session.title || "Séance"}</option>)}</select></div>
       <div className="flex items-end"><Button type="submit" disabled={pending}><Camera />{pending ? "Envoi…" : "Ajouter à la galerie"}</Button></div>
       {state.error ? <p className="text-sm text-destructive sm:col-span-2">{state.error}</p> : null}
     </form>
