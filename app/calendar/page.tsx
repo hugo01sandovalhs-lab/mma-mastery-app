@@ -8,6 +8,7 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { getCalendarEvents } from "@/lib/usecases/calendar-actions";
 import { monthParam, parseCalendarMonth } from "@/lib/domain/calendar";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 
 function shiftMonth(year: number, month: number, delta: number) {
   const d = new Date(year, month + delta, 1);
@@ -53,6 +54,8 @@ export default async function CalendarPage({
             </Button>
           </div>
         } />
+
+        <ChampionshipPhotoMosaic page="calendar" />
 
         <CalendarView events={events} gridDays={gridDays} currentMonth={current.month} />
       </div>

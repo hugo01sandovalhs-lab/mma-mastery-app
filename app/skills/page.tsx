@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Network, Search, Target } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,8 @@ export default async function SkillsPage({
             <Network /> Carte de maîtrise
           </Button>
         } />
+
+        <ChampionshipPhotoMosaic page="skills" />
 
         <form className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_200px_auto]">
           <div className="relative">

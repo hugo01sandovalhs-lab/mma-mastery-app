@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { ProfileForm } from "@/components/profile/profile-form";
@@ -26,6 +27,7 @@ export default async function ProfilePage() {
     <AppShell>
       <div className="editorial-page editorial-profile">
       <PageHeader page="profile" title="Profil" description="Votre identité, votre parcours." />
+      <ChampionshipPhotoMosaic page="profile" />
       <Card>
         <CardHeader>
           <CardTitle>Informations personnelles</CardTitle>

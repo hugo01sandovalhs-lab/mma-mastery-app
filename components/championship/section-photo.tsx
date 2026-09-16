@@ -1,5 +1,8 @@
 import { cn } from "cn";
+import Image from "next/image";
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { PHOTO_STORIES, type PhotoStoryPage } from "@/lib/design/photography";
 
 export function ChampionshipSectionPhoto({
   src,
@@ -40,6 +43,25 @@ export function ChampionshipSectionPhoto({
           {label}
         </span>
       </div>
+    </div>
+  );
+}
+
+export function ChampionshipPhotoMosaic({ page, className }: { page: PhotoStoryPage; className?: string }) {
+  const photos = PHOTO_STORIES[page];
+  return (
+    <div className={cn("editorial-photo-mosaic", className)}>
+      {photos.map((photo, index) => {
+        const content = <>
+          <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 82vw, (max-width: 1100px) 42vw, 30vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
+          <span>{photo.label}</span>
+        </>;
+        return "href" in photo ? (
+          <Link key={photo.src} href={photo.href} className="editorial-photo-tile" style={{ "--photo-order": index } as React.CSSProperties}>{content}</Link>
+        ) : (
+          <figure key={photo.src} className="editorial-photo-tile" style={{ "--photo-order": index } as React.CSSProperties}>{content}</figure>
+        );
+      })}
     </div>
   );
 }

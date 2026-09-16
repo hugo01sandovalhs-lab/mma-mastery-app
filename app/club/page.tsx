@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getMyClubs } from "@/lib/usecases/club-actions";
@@ -20,6 +21,8 @@ export default async function ClubListPage() {
     <AppShell>
       <div className="editorial-page editorial-club">
         <PageHeader page="club" title="Club" description="Progresser ensemble. Retrouvez vos clubs, leurs membres et vos groupes d'entraînement." />
+
+        <ChampionshipPhotoMosaic page="club" />
 
         <div className="editorial-secondary-columns">
         <section className="editorial-section">

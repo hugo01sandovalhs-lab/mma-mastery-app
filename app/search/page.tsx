@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,8 @@ export default async function SearchPage({
     <AppShell>
       <div className="editorial-page editorial-search">
         <PageHeader page="search" title="Recherche" description="Explorez vos compétences, séances, observations, objectifs et ressources." />
+
+        <ChampionshipPhotoMosaic page="search" />
 
         <form className="flex gap-2">
           <Input name="q" aria-label="Rechercher dans MMA Mastery" defaultValue={query} placeholder="Rechercher..." autoFocus className="max-w-xl" />

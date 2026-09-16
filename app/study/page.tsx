@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BookmarkIcon, ListChecksIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -35,6 +36,8 @@ export default async function StudyPage() {
     <AppShell>
       <div className="editorial-page editorial-study">
         <PageHeader page="study" title="Étude" description="Comprendre avant de répéter. Votre file d'étude, vos favoris et vos ressources." />
+
+        <ChampionshipPhotoMosaic page="study" />
 
         <div className="editorial-study-columns">
         <section className="flex flex-col gap-3">

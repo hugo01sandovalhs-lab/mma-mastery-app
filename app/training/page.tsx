@@ -10,7 +10,7 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
 import { RoundTimer } from "@/components/training/round-timer";
-import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
+import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
@@ -46,9 +46,11 @@ export default async function TrainingListPage() {
             </Button>
           </>} />
 
+        <ChampionshipPhotoMosaic page="training" />
+
         <section className="editorial-section">
           <h2>Timer de round</h2>
-          <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cottonbro-4761779.jpg" alt="Boxeur concentré entre deux rounds" label="Cadence de travail" icon={Timer} objectPosition="50% 35%" />
+          <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cao-vi-ton-449370203-17279410.jpg" alt="Deux boxeurs répètent leurs enchaînements sur le ring" label="Cadence de travail" icon={Timer} objectPosition="50% 48%" />
           <RoundTimer />
         </section>
 

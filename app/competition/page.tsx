@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getDisciplines } from "@/lib/usecases/training-actions";
@@ -30,6 +31,8 @@ export default async function CompetitionPage() {
     <AppShell>
       <div className="editorial-page editorial-competition">
         <PageHeader page="competition" title="Compétition" description="L'épreuve du combat. Retrouvez votre historique et les séquences vidéo liées à vos compétences." />
+
+        <ChampionshipPhotoMosaic page="competition" />
 
         <div className="editorial-competition-columns">
         <section className="editorial-section">
