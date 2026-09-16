@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { profileSchema } from "@/lib/domain/profile";
+import { profileInputSchema, profileSchema } from "@/lib/domain/profile";
 
 describe("profileSchema", () => {
   it("accepts a valid profile", () => {
@@ -22,5 +22,31 @@ describe("profileSchema", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it("normalizes an enriched athlete profile", () => {
+    const result = profileInputSchema.parse({
+      first_name: "  Hugo ",
+      last_name: " Martin ",
+      age: "31",
+      height_cm: "181",
+      weight_kg: "77.5",
+      years_practicing: "8",
+      disciplines: "Boxe, Jiu-jitsu",
+      preferred_techniques: "Jab, étranglement arrière",
+      profile_visibility: "private",
+    });
+
+    expect(result).toMatchObject({
+      first_name: "Hugo",
+      last_name: "Martin",
+      age: 31,
+      height_cm: 181,
+      weight_kg: 77.5,
+      years_practicing: 8,
+      disciplines: ["Boxe", "Jiu-jitsu"],
+      preferred_techniques: ["Jab", "étranglement arrière"],
+      profile_visibility: "private",
+    });
   });
 });

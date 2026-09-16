@@ -20,13 +20,13 @@ const APP_NAV_ITEMS: ChampionshipNavItem[] = [
   { href: "/training", label: "Entraînement", icon: Dumbbell, imageSrc: PAGE_PHOTOS.training.src, imagePosition: PAGE_PHOTOS.training.position },
   { href: "/skills", label: "Compétences", icon: Target, imageSrc: PAGE_PHOTOS.skills.src, imagePosition: PAGE_PHOTOS.skills.position },
   { href: "/coach", label: "Coach", icon: Sparkles, imageSrc: PAGE_PHOTOS.coach.src, imagePosition: PAGE_PHOTOS.coach.position },
-  { href: "/study", label: "Étude", icon: BookOpen },
-  { href: "/goals", label: "Objectifs", icon: Flag },
+  { href: "/study", label: "Étude", icon: BookOpen, imageSrc: PAGE_PHOTOS.study.src, imagePosition: PAGE_PHOTOS.study.position },
+  { href: "/goals", label: "Objectifs", icon: Flag, imageSrc: PAGE_PHOTOS.goals.src, imagePosition: PAGE_PHOTOS.goals.position },
   { href: "/competition", label: "Compétition", icon: Trophy, imageSrc: PAGE_PHOTOS.competition.src, imagePosition: PAGE_PHOTOS.competition.position },
-  { href: "/club", label: "Club", icon: Users },
-  { href: "/search", label: "Recherche", icon: Search },
-  { href: "/profile", label: "Profil", icon: User },
-  { href: "/calendar", label: "Calendrier", icon: CalendarDays },
+  { href: "/club", label: "Club", icon: Users, imageSrc: PAGE_PHOTOS.club.src, imagePosition: PAGE_PHOTOS.club.position },
+  { href: "/search", label: "Recherche", icon: Search, imageSrc: PAGE_PHOTOS.search.src, imagePosition: PAGE_PHOTOS.search.position },
+  { href: "/profile", label: "Profil", icon: User, imageSrc: PAGE_PHOTOS.profile.src, imagePosition: PAGE_PHOTOS.profile.position },
+  { href: "/calendar", label: "Calendrier", icon: CalendarDays, imageSrc: PAGE_PHOTOS.calendar.src, imagePosition: PAGE_PHOTOS.calendar.position },
 ];
 
 export function ChampionshipAppSidebar() {
@@ -70,7 +70,7 @@ export function ChampionshipSidebar({
               )}
             >
               {item.imageSrc ? (
-                <Image src={item.imageSrc} alt="" aria-hidden="true" fill priority={active} sizes="176px" style={{ objectPosition: item.imagePosition }} />
+                <Image src={item.imageSrc} alt="" aria-hidden="true" fill sizes="176px" style={{ objectPosition: item.imagePosition }} />
               ) : null}
               <Icon className="relative z-10 size-4 shrink-0" />
               <span className="relative z-10">{item.label}</span>

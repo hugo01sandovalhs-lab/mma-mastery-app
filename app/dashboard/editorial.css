@@ -15,9 +15,9 @@
 .editorial-header--skills { grid-template-columns:1fr 34%; min-height:250px; }
 .editorial-header--coach { grid-template-columns:1fr 29%; min-height:230px; }
 .editorial-header--competition { grid-template-columns:1fr 52%; min-height:250px; }
-.editorial-header--study,.editorial-header--goals,.editorial-header--club,.editorial-header--search,.editorial-header--profile { min-height:184px; }
+.editorial-header--study,.editorial-header--goals,.editorial-header--club,.editorial-header--search,.editorial-header--profile,.editorial-header--calendar { min-height:184px; }
 .editorial-header--goals,.editorial-header--profile,.editorial-header--study { grid-template-columns:1fr 27%; }
-.editorial-header--goals h1,.editorial-header--profile h1,.editorial-header--study h1,.editorial-header--club h1,.editorial-header--search h1 { font-size:clamp(32px,3vw,44px); }
+.editorial-header--goals h1,.editorial-header--profile h1,.editorial-header--study h1,.editorial-header--club h1,.editorial-header--search h1,.editorial-header--calendar h1 { font-size:clamp(32px,3vw,44px); text-transform:capitalize; }
 .editorial-section { display:flex; flex-direction:column; gap:12px; min-width:0; }
 .editorial-content h2 { font-size:18px; line-height:1.3; letter-spacing:-.035em; font-weight:750; color:var(--foreground); }
 .editorial-content h3 { font-weight:650; }

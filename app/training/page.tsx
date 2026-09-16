@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Dumbbell, PlusIcon } from "lucide-react";
+import { BookOpen, Camera, Dumbbell, PlusIcon, Timer } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
+import { RoundTimer } from "@/components/training/round-timer";
+import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
@@ -33,6 +35,9 @@ export default async function TrainingListPage() {
               {sessions.length > 1 ? "s" : ""}
             </p>
           </>} actions={<>
+            <Button variant="outline" size="lg" render={<Link href="/training/photos" />}>
+              <Camera /> Galerie
+            </Button>
             <Button variant="outline" size="lg" render={<Link href="/training/review" />}>
               <BookOpen /> À revoir
             </Button>
@@ -40,6 +45,12 @@ export default async function TrainingListPage() {
               <PlusIcon /> Nouvelle séance
             </Button>
           </>} />
+
+        <section className="editorial-section">
+          <h2>Timer de round</h2>
+          <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cottonbro-4761779.jpg" alt="Boxeur concentré entre deux rounds" label="Cadence de travail" icon={Timer} objectPosition="50% 35%" />
+          <RoundTimer />
+        </section>
 
         {sessions.length === 0 ? (
           <Card>

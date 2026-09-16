@@ -3,6 +3,8 @@ import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { ProfileForm } from "@/components/profile/profile-form";
+import type { Profile } from "@/lib/domain/profile";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -16,7 +18,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name")
+    .select("*")
     .eq("user_id", user.id)
     .single();
 
@@ -29,10 +31,8 @@ export default async function ProfilePage() {
           <CardTitle>Informations personnelles</CardTitle>
         </CardHeader>
         <CardContent>
-          <dl className="editorial-profile-details">
-            <div><dt>Email</dt><dd>{user.email}</dd></div>
-            <div><dt>Nom affiché</dt><dd>{profile?.display_name ?? "—"}</dd></div>
-          </dl>
+          <p className="mb-5 text-sm text-muted-foreground">Compte : {user.email}</p>
+          <ProfileForm profile={profile as Profile | null} />
         </CardContent>
       </Card>
       </div>

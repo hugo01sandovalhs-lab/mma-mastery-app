@@ -7,6 +7,7 @@ import { CalendarView } from "@/components/calendar-view";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getCalendarEvents } from "@/lib/usecases/calendar-actions";
 import { monthParam, parseCalendarMonth } from "@/lib/domain/calendar";
+import { PageHeader } from "@/components/championship/page-header";
 
 function shiftMonth(year: number, month: number, delta: number) {
   const d = new Date(year, month + delta, 1);
@@ -38,16 +39,8 @@ export default async function CalendarPage({
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-1.5">
-            <h1 className="font-heading text-2xl font-semibold tracking-tight capitalize sm:text-3xl">
-              {monthLabel}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Cours, événements club, entraînements et compétitions
-            </p>
-          </div>
+      <div className="editorial-page editorial-calendar">
+        <PageHeader page="calendar" title={monthLabel} description="Cours, événements club, entraînements et compétitions" actions={
           <div className="flex w-fit gap-2">
             <Button variant="outline" size="icon" render={<Link href={`/calendar?month=${monthParam(prev)}`} />}>
               <ChevronLeft />
@@ -59,7 +52,7 @@ export default async function CalendarPage({
               <ChevronRight />
             </Button>
           </div>
-        </div>
+        } />
 
         <CalendarView events={events} gridDays={gridDays} currentMonth={current.month} />
       </div>

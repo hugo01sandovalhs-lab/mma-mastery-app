@@ -10,6 +10,7 @@ export const PAGE_PHOTOS = {
   club: { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295766.jpg", alt: "Plusieurs binômes s'entraînent ensemble dans le gym", position: "50% 45%" },
   search: { src: "/mma-mastery-photos/pexels-cottonbro-4761780.jpg", alt: "Vue d'ensemble d'un ring avec deux boxeurs", position: "50% 48%" },
   profile: { src: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758889.jpg", alt: "Une athlète assise sur le tapis pendant une pause", position: "50% 30%" },
+  calendar: { src: "/mma-mastery-photos/pexels-mariano-di-luch-679379189-38571271.jpg", alt: "Athlète levant ses gants après une session structurée", position: "50% 53%" },
 } as const;
 
 export type PhotoPage = keyof typeof PAGE_PHOTOS;

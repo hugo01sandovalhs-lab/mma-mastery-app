@@ -6,7 +6,8 @@ import { PAGE_PHOTOS } from "@/lib/design/photography";
 describe("production photo mapping", () => {
   it("gives each main page an existing, distinct photograph and an explicit crop", () => {
     const photos = Object.values(PAGE_PHOTOS);
-    expect(photos).toHaveLength(10);
+    expect(photos).toHaveLength(11);
+    expect(PAGE_PHOTOS.calendar).toBeDefined();
     expect(new Set(photos.map(({ src }) => src)).size).toBe(photos.length);
     for (const photo of photos) {
       expect(existsSync(join(process.cwd(), "public", photo.src))).toBe(true);

@@ -7,6 +7,8 @@ import { getGoals } from "@/lib/usecases/goals-actions";
 import { getSkills } from "@/lib/usecases/skill-actions";
 import { GoalForm } from "@/components/goals/goal-form";
 import { GoalRow } from "@/components/goals/goal-row";
+import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
+import { Route } from "lucide-react";
 
 export default async function GoalsPage() {
   const supabase = await createClient();
@@ -21,6 +23,8 @@ export default async function GoalsPage() {
     <AppShell>
       <div className="editorial-page editorial-goals">
         <PageHeader page="goals" title="Objectifs" description="Donner une direction à l'effort. Vos objectifs à court, moyen et long terme, liés à vos compétences." />
+
+        <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-duren-williams-29414623-14796246.jpg" alt="Combattant avançant avec détermination dans la cage" label="Construire la trajectoire" icon={Route} objectPosition="50% 43%" />
 
         <div className="editorial-secondary-columns">
         <section className="editorial-section">
