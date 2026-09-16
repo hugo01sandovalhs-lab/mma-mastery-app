@@ -70,7 +70,7 @@ export function ChampionshipSidebar({
               )}
             >
               {item.imageSrc ? (
-                <Image src={item.imageSrc} alt="" aria-hidden="true" fill sizes="176px" style={{ objectPosition: item.imagePosition }} />
+                <Image src={item.imageSrc} alt="" aria-hidden="true" fill priority={active} sizes="176px" style={{ objectPosition: item.imagePosition }} />
               ) : null}
               <Icon className="relative z-10 size-4 shrink-0" />
               <span className="relative z-10">{item.label}</span>
