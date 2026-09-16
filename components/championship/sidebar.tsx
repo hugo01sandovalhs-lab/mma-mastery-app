@@ -1,12 +1,36 @@
+"use client";
+
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { cn } from "cn";
-import type { LucideIcon } from "lucide-react";
+import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users, type LucideIcon } from "lucide-react";
+import { PAGE_PHOTOS } from "@/lib/design/photography";
 
 export interface ChampionshipNavItem {
   href: string;
   label: string;
   icon: LucideIcon;
   imageSrc?: string;
+  imagePosition?: string;
+}
+
+const APP_NAV_ITEMS: ChampionshipNavItem[] = [
+  { href: "/dashboard", label: "Accueil", icon: LayoutDashboard, imageSrc: PAGE_PHOTOS.dashboard.src, imagePosition: PAGE_PHOTOS.dashboard.position },
+  { href: "/training", label: "Entraînement", icon: Dumbbell, imageSrc: PAGE_PHOTOS.training.src, imagePosition: PAGE_PHOTOS.training.position },
+  { href: "/skills", label: "Compétences", icon: Target, imageSrc: PAGE_PHOTOS.skills.src, imagePosition: PAGE_PHOTOS.skills.position },
+  { href: "/coach", label: "Coach", icon: Sparkles, imageSrc: PAGE_PHOTOS.coach.src, imagePosition: PAGE_PHOTOS.coach.position },
+  { href: "/study", label: "Étude", icon: BookOpen },
+  { href: "/goals", label: "Objectifs", icon: Flag },
+  { href: "/competition", label: "Compétition", icon: Trophy, imageSrc: PAGE_PHOTOS.competition.src, imagePosition: PAGE_PHOTOS.competition.position },
+  { href: "/club", label: "Club", icon: Users },
+  { href: "/search", label: "Recherche", icon: Search },
+  { href: "/profile", label: "Profil", icon: User },
+  { href: "/calendar", label: "Calendrier", icon: CalendarDays },
+];
+
+export function ChampionshipAppSidebar() {
+  return <ChampionshipSidebar items={APP_NAV_ITEMS} wordmark="MMA MASTERY" />;
 }
 
 export function ChampionshipSidebar({
@@ -15,9 +39,10 @@ export function ChampionshipSidebar({
   wordmark,
 }: {
   items: ChampionshipNavItem[];
-  activeHref: string;
+  activeHref?: string;
   wordmark: string;
 }) {
+  const pathname = usePathname();
   return (
     <aside className="flex w-40 shrink-0 flex-col gap-5 border-r border-border/50 bg-background pr-3">
       <div className="flex items-center gap-2 px-1 pt-1">
@@ -29,7 +54,7 @@ export function ChampionshipSidebar({
 
       <nav className="flex flex-col gap-0.5">
         {items.map((item) => {
-          const active = item.href === activeHref;
+          const active = activeHref ? item.href === activeHref : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
             <Link
@@ -45,8 +70,7 @@ export function ChampionshipSidebar({
               )}
             >
               {item.imageSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.imageSrc} alt="" aria-hidden="true" />
+                <Image src={item.imageSrc} alt="" aria-hidden="true" fill sizes="176px" style={{ objectPosition: item.imagePosition }} />
               ) : null}
               <Icon className="relative z-10 size-4 shrink-0" />
               <span className="relative z-10">{item.label}</span>

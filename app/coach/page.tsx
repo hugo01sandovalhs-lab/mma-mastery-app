@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { Sparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { CoachAnswerView } from "@/components/coach/coach-answer";
 import { CoachQuestionForm } from "@/components/coach/coach-question-form";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -17,21 +17,19 @@ export default async function CoachPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-primary" />
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">AI Coach</h1>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Réponses ancrées dans tes données réelles — sessions, progression, review. Aucune
-          performance n&apos;est inventée.
-        </p>
+      <div className="editorial-page editorial-coach">
+        <PageHeader page="coach" title="Coach" description="Prendre du recul. Préparer la suite. Des réponses fondées sur vos séances, votre progression et vos révisions." />
 
+        <div className="editorial-coach-columns">
+        <section className="editorial-section">
+          <h2>Votre analyse</h2>
         <CoachAnswerView answer={answer} />
+        </section>
 
-        <div className="flex flex-col gap-3 border-t border-border pt-6">
+        <section className="editorial-section">
           <h2 className="font-heading text-lg font-semibold tracking-tight">Poser une question</h2>
           <CoachQuestionForm />
+        </section>
         </div>
       </div>
     </AppShell>

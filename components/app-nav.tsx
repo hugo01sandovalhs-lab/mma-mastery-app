@@ -81,3 +81,19 @@ export function MobileNav() {
     </nav>
   );
 }
+
+export function MobileSectionNav() {
+  const pathname = usePathname();
+  return (
+    <details key={pathname} className="championship-mobile-sections md:hidden">
+      <summary>Menu</summary>
+      <nav aria-label="Toutes les rubriques">
+        {[...NAV_LINKS, ...SIDEBAR_ONLY_LINKS].map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} aria-current={isActive(pathname, href) ? "page" : undefined}>
+            <Icon size={16} aria-hidden="true" />{label}
+          </Link>
+        ))}
+      </nav>
+    </details>
+  );
+}

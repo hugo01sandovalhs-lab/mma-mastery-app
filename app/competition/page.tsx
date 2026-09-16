@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { Trophy } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getDisciplines } from "@/lib/usecases/training-actions";
@@ -28,19 +28,17 @@ export default async function CompetitionPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <div className="flex items-center gap-2">
-            <Trophy className="size-5 text-primary" />
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Compétition</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Historique de combats et séquences vidéo liées à vos compétences.
-          </p>
-        </div>
+      <div className="editorial-page editorial-competition">
+        <PageHeader page="competition" title="Compétition" description="L'épreuve du combat. Retrouvez votre historique et les séquences vidéo liées à vos compétences." />
 
+        <div className="editorial-competition-columns">
+        <section className="editorial-section">
+        <h2>Enregistrer un combat</h2>
         <MatchForm disciplines={disciplines} athletes={athletes} sessionOptions={sessionOptions} />
+        </section>
 
+        <section className="editorial-section">
+        <h2>Historique des combats</h2>
         {matches.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-sm text-muted-foreground">
@@ -54,6 +52,8 @@ export default async function CompetitionPage() {
             ))}
           </div>
         )}
+        </section>
+        </div>
       </div>
     </AppShell>
   );

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 
@@ -21,15 +22,20 @@ export default async function ProfilePage() {
 
   return (
     <AppShell>
-      <Card className="max-w-md">
+      <div className="editorial-page editorial-profile">
+      <PageHeader page="profile" title="Profil" description="Votre identité, votre parcours." />
+      <Card>
         <CardHeader>
-          <CardTitle>Profil</CardTitle>
+          <CardTitle>Informations personnelles</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm">
-          <p>Email: {user.email}</p>
-          <p>Nom affiché: {profile?.display_name ?? "—"}</p>
+        <CardContent>
+          <dl className="editorial-profile-details">
+            <div><dt>Email</dt><dd>{user.email}</dd></div>
+            <div><dt>Nom affiché</dt><dd>{profile?.display_name ?? "—"}</dd></div>
+          </dl>
         </CardContent>
       </Card>
+      </div>
     </AppShell>
   );
 }

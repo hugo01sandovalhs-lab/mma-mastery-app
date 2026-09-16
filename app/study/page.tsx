@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookmarkIcon, LibraryIcon, ListChecksIcon } from "lucide-react";
+import { BookmarkIcon, ListChecksIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -32,17 +33,10 @@ export default async function StudyPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <div className="flex items-center gap-2">
-            <LibraryIcon className="size-5 text-primary" />
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Étude</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            File d&apos;étude, favoris et ressources externes.
-          </p>
-        </div>
+      <div className="editorial-page editorial-study">
+        <PageHeader page="study" title="Étude" description="Comprendre avant de répéter. Votre file d'étude, vos favoris et vos ressources." />
 
+        <div className="editorial-study-columns">
         <section className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <ListChecksIcon className="size-4 text-primary" />
@@ -107,6 +101,7 @@ export default async function StudyPage() {
           )}
           <ResourceForm skills={skills} />
         </section>
+        </div>
       </div>
     </AppShell>
   );

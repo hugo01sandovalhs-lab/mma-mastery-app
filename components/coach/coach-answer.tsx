@@ -23,7 +23,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
   if (response.status === "insufficient_data") {
     return (
       <Card>
-        <CardContent className="flex flex-col items-start gap-2 py-8">
+        <CardContent className="editorial-empty flex flex-col items-start gap-2 py-8">
           <Sparkles className="size-6 text-muted-foreground" />
           <p className="font-medium">Pas encore assez de données</p>
           <p className="max-w-md text-sm text-muted-foreground">{response.reason}</p>

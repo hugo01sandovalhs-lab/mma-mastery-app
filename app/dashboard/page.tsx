@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -19,6 +20,7 @@ import {
 import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
 import { ProgressRing } from "@/components/championship/progress-ring";
+import { PAGE_PHOTOS } from "@/lib/design/photography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,10 +45,10 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 
 const PHOTOS = {
   focus: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg",
-  session: "/mma-mastery-photos/pexels-cottonbro-4761779.jpg",
+  session: "/mma-mastery-photos/pexels-duren-williams-29414623-14796246.jpg",
   progress: "/mma-mastery-photos/pexels-mjlo-28550403.jpg",
   activity: "/mma-mastery-photos/pexels-pavel-danilyuk-6296015.jpg",
-  club: "/mma-mastery-photos/pexels-heloisa-freitas-734111-1608099.jpg",
+  club: "/mma-mastery-photos/pexels-pavel-danilyuk-6295755.jpg",
 } as const;
 
 function relativeDays(iso: string): string {
@@ -57,7 +59,7 @@ function relativeDays(iso: string): string {
 }
 
 const HEROES = {
-  cage: "/mma-mastery-photos/pexels-shkrabaanthony-4398347.jpg",
+  cage: PAGE_PHOTOS.dashboard.src,
   light: "/mma-mastery-photos/pexels-cottonbro-4761780.jpg",
   ring: "/mma-mastery-photos/pexels-cottonbro-4761790.jpg",
 } as const;
@@ -161,8 +163,7 @@ function Hero({
 
   return (
     <section className="championship-hero" aria-label="Votre entraînement">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageSrc} alt="Combattant en garde dans la cage" className="championship-fighter" />
+      <Image src={imageSrc} alt="Entraînement de boxe dans une salle sombre" fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" />
       <div className="championship-hero-tools">
         <Link href="/search" aria-label="Rechercher"><SearchIcon size={16} /></Link>
         <Link href="/goals" aria-label="Mes objectifs"><Flag size={16} /></Link>
@@ -215,7 +216,7 @@ function StatRow({
       <ImageMetricPanel
         label="Focus du jour"
         imageSrc={PHOTOS.focus}
-        imageAlt="Travail au pao"
+        imageAlt="Un boxeur travaille sa garde à contre-jour"
         href={p ? `/skills/${p.focusSkillId}` : "/training/new"}
         title={p ? p.focusSkillName : "Définir mon focus"}
         detail={p ? p.reasons[0] : "Enregistrez une séance pour identifier vos priorités."}
@@ -250,8 +251,7 @@ function ImageMetricPanel({
 }) {
   return (
     <Link href={href} className="championship-image-panel">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageSrc} alt={imageAlt} />
+      <Image src={imageSrc} alt={imageAlt} fill sizes="(max-width: 767px) 100vw, 40vw" />
       <span className="championship-image-panel-copy">
         <span className="championship-image-panel-label">{label}</span>
         <strong>{title}</strong>
@@ -403,8 +403,7 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
 
   return (
     <Card className="championship-progress-panel rounded-2xl border-border bg-card">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={PHOTOS.progress} alt="Cage éclairée avant l'entraînement" />
+      <Image src={PHOTOS.progress} alt="Un combattant vu de dos à travers le grillage de la cage" fill sizes="(max-width: 767px) 100vw, 50vw" />
       <div className="championship-progress-shade" aria-hidden="true" />
       <CardHeader className="relative z-10 pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -460,10 +459,9 @@ function DisciplineBar({ name, count, total }: { name: string; count: number; to
 
 function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   return (
-    <Card className="championship-activity-panel rounded-2xl border-border bg-card">
+    <Card data-empty={sessions.length === 0 || undefined} className="championship-activity-panel rounded-2xl border-border bg-card">
       <div className="championship-activity-cover">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={PHOTOS.activity} alt="Séance de sparring" />
+        <Image src={PHOTOS.activity} alt="Séance de sparring" fill sizes="(max-width: 767px) 100vw, 50vw" />
         <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Flame className="size-3.5 text-primary" />
@@ -540,10 +538,11 @@ function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr_1fr]">
         <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={PHOTOS.club}
-            alt="Membre du club en entraînement"
+            alt="Deux partenaires s'entraînent au gym"
+            width={44}
+            height={44}
             className="size-11 shrink-0 rounded-full object-cover ring-2 ring-primary/20"
             style={{ objectPosition: "80% center" }}
           />

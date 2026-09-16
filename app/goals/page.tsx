@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { Target } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getGoals } from "@/lib/usecases/goals-actions";
@@ -19,19 +19,17 @@ export default async function GoalsPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <div className="flex items-center gap-2">
-            <Target className="size-5 text-primary" />
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Objectifs</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Objectifs court, moyen et long terme, liés à vos compétences.
-          </p>
-        </div>
+      <div className="editorial-page editorial-goals">
+        <PageHeader page="goals" title="Objectifs" description="Donner une direction à l'effort. Vos objectifs à court, moyen et long terme, liés à vos compétences." />
 
+        <div className="editorial-secondary-columns">
+        <section className="editorial-section">
+        <h2>Définir un objectif</h2>
         <GoalForm skills={skills} />
+        </section>
 
+        <section className="editorial-section">
+        <h2>Votre feuille de route</h2>
         {goals.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-sm text-muted-foreground">
@@ -45,6 +43,8 @@ export default async function GoalsPage() {
             ))}
           </div>
         )}
+        </section>
+        </div>
       </div>
     </AppShell>
   );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Network, Search, Target } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,29 +65,27 @@ export default async function SkillsPage({
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-1.5">
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-              Compétences
-            </h1>
-            <p className="text-sm text-muted-foreground">
+      <div className="editorial-page editorial-skills">
+        <PageHeader page="skills" title="Compétences" description={<>
+            <p>Comprendre le geste. Affiner la maîtrise.</p>
+            <p className="editorial-caption">
               {skills.length} compétence{skills.length > 1 ? "s" : ""} au catalogue
               {trackedCount > 0
                 ? ` · ${trackedCount} suivie${trackedCount > 1 ? "s" : ""}`
                 : ""}
             </p>
-          </div>
+          </>} actions={
           <Button variant="outline" size="sm" render={<Link href="/skills/map" />} className="w-fit">
             <Network /> Carte de maîtrise
           </Button>
-        </div>
+        } />
 
         <form className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_200px_auto]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               name="q"
+              aria-label="Rechercher une compétence"
               placeholder="Rechercher une compétence..."
               defaultValue={q ?? ""}
               className="pl-8"
@@ -119,7 +118,7 @@ export default async function SkillsPage({
 
         {skills.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-start gap-2 py-8">
+            <CardContent className="editorial-empty">
               <Target className="size-6 text-muted-foreground" />
               <p className="font-medium">
                 {isFiltered ? "Aucune compétence ne correspond" : "Aucune compétence au catalogue"}

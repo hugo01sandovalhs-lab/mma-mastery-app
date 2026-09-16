@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BookOpen, Dumbbell, PlusIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,30 +25,25 @@ export default async function TrainingListPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-1.5">
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-              Entraînement
-            </h1>
-            <p className="text-sm text-muted-foreground">
+      <div className="editorial-page editorial-training">
+        <PageHeader page="training" title="Entraînement" description={<>
+            <p>Le travail se construit séance après séance.</p>
+            <p className="editorial-caption">
               {sessions.length} séance{sessions.length > 1 ? "s" : ""} enregistrée
               {sessions.length > 1 ? "s" : ""}
             </p>
-          </div>
-          <div className="flex w-fit gap-2">
+          </>} actions={<>
             <Button variant="outline" size="lg" render={<Link href="/training/review" />}>
               <BookOpen /> À revoir
             </Button>
             <Button size="lg" render={<Link href="/training/new" />}>
               <PlusIcon /> Nouvelle séance
             </Button>
-          </div>
-        </div>
+          </>} />
 
         {sessions.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-start gap-2 py-8">
+            <CardContent className="editorial-empty">
               <Dumbbell className="size-6 text-muted-foreground" />
               <p className="font-medium">Aucune séance enregistrée</p>
               <p className="max-w-md text-sm text-muted-foreground">

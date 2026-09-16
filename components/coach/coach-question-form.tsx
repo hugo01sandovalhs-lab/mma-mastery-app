@@ -26,6 +26,7 @@ export function CoachQuestionForm() {
       <form action={formAction} className="flex flex-col gap-2 sm:flex-row">
         <Input
           name="question"
+          aria-label="Votre question au coach"
           placeholder="Pose une question au coach..."
           className="flex-1"
           disabled={isPending}

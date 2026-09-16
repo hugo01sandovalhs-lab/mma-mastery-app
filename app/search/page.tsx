@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { SearchIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,19 +33,11 @@ export default async function SearchPage({
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <div className="flex items-center gap-2">
-            <SearchIcon className="size-5 text-primary" />
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Recherche</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Compétences, séances, observations, objectifs et ressources.
-          </p>
-        </div>
+      <div className="editorial-page editorial-search">
+        <PageHeader page="search" title="Recherche" description="Explorez vos compétences, séances, observations, objectifs et ressources." />
 
         <form className="flex gap-2">
-          <Input name="q" defaultValue={query} placeholder="Rechercher..." autoFocus className="max-w-md" />
+          <Input name="q" aria-label="Rechercher dans MMA Mastery" defaultValue={query} placeholder="Rechercher..." autoFocus className="max-w-xl" />
         </form>
 
         {query.length > 0 && query.trim().length < 2 ? (

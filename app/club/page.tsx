@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { Users } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getMyClubs } from "@/lib/usecases/club-actions";
@@ -18,17 +18,17 @@ export default async function ClubListPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <div className="flex items-center gap-2">
-            <Users className="size-5 text-primary" />
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Clubs</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">Vos clubs, membres et groupes.</p>
-        </div>
+      <div className="editorial-page editorial-club">
+        <PageHeader page="club" title="Club" description="Progresser ensemble. Retrouvez vos clubs, leurs membres et vos groupes d'entraînement." />
 
+        <div className="editorial-secondary-columns">
+        <section className="editorial-section">
+        <h2>Créer un club</h2>
         <ClubForm />
+        </section>
 
+        <section className="editorial-section">
+        <h2>Vos clubs</h2>
         {clubs.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-sm text-muted-foreground">
@@ -42,6 +42,8 @@ export default async function ClubListPage() {
             ))}
           </div>
         )}
+        </section>
+        </div>
       </div>
     </AppShell>
   );
