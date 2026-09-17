@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles, Video } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +19,7 @@ const FACT_KIND_VARIANT: Record<string, "secondary" | "default" | "outline"> = {
 };
 
 export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
-  const { context, response, providerName } = answer;
+  const { context, response, providerName, videos } = answer;
 
   if (response.status === "insufficient_data") {
     return (
@@ -78,6 +79,23 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
           ) : null}
         </CardContent>
       </Card>
+
+      {videos.length > 0 ? (
+        <section aria-labelledby="coach-videos" className="grid gap-3">
+          <h3 id="coach-videos" className="font-heading text-lg font-semibold">Démonstrations recommandées</h3>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {videos.map((video) => (
+              <a key={video.videoId} href={video.url} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-md border bg-card transition-colors hover:bg-muted/40">
+                <Image src={video.thumbnail} alt="" width={320} height={180} className="aspect-video w-full object-cover" />
+                <span className="grid gap-1 p-3">
+                  <strong className="line-clamp-2 text-sm group-hover:underline">{video.title}</strong>
+                  <span className="text-xs text-muted-foreground">{video.channelTitle}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <details className="group rounded-lg border border-border">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-muted-foreground marker:content-none">

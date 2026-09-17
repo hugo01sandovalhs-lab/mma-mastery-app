@@ -2,13 +2,14 @@
 
 ## Livré
 
-- Les recommandations du coach ouvrent une recherche YouTube ciblée sans clé ni coût API.
+- Les recommandations du coach ouvrent une recherche YouTube ciblée sans clé et affichent, avec une clé gratuite, jusqu’à trois vidéos techniques réelles.
+- Le provider YouTube Data API v3 reste côté serveur, limite chaque recherche à trois résultats et garde les réponses 24 h en mémoire (100 requêtes distinctes maximum par instance).
 - La PWA met en cache uniquement le shell et les médias publics, avec une page hors connexion.
 - Les données d’athlète, les réponses API et les photos privées ne sont jamais placées dans le cache partagé du service worker.
 
-## Activation d’une sélection automatique de vidéos
+## Activation de la sélection automatique de vidéos
 
-Pour afficher des vidéos choisies directement dans l’application, il reste à fournir une clé serveur `YOUTUBE_API_KEY`, implémenter un provider de recherche YouTube Data API, puis ajouter un cache de résultats avec quota. Le provider doit recevoir uniquement le nom de la technique et la difficulté, jamais des données personnelles brutes.
+Créer une clé YouTube Data API v3 dans un projet Google sans facturation obligatoire, puis renseigner `YOUTUBE_API_KEY` dans `.env.local`. Sans clé, quota disponible ou réseau, le coach conserve son lien de recherche manuel et aucune fonctionnalité n’est bloquée. Le provider reçoit uniquement la recommandation technique, son niveau et la discipline, jamais les données personnelles brutes.
 
 ## Offline complet
 

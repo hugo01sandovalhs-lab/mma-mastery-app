@@ -3,6 +3,7 @@ import { z } from "zod";
 export const profileSchema = z.object({
   user_id: z.string().uuid(),
   display_name: z.string().min(1).max(80).nullable(),
+  friend_code: z.string().length(8).optional(),
   first_name: z.string().max(80).nullable().optional(),
   last_name: z.string().max(80).nullable().optional(),
   age: z.number().int().min(13).max(100).nullable().optional(),

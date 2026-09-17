@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { ProfileForm } from "@/components/profile/profile-form";
 import type { Profile } from "@/lib/domain/profile";
+import type { TrainingPartner } from "@/lib/domain/training-partner";
+import { TrainingPartners } from "@/components/profile/training-partners";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -17,11 +19,10 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: profile }, { data: partners }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+    supabase.rpc("list_training_partners"),
+  ]);
 
   return (
     <AppShell>
@@ -37,6 +38,15 @@ export default async function ProfilePage() {
           <ProfileForm profile={profile as Profile | null} />
         </CardContent>
       </Card>
+      <TrainingPartners
+        friendCode={(profile as Profile | null)?.friend_code ?? ""}
+        partners={((partners ?? []) as Array<{ relationship_id: string; partner_user_id: string; display_name: string }>).map((partner) => ({
+          relationshipId: partner.relationship_id,
+          userId: partner.partner_user_id,
+          displayName: partner.display_name,
+          avatarUrl: null,
+        } satisfies TrainingPartner))}
+      />
       </div>
     </AppShell>
   );
