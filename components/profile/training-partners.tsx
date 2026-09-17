@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { Check, Copy, UserPlus, Users, X } from "lucide-react";
-import { addTrainingPartner, removeTrainingPartner } from "@/app/profile/actions";
+import { addTrainingPartner, removeTrainingPartner } from "@/app/(app)/profile/actions";
 import type { TrainingPartner } from "@/lib/domain/training-partner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

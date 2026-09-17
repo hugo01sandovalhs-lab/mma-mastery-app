@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateProfile } from "@/app/profile/actions";
+import { updateProfile } from "@/app/(app)/profile/actions";
 import type { Profile } from "@/lib/domain/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

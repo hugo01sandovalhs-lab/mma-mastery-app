@@ -18,8 +18,8 @@ import {
   UsersRound,
 } from "lucide-react";
 import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
-import { DashboardShell } from "@/app/dashboard/dashboard-shell";
 import { ProgressRing } from "@/components/championship/progress-ring";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PAGE_PHOTOS } from "@/lib/design/photography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,8 +92,7 @@ export default async function DashboardPage() {
       : 0;
 
   return (
-    <DashboardShell>
-      <div className="championship-dashboard">
+    <main className="championship-dashboard">
         <Hero
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
@@ -117,8 +116,7 @@ export default async function DashboardPage() {
 
         <QuickActions />
         </div>
-      </div>
-    </DashboardShell>
+    </main>
   );
 }
 
@@ -219,7 +217,7 @@ function ImageMetricPanel({
 }) {
   return (
     <Link href={href} className="championship-image-panel">
-      <Image src={imageSrc} alt={imageAlt} fill sizes="(max-width: 767px) 100vw, 40vw" />
+      <ProgressiveImage src={imageSrc} alt={imageAlt} fill sizes="(max-width: 767px) 100vw, 40vw" />
       <span className="championship-image-panel-copy">
         <span className="championship-image-panel-label">{label}</span>
         <strong>{title}</strong>
@@ -371,7 +369,7 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
 
   return (
     <Card className="championship-progress-panel rounded-2xl border-border bg-card">
-      <Image src={PHOTOS.progress} alt="Un combattant vu de dos à travers le grillage de la cage" fill sizes="(max-width: 767px) 100vw, 50vw" />
+      <ProgressiveImage src={PHOTOS.progress} alt="Un combattant vu de dos à travers le grillage de la cage" fill sizes="(max-width: 767px) 100vw, 50vw" />
       <div className="championship-progress-shade" aria-hidden="true" />
       <CardHeader className="relative z-10 pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -429,7 +427,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   return (
     <Card data-empty={sessions.length === 0 || undefined} className="championship-activity-panel rounded-2xl border-border bg-card">
       <div className="championship-activity-cover">
-        <Image src={PHOTOS.activity} alt="Séance de sparring" fill sizes="(max-width: 767px) 100vw, 50vw" />
+        <ProgressiveImage src={PHOTOS.activity} alt="Séance de sparring" fill sizes="(max-width: 767px) 100vw, 50vw" />
         <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Flame className="size-3.5 text-primary" />

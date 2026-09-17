@@ -1,6 +1,6 @@
 import { ArrowRight, Sparkles, Video } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,7 @@ const FACT_KIND_VARIANT: Record<string, "secondary" | "default" | "outline"> = {
 };
 
 export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
-  const { context, response, providerName, videos } = answer;
+  const { context, response, providerName, videos, videoSuggestions } = answer;
 
   if (response.status === "insufficient_data") {
     return (
@@ -36,7 +36,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
     );
   }
 
-  const demoQuery = response.recommendations[0]?.statement ?? "technique MMA";
+  const primaryVideoQuery = videoSuggestions[0] ?? "mma technique";
 
   return (
     <div className="flex flex-col gap-4">
@@ -58,14 +58,6 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
                     <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
                     <span>{rec.statement}</span>
                   </p>
-                  <a
-                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`MMA technique ${rec.statement}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-5 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline"
-                  >
-                    <Video className="size-3.5" /> Voir des démonstrations
-                  </a>
                   {rec.basedOnFactIndexes.length > 0 ? (
                     <p className="pl-5 text-xs text-muted-foreground">
                       Basé sur:{" "}
@@ -86,13 +78,21 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
         <div className="coach-video-heading">
           <span><Video aria-hidden="true" /> À voir maintenant</span>
           <h3 id="coach-videos">Démonstrations pour votre prochain entraînement</h3>
-          <p>Des vidéos ciblées sur la priorité détectée par votre coach.</p>
+          <p className="font-medium text-[#fff5e2]">{primaryVideoQuery}</p>
+          {videoSuggestions.length > 1 ? (
+            <ul className="grid gap-1 text-xs text-[#bcb3a4]">
+              {videoSuggestions.slice(1).map((query) => <li key={query}>• {query}</li>)}
+            </ul>
+          ) : null}
+          <Button render={<a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(primaryVideoQuery)}`} target="_blank" rel="noreferrer" />} className="w-fit">
+            <Video /> Rechercher sur YouTube
+          </Button>
         </div>
         {videos.length > 0 ? (
           <div className="coach-video-grid">
             {videos.map((video) => (
               <a key={video.videoId} href={video.url} target="_blank" rel="noreferrer" className="coach-video-card group">
-                <Image src={video.thumbnail} alt="" width={640} height={360} sizes="(max-width: 767px) 100vw, 33vw" className="aspect-video w-full object-cover" />
+                <ProgressiveImage src={video.thumbnail} alt="" width={640} height={360} sizes="(max-width: 767px) 100vw, 33vw" className="aspect-video w-full object-cover" />
                 <span className="grid gap-1 p-3">
                   <strong className="line-clamp-2 text-sm group-hover:underline">{video.title}</strong>
                   <span className="text-xs text-muted-foreground">{video.channelTitle}</span>
@@ -100,11 +100,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
               </a>
             ))}
           </div>
-        ) : (
-          <Button variant="outline" render={<a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`MMA technique ${demoQuery}`)}`} target="_blank" rel="noreferrer" />}>
-            <Video /> Chercher les démonstrations sur YouTube
-          </Button>
-        )}
+        ) : null}
       </section>
 
       <details className="group rounded-lg border border-border">

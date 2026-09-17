@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeLabOverride } from "@/lib/design/theme-lab-override";
 import { PwaRegister } from "@/components/pwa-register";
+import { I18nProvider } from "@/components/i18n-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +45,7 @@ export default function RootLayout({
       >
         <ThemeLabOverride />
         <PwaRegister />
-        {children}
+        <I18nProvider>{children}</I18nProvider>
       </body>
     </html>
   );

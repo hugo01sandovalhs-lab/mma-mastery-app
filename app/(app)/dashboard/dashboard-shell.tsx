@@ -6,10 +6,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { UserMenu } from "@/components/user-menu";
 import { MobileNav, MobileSectionNav } from "@/components/app-nav";
 import { ChampionshipAppSidebar } from "@/components/championship/sidebar";
+import { ShellRoot } from "@/components/championship/shell-root";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
-export function DashboardShell({ children, interior = false }: { children: React.ReactNode; interior?: boolean }) {
+export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div data-fight-theme="championship" className={`championship-app min-h-screen bg-background text-foreground${interior ? " championship-interior" : ""}`}>
+    <ShellRoot>
       <div className="championship-frame">
         <div className="championship-nav">
           <ChampionshipAppSidebar />
@@ -21,9 +23,12 @@ export function DashboardShell({ children, interior = false }: { children: React
             <Link href="/dashboard" className="font-extrabold tracking-tight md:hidden">
               MMA MASTERY
             </Link>
-            <Suspense fallback={<Skeleton className="h-8 w-8 rounded-full" />}>
-              <UserMenu />
-            </Suspense>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Suspense fallback={<Skeleton className="h-8 w-8 rounded-full" />}>
+                <UserMenu />
+              </Suspense>
+            </div>
           </header>
 
           {children}
@@ -31,6 +36,6 @@ export function DashboardShell({ children, interior = false }: { children: React
       </div>
 
       <MobileNav />
-    </div>
+    </ShellRoot>
   );
 }

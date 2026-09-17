@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users } from "lucide-react";
 import { cn } from "cn";
+import { useI18n } from "@/components/i18n-provider";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
@@ -28,6 +29,7 @@ function isActive(pathname: string, href: string) {
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <nav className="flex flex-col gap-1">
@@ -47,7 +49,7 @@ export function SidebarNav() {
             )}
           >
             <Icon className={cn("size-4 shrink-0", active && "text-primary")} />
-            {link.label}
+            {t(`nav.${link.href.slice(1) || "dashboard"}`, link.label)}
           </Link>
         );
       })}
@@ -57,6 +59,7 @@ export function SidebarNav() {
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-around border-t border-border bg-background/95 py-1.5 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
@@ -74,7 +77,7 @@ export function MobileNav() {
             )}
           >
             <Icon className="size-5" />
-            {link.label}
+            {t(`nav.${link.href.slice(1) || "dashboard"}`, link.label)}
           </Link>
         );
       })}
@@ -84,13 +87,14 @@ export function MobileNav() {
 
 export function MobileSectionNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
   return (
     <details key={pathname} className="championship-mobile-sections md:hidden">
-      <summary>Menu</summary>
-      <nav aria-label="Toutes les rubriques">
+      <summary>{t("nav.menu", "Menu")}</summary>
+      <nav aria-label={t("nav.all", "Toutes les rubriques")}>
         {[...NAV_LINKS, ...SIDEBAR_ONLY_LINKS].map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href} aria-current={isActive(pathname, href) ? "page" : undefined}>
-            <Icon size={16} aria-hidden="true" />{label}
+            <Icon size={16} aria-hidden="true" />{t(`nav.${href.slice(1)}`, label)}
           </Link>
         ))}
       </nav>

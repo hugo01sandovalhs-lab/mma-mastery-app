@@ -1,7 +1,7 @@
 import { cn } from "cn";
-import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PHOTO_STORIES, type PhotoStoryPage } from "@/lib/design/photography";
 
 export function ChampionshipSectionPhoto({
@@ -21,7 +21,7 @@ export function ChampionshipSectionPhoto({
 }) {
   return (
     <div className={cn("relative isolate h-28 w-full overflow-hidden rounded-2xl sm:h-36", className)}>
-      <Image
+      <ProgressiveImage
         src={src}
         alt={alt}
         fill
@@ -52,7 +52,7 @@ export function ChampionshipPhotoMosaic({ page, className }: { page: PhotoStoryP
     <div className={cn("editorial-photo-mosaic", className)}>
       {photos.map((photo, index) => {
         const content = <>
-          <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 82vw, (max-width: 1100px) 42vw, 30vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
+          <ProgressiveImage src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 82vw, (max-width: 1100px) 42vw, 30vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
           <span>{photo.label}</span>
         </>;
         return "href" in photo ? (

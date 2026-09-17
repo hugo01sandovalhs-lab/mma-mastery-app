@@ -1,6 +1,10 @@
 import "server-only";
 import type { AIProvider, CoachContext, CoachFact, CoachResponse } from "@/lib/domain/ai-coach";
-import type { VideoSearchResult } from "@/lib/domain/video-search";
+import {
+  buildYouTubeSearchSuggestions,
+  inferVideoSearchQuery,
+  type VideoSearchResult,
+} from "@/lib/domain/video-search";
 import { DeterministicCoachProvider } from "@/lib/infra/ai/deterministic-provider";
 import { OllamaCoachProvider } from "@/lib/infra/ai/ollama-provider";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
@@ -94,15 +98,25 @@ export type CoachAnswer = {
   response: CoachResponse;
   providerName: string;
   videos: VideoSearchResult[];
+  videoSuggestions: string[];
 };
 
-async function findCoachVideos(response: CoachResponse): Promise<VideoSearchResult[]> {
-  if (response.status !== "ok" || !response.recommendations[0]) return [];
-  return videoProvider.search({
-    technique: response.recommendations[0].statement,
-    difficulty: "all levels",
-    discipline: "MMA",
-  });
+async function completeAnswer(
+  context: CoachContext,
+  response: CoachResponse,
+  providerName: string,
+  question?: string,
+): Promise<CoachAnswer> {
+  const fallback = response.status === "ok" ? response.recommendations[0]?.statement ?? "technique" : "technique";
+  const videoQuery = inferVideoSearchQuery(question, fallback);
+  const videoSuggestions = buildYouTubeSearchSuggestions(videoQuery);
+  return {
+    context,
+    response,
+    providerName,
+    videoSuggestions,
+    videos: await videoProvider.search(videoQuery),
+  };
 }
 
 /**
@@ -117,14 +131,14 @@ export async function getCoachResponse(question?: string): Promise<CoachAnswer> 
 
   if (provider.name === defaultProvider.name) {
     const response = await defaultProvider.generateCoachResponse(context, question);
-    return { context, response, providerName: defaultProvider.name, videos: await findCoachVideos(response) };
+    return completeAnswer(context, response, defaultProvider.name, question);
   }
 
   try {
     const response = await provider.generateCoachResponse(context, question);
-    return { context, response, providerName: provider.name, videos: await findCoachVideos(response) };
+    return completeAnswer(context, response, provider.name, question);
   } catch {
     const response = await defaultProvider.generateCoachResponse(context, question);
-    return { context, response, providerName: defaultProvider.name, videos: await findCoachVideos(response) };
+    return completeAnswer(context, response, defaultProvider.name, question);
   }
 }

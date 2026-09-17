@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import { PAGE_PHOTOS, type PhotoPage } from "@/lib/design/photography";
+import { useI18n } from "@/components/i18n-provider";
 
 export function PageHeader({ page, title, description, actions }: {
   page: Exclude<PhotoPage, "dashboard">;
@@ -8,10 +11,12 @@ export function PageHeader({ page, title, description, actions }: {
   actions?: React.ReactNode;
 }) {
   const photo = PAGE_PHOTOS[page];
+  const { t } = useI18n();
+  const localizedTitle = page === "calendar" ? title : t(`page.${page}.title`, title);
   return (
     <header className={`editorial-header editorial-header--${page}`}>
       <div className="editorial-header-copy">
-        <h1>{title}</h1>
+        <h1>{localizedTitle}</h1>
         <div className="editorial-header-description">{description}</div>
         {actions && <div className="editorial-header-actions">{actions}</div>}
       </div>

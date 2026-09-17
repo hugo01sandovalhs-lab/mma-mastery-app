@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Send } from "lucide-react";
-import { askCoachAction } from "@/app/coach/actions";
+import { askCoachAction } from "@/app/(app)/coach/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CoachAnswerView } from "@/components/coach/coach-answer";

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "cn";
+import { useI18n } from "@/components/i18n-provider";
 import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users, type LucideIcon } from "lucide-react";
 
 export interface ChampionshipNavItem {
@@ -29,7 +30,8 @@ const APP_NAV_ITEMS: ChampionshipNavItem[] = [
 ];
 
 export function ChampionshipAppSidebar() {
-  return <ChampionshipSidebar items={APP_NAV_ITEMS} wordmark="MMA MASTERY" />;
+  const { t } = useI18n();
+  return <ChampionshipSidebar items={APP_NAV_ITEMS.map((item) => ({ ...item, label: t(`nav.${item.href.slice(1)}`, item.label) }))} wordmark="MMA MASTERY" />;
 }
 
 export function ChampionshipSidebar({

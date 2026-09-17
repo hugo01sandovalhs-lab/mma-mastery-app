@@ -52,7 +52,7 @@
 .editorial-profile-details dd { overflow-wrap:anywhere; font-weight:600; }
 .editorial-photo-mosaic { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; min-height:190px; }
 .editorial-photo-mosaic:has(>:nth-child(2):last-child) { grid-template-columns:1.2fr 1fr; }
-.editorial-photo-tile { --photo-order:0; position:relative; isolation:isolate; min-height:190px; overflow:hidden; margin:0; border-radius:6px; background:#0b0c09; animation:editorial-photo-reveal .55s ease-out both; animation-delay:calc(var(--photo-order) * 90ms); }
+.editorial-photo-tile { --photo-order:0; position:relative; isolation:isolate; min-height:190px; overflow:hidden; margin:0; border-radius:6px; background:#0b0c09; animation:editorial-photo-reveal .2s ease-out both; }
 .editorial-photo-tile>img { z-index:-2; transition:transform .45s cubic-bezier(.2,.7,.2,1),filter .3s ease; }
 .editorial-photo-tile:after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,#080906e8 0%,#08090638 55%,transparent 82%); transition:background .25s ease; }
 .editorial-photo-tile>span { position:absolute; left:16px; bottom:14px; color:#fff4dc; font-size:14px; font-weight:750; letter-spacing:-.02em; text-shadow:0 1px 10px #000; }
@@ -84,7 +84,7 @@
 .photo-share svg { width:15px; height:15px; }
 .photo-share a>span { font-size:11px; font-weight:800; letter-spacing:-.04em; }
 .editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-goals .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
-a.editorial-photo-tile:hover>img,a.editorial-photo-tile:focus-visible>img { transform:scale(1.045); filter:saturate(1.06); }
+a.editorial-photo-tile:hover>img,a.editorial-photo-tile:focus-visible>img { transform:scale(1.015); filter:saturate(1.03); }
 a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset:2px; }
 @keyframes editorial-photo-reveal { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 .championship-mobile-sections { position:relative; color:var(--foreground); }
@@ -95,6 +95,9 @@ a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset
 .championship-mobile-sections nav a[aria-current] { background:#e5dac3; font-weight:700; }
 .championship-details:has(.championship-activity-panel[data-empty]) :is(.championship-progress-panel,.championship-activity-panel) { min-height:320px; }
 .championship-fighter { left:auto!important; width:min(100%,700px)!important; }
+@media (min-width:768px) {
+  .editorial-header-photo>img,.editorial-photo-tile>img { object-fit:contain!important; }
+}
 @media (max-width:1100px) {
   .editorial-content { padding:18px; }
   .editorial-header-copy { padding:24px; }
