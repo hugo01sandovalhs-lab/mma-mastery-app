@@ -36,6 +36,8 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
     );
   }
 
+  const demoQuery = response.recommendations[0]?.statement ?? "technique MMA";
+
   return (
     <div className="flex flex-col gap-4">
       <Card>
@@ -80,13 +82,17 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
         </CardContent>
       </Card>
 
-      {videos.length > 0 ? (
-        <section aria-labelledby="coach-videos" className="grid gap-3">
-          <h3 id="coach-videos" className="font-heading text-lg font-semibold">Démonstrations recommandées</h3>
-          <div className="grid gap-3 sm:grid-cols-3">
+      <section aria-labelledby="coach-videos" className="coach-video-stage">
+        <div className="coach-video-heading">
+          <span><Video aria-hidden="true" /> À voir maintenant</span>
+          <h3 id="coach-videos">Démonstrations pour votre prochain entraînement</h3>
+          <p>Des vidéos ciblées sur la priorité détectée par votre coach.</p>
+        </div>
+        {videos.length > 0 ? (
+          <div className="coach-video-grid">
             {videos.map((video) => (
-              <a key={video.videoId} href={video.url} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-md border bg-card transition-colors hover:bg-muted/40">
-                <Image src={video.thumbnail} alt="" width={320} height={180} className="aspect-video w-full object-cover" />
+              <a key={video.videoId} href={video.url} target="_blank" rel="noreferrer" className="coach-video-card group">
+                <Image src={video.thumbnail} alt="" width={640} height={360} sizes="(max-width: 767px) 100vw, 33vw" className="aspect-video w-full object-cover" />
                 <span className="grid gap-1 p-3">
                   <strong className="line-clamp-2 text-sm group-hover:underline">{video.title}</strong>
                   <span className="text-xs text-muted-foreground">{video.channelTitle}</span>
@@ -94,8 +100,12 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
               </a>
             ))}
           </div>
-        </section>
-      ) : null}
+        ) : (
+          <Button variant="outline" render={<a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`MMA technique ${demoQuery}`)}`} target="_blank" rel="noreferrer" />}>
+            <Video /> Chercher les démonstrations sur YouTube
+          </Button>
+        )}
+      </section>
 
       <details className="group rounded-lg border border-border">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-muted-foreground marker:content-none">

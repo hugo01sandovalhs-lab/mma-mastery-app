@@ -56,6 +56,33 @@
 .editorial-photo-tile>img { z-index:-2; transition:transform .45s cubic-bezier(.2,.7,.2,1),filter .3s ease; }
 .editorial-photo-tile:after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,#080906e8 0%,#08090638 55%,transparent 82%); transition:background .25s ease; }
 .editorial-photo-tile>span { position:absolute; left:16px; bottom:14px; color:#fff4dc; font-size:14px; font-weight:750; letter-spacing:-.02em; text-shadow:0 1px 10px #000; }
+.coach-video-stage { display:grid; gap:18px; overflow:hidden; padding:22px; border:1px solid #9a742d66; border-radius:6px; background:linear-gradient(135deg,#17150f,#0a0b09); color:#f5eddd; }
+.coach-video-heading { display:grid; gap:7px; }
+.coach-video-heading>span { display:flex; align-items:center; gap:7px; color:#d7bd80; font-size:12px; font-weight:700; }
+.coach-video-heading>span svg { width:15px; height:15px; }
+.coach-video-heading h3 { max-width:560px; color:#fff5e2; font-size:clamp(22px,2.4vw,34px); line-height:1.05; letter-spacing:-.045em; }
+.coach-video-heading p { color:#bcb3a4; font-size:13px; }
+.coach-video-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.coach-video-card { overflow:hidden; border:1px solid #ffffff1f; border-radius:5px; background:#ffffff08; transition:border-color .2s ease,transform .2s ease; }
+.coach-video-card:hover,.coach-video-card:focus-visible { border-color:#d7bd80; transform:translateY(-2px); }
+.search-stage { display:grid; gap:18px; padding:clamp(22px,4vw,44px); border:1px solid var(--border); border-radius:6px; background:var(--card); }
+.search-stage>div:first-child { display:grid; gap:7px; }
+.search-stage>div:first-child>p { color:#80632f; font-size:12px; font-weight:700; }
+.search-stage h2 { font-size:clamp(28px,4vw,52px); line-height:1; }
+.search-form { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; max-width:850px; }
+.search-form input { min-height:54px!important; font-size:17px; }
+.search-prompts { display:flex; flex-wrap:wrap; gap:8px; }
+.search-prompts a { padding:8px 11px; border:1px solid var(--border); border-radius:4px; color:var(--muted-foreground); font-size:12px; }
+.search-prompts a:hover,.search-prompts a:focus-visible { border-color:#9a742d; color:var(--foreground); }
+.club-paths { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.club-paths section { display:flex; min-height:210px; flex-direction:column; align-items:flex-start; gap:10px; padding:22px; border:1px solid var(--border); border-radius:6px; background:var(--card); scroll-margin-top:20px; }
+.club-paths section>svg { width:22px; color:#80632f; }
+.club-paths section>p { flex:1; color:var(--muted-foreground); font-size:13px; line-height:1.55; }
+.photo-share { display:flex; align-items:center; gap:3px; border-top:1px solid var(--border); padding-top:8px; }
+.photo-share a { display:grid; width:32px; height:32px; place-items:center; border-radius:4px; color:var(--muted-foreground); }
+.photo-share a:hover,.photo-share a:focus-visible { background:var(--muted); color:var(--foreground); }
+.photo-share svg { width:15px; height:15px; }
+.photo-share a>span { font-size:11px; font-weight:800; letter-spacing:-.04em; }
 .editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-goals .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
 a.editorial-photo-tile:hover>img,a.editorial-photo-tile:focus-visible>img { transform:scale(1.045); filter:saturate(1.06); }
 a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset:2px; }
@@ -80,6 +107,7 @@ a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset
   .editorial-header { grid-template-columns:1fr 38%; }
   .editorial-photo-mosaic { grid-template-columns:1.15fr 1fr; }
   .editorial-photo-mosaic>:nth-child(3) { grid-column:1/-1; min-height:150px; }
+  .club-paths { grid-template-columns:1fr; }
 }
 @media (max-width:767px) {
   .championship-account { left:16px; right:16px; top:10px; display:flex; align-items:center; justify-content:space-between; }
@@ -105,6 +133,9 @@ a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset
   .editorial-photo-mosaic::-webkit-scrollbar { display:none; }
   .editorial-photo-mosaic>:nth-child(3) { grid-column:auto; min-height:170px; }
   .editorial-photo-tile { flex:0 0 82vw; min-height:170px; scroll-snap-align:start; }
+  .coach-video-grid { display:flex; margin-inline:-22px; padding-inline:22px; overflow-x:auto; scroll-snap-type:x mandatory; }
+  .coach-video-card { flex:0 0 78vw; scroll-snap-align:start; }
+  .search-form { grid-template-columns:1fr; }
   .championship-app>nav { padding-bottom:max(6px,env(safe-area-inset-bottom)); }
   .championship-app>nav a { min-width:0; padding-inline:5px; font-size:10px; }
   .championship-frame { padding-bottom:calc(76px + env(safe-area-inset-bottom)); }

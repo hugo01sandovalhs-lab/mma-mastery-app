@@ -13,6 +13,13 @@ export const PAGE_PHOTOS = {
   calendar: { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295766.jpg", alt: "Groupe structuré en séance de sparring", position: "50% 47%" },
 } as const;
 
+export const LANDING_SLIDES = [
+  { src: "/mma-mastery-photos/anastase-maragos-i3Kbld04hs4-unsplash.jpg", alt: "Combattant avançant sous les lumières du gym", position: "50% 42%" },
+  { src: "/mma-mastery-photos/pexels-cristian-rojas-8810145.jpg", alt: "Athlète concentré pendant une séance de préparation", position: "50% 38%" },
+  { src: "/mma-mastery-photos/pexels-brunogobofoto-5521149.jpg", alt: "Combattant récupérant sur le tapis après l'effort", position: "58% 50%" },
+  { src: "/mma-mastery-photos/anastase-maragos-sZYPBJ3neyA-unsplash.jpg", alt: "Boxeur travaillant dans une salle à l'atmosphère brute", position: "50% 44%" },
+] as const;
+
 export const PHOTO_STORIES = {
   training: [
     { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6296025.jpg", alt: "Travail au sol pendant une séance de MMA", label: "Séances", href: "/training#sessions", position: "50% 58%" },
@@ -32,6 +39,7 @@ export const PHOTO_STORIES = {
   study: [
     { src: "/mma-mastery-photos/pexels-mica-bassa-2157036390-38718034.jpg", alt: "Pratiquante nouant sa ceinture de jiu-jitsu", label: "Comprendre", position: "50% 50%" },
     { src: "/mma-mastery-photos/pexels-cottonbro-4761662.jpg", alt: "Deux boxeurs étudient la distance", label: "Décomposer", position: "50% 45%" },
+    { src: "/mma-mastery-photos/pexels-shkrabaanthony-4398382.jpg", alt: "Athlète analysant sa préparation avant la séance", label: "Ressources", position: "50% 46%" },
   ],
   goals: [
     { src: "/mma-mastery-photos/pexels-gera-cejas-3616330-38502836.jpg", alt: "Athlète levant le poing après l'effort", label: "Cap", position: "50% 33%" },
@@ -43,9 +51,9 @@ export const PHOTO_STORIES = {
     { src: "/mma-mastery-photos/pexels-franco-monsalvo-252430633-13808109.jpg", alt: "Impact d'un coup de pied en compétition", label: "Séquences", position: "50% 50%" },
   ],
   club: [
-    { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295755.jpg", alt: "Groupe en entraînement de striking", label: "Cours", position: "50% 50%" },
-    { src: "/mma-mastery-photos/pexels-alexapopovich-10655516.jpg", alt: "Groupe de jeunes compétiteurs et leur coach", label: "Collectif", position: "50% 48%" },
-    { src: "/mma-mastery-photos/pexels-duren-williams-29414623-11392013.jpg", alt: "Partenaires en travail de grappling", label: "Partenaires", position: "50% 50%" },
+    { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295755.jpg", alt: "Groupe en entraînement de striking", label: "Cours", href: "/club#cours", position: "50% 50%" },
+    { src: "/mma-mastery-photos/pexels-alexapopovich-10655516.jpg", alt: "Groupe de jeunes compétiteurs et leur coach", label: "Collectif", href: "/club#collectif", position: "50% 48%" },
+    { src: "/mma-mastery-photos/pexels-duren-williams-29414623-11392013.jpg", alt: "Partenaires en travail de grappling", label: "Partenaires", href: "/profile#partenaires", position: "50% 50%" },
   ],
   search: [
     { src: "/mma-mastery-photos/pexels-cottonbro-4761780.jpg", alt: "Vue d'ensemble d'un ring avec deux boxeurs", label: "Séances", position: "50% 50%" },
@@ -56,7 +64,7 @@ export const PHOTO_STORIES = {
     { src: "/mma-mastery-photos/anastase-maragos-G0V6_28ONZA-unsplash.jpg", alt: "Athlète après l'effort dans une lumière bleue", label: "Parcours", position: "50% 48%" },
   ],
   calendar: [
-    { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295766.jpg", alt: "Plusieurs binômes s'entraînent dans le gym", label: "Entraînements", position: "50% 48%" },
+    { src: "/mma-mastery-photos/pexels-cottonbro-4753927.jpg", alt: "Plusieurs binômes s'entraînent dans le gym", label: "Entraînements", position: "50% 48%" },
     { src: "/mma-mastery-photos/pexels-franco-monsalvo-252430633-13808107.jpg", alt: "Combat programmé sur un ring", label: "Compétitions", position: "50% 48%" },
   ],
 } as const;

@@ -38,15 +38,17 @@ export default async function ProfilePage() {
           <ProfileForm profile={profile as Profile | null} />
         </CardContent>
       </Card>
-      <TrainingPartners
-        friendCode={(profile as Profile | null)?.friend_code ?? ""}
-        partners={((partners ?? []) as Array<{ relationship_id: string; partner_user_id: string; display_name: string }>).map((partner) => ({
-          relationshipId: partner.relationship_id,
-          userId: partner.partner_user_id,
-          displayName: partner.display_name,
-          avatarUrl: null,
-        } satisfies TrainingPartner))}
-      />
+      <div id="partenaires">
+        <TrainingPartners
+          friendCode={(profile as Profile | null)?.friend_code ?? ""}
+          partners={((partners ?? []) as Array<{ relationship_id: string; partner_user_id: string; display_name: string }>).map((partner) => ({
+            relationshipId: partner.relationship_id,
+            userId: partner.partner_user_id,
+            displayName: partner.display_name,
+            avatarUrl: null,
+          } satisfies TrainingPartner))}
+        />
+      </div>
       </div>
     </AppShell>
   );

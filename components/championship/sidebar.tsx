@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "cn";
 import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users, type LucideIcon } from "lucide-react";
-import { PAGE_PHOTOS } from "@/lib/design/photography";
 
 export interface ChampionshipNavItem {
   href: string;
@@ -16,17 +15,17 @@ export interface ChampionshipNavItem {
 }
 
 const APP_NAV_ITEMS: ChampionshipNavItem[] = [
-  { href: "/dashboard", label: "Accueil", icon: LayoutDashboard, imageSrc: PAGE_PHOTOS.dashboard.src, imagePosition: PAGE_PHOTOS.dashboard.position },
-  { href: "/training", label: "Entraînement", icon: Dumbbell, imageSrc: PAGE_PHOTOS.training.src, imagePosition: PAGE_PHOTOS.training.position },
-  { href: "/skills", label: "Compétences", icon: Target, imageSrc: PAGE_PHOTOS.skills.src, imagePosition: PAGE_PHOTOS.skills.position },
-  { href: "/coach", label: "Coach", icon: Sparkles, imageSrc: PAGE_PHOTOS.coach.src, imagePosition: PAGE_PHOTOS.coach.position },
-  { href: "/study", label: "Étude", icon: BookOpen, imageSrc: PAGE_PHOTOS.study.src, imagePosition: PAGE_PHOTOS.study.position },
-  { href: "/goals", label: "Objectifs", icon: Flag, imageSrc: PAGE_PHOTOS.goals.src, imagePosition: PAGE_PHOTOS.goals.position },
-  { href: "/competition", label: "Compétition", icon: Trophy, imageSrc: PAGE_PHOTOS.competition.src, imagePosition: PAGE_PHOTOS.competition.position },
-  { href: "/club", label: "Club", icon: Users, imageSrc: PAGE_PHOTOS.club.src, imagePosition: PAGE_PHOTOS.club.position },
-  { href: "/search", label: "Recherche", icon: Search, imageSrc: PAGE_PHOTOS.search.src, imagePosition: PAGE_PHOTOS.search.position },
-  { href: "/profile", label: "Profil", icon: User, imageSrc: PAGE_PHOTOS.profile.src, imagePosition: PAGE_PHOTOS.profile.position },
-  { href: "/calendar", label: "Calendrier", icon: CalendarDays, imageSrc: PAGE_PHOTOS.calendar.src, imagePosition: PAGE_PHOTOS.calendar.position },
+  { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
+  { href: "/training", label: "Entraînement", icon: Dumbbell },
+  { href: "/skills", label: "Compétences", icon: Target },
+  { href: "/coach", label: "Coach", icon: Sparkles },
+  { href: "/study", label: "Étude", icon: BookOpen },
+  { href: "/goals", label: "Objectifs", icon: Flag },
+  { href: "/competition", label: "Compétition", icon: Trophy },
+  { href: "/club", label: "Club", icon: Users },
+  { href: "/search", label: "Recherche", icon: Search },
+  { href: "/profile", label: "Profil", icon: User },
+  { href: "/calendar", label: "Calendrier", icon: CalendarDays },
 ];
 
 export function ChampionshipAppSidebar() {

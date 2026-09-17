@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BookOpen, UserRoundPlus, UsersRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
@@ -7,6 +9,7 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { getMyClubs } from "@/lib/usecases/club-actions";
 import { ClubForm } from "@/components/club/club-form";
 import { ClubRow } from "@/components/club/club-row";
+import { Button } from "@/components/ui/button";
 
 export default async function ClubListPage() {
   const supabase = await createClient();
@@ -16,6 +19,7 @@ export default async function ClubListPage() {
   if (!user) redirect("/login");
 
   const clubs = await getMyClubs();
+  const primaryClub = clubs[0];
 
   return (
     <AppShell>
@@ -24,8 +28,23 @@ export default async function ClubListPage() {
 
         <ChampionshipPhotoMosaic page="club" />
 
+        <div className="club-paths">
+          <section id="cours">
+            <BookOpen aria-hidden="true" /><h2>Cours</h2><p>Retrouvez le planning et les séances de votre club.</p>
+            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}/classes` : "#creer-un-club"} />}>{primaryClub ? "Voir les cours" : "Créer un club"}</Button>
+          </section>
+          <section id="collectif">
+            <UsersRound aria-hidden="true" /><h2>Collectif</h2><p>Suivez les membres, événements et annonces du groupe.</p>
+            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}` : "#creer-un-club"} />}>{primaryClub ? "Ouvrir le collectif" : "Créer un club"}</Button>
+          </section>
+          <section id="partenaires">
+            <UserRoundPlus aria-hidden="true" /><h2>Partenaires</h2><p>Invitez un partenaire avec votre code ami et progressez ensemble.</p>
+            <Button variant="outline" size="sm" render={<Link href="/profile#partenaires" />}>Gérer mes partenaires</Button>
+          </section>
+        </div>
+
         <div className="editorial-secondary-columns">
-        <section className="editorial-section">
+        <section id="creer-un-club" className="editorial-section">
         <h2>Créer un club</h2>
         <ClubForm />
         </section>

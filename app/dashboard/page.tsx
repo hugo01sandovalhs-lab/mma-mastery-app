@@ -46,9 +46,9 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 const PHOTOS = {
   focus: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg",
   session: "/mma-mastery-photos/pexels-duren-williams-29414623-14796246.jpg",
-  progress: "/mma-mastery-photos/pexels-mjlo-28550403.jpg",
-  activity: "/mma-mastery-photos/pexels-pavel-danilyuk-6296015.jpg",
-  club: "/mma-mastery-photos/pexels-pavel-danilyuk-6295755.jpg",
+  progress: "/mma-mastery-photos/pexels-eduard-perez-2158828645-38674544.jpg",
+  activity: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758867.jpg",
+  club: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758994.jpg",
 } as const;
 
 function relativeDays(iso: string): string {
@@ -58,21 +58,7 @@ function relativeDays(iso: string): string {
   return `il y a ${days} jours`;
 }
 
-const HEROES = {
-  cage: PAGE_PHOTOS.dashboard.src,
-  light: "/mma-mastery-photos/pexels-cottonbro-4761780.jpg",
-  ring: "/mma-mastery-photos/pexels-cottonbro-4761790.jpg",
-} as const;
-
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ hero?: keyof typeof HEROES }>;
-}) {
-  const { hero } = await searchParams;
-  const activeHero = hero && hero in HEROES ? hero : Math.random() < 0.5 ? "cage" : "ring";
-  const heroImageSrc = HEROES[activeHero];
-
+export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -113,8 +99,7 @@ export default async function DashboardPage({
           sessionCount={sessions.length}
           lastSessionDate={sessions[0]?.date ?? null}
           highPriorityCount={highPriorityCount}
-          imageSrc={heroImageSrc}
-          activeHero={activeHero}
+          imageSrc={PAGE_PHOTOS.dashboard.src}
         />
 
         <div className="championship-grid">
@@ -143,14 +128,12 @@ function Hero({
   lastSessionDate,
   highPriorityCount,
   imageSrc,
-  activeHero,
 }: {
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
   highPriorityCount: number;
   imageSrc: string;
-  activeHero: keyof typeof HEROES;
 }) {
   const status =
     sessionCount === 0
@@ -174,21 +157,6 @@ function Hero({
         <h1>La discipline<br />forge les<br />champions.</h1>
         <p className="championship-status">{status}</p>
       </div>
-      <nav className="championship-hero-views" aria-label="Choisir un cadrage hero">
-        {[
-          ["cage", "Cage"],
-          ["light", "Lumière"],
-          ["ring", "Ring"],
-        ].map(([id, label]) => (
-          <Link
-            key={id}
-            href={`/dashboard?hero=${id}`}
-            aria-current={activeHero === id ? "page" : undefined}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
       <div className="championship-hero-footer">
         <span>{sessionCount > 0 ? `${sessionCount} séance${sessionCount > 1 ? "s" : ""} enregistrée${sessionCount > 1 ? "s" : ""}` : "Votre parcours commence ici"}</span>
         <Button size="sm" render={<Link href="/training/new" />}><Dumbbell /> Nouvelle séance</Button>

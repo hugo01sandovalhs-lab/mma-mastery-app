@@ -9,9 +9,9 @@ import { CoachAnswerView } from "@/components/coach/coach-answer";
 import type { CoachAnswer } from "@/lib/usecases/ai-coach-actions";
 
 const SUGGESTED_QUESTIONS = [
-  "Sur quoi dois-je travailler ?",
-  "Que dois-je revoir ?",
-  "Qu'est-ce qui me pose problème ?",
+  "Comment améliorer mon open guard ?",
+  "Quelles erreurs dois-je corriger en priorité ?",
+  "Comment préparer ma prochaine séance ?",
 ];
 
 async function askAction(_prev: CoachAnswer | null, formData: FormData): Promise<CoachAnswer> {

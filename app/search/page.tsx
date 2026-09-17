@@ -6,6 +6,7 @@ import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { search, type SearchResultType } from "@/lib/usecases/search-actions";
 
@@ -16,6 +17,13 @@ const TYPE_LABELS: Record<SearchResultType, string> = {
   observation: "Observation",
   goal: "Objectif",
 };
+
+const QUICK_PROMPTS = [
+  "Comment faire un armbar ?",
+  "Qu’est-ce que l’open guard ?",
+  "Comment maîtriser le double leg ?",
+  "Quelles sont les erreurs les plus courantes en jab ?",
+] as const;
 
 export default async function SearchPage({
   searchParams,
@@ -39,9 +47,19 @@ export default async function SearchPage({
 
         <ChampionshipPhotoMosaic page="search" />
 
-        <form className="flex gap-2">
-          <Input name="q" aria-label="Rechercher dans MMA Mastery" defaultValue={query} placeholder="Rechercher..." autoFocus className="max-w-xl" />
-        </form>
+        <section className="search-stage" aria-labelledby="search-question">
+          <div>
+            <p>Interrogez votre parcours</p>
+            <h2 id="search-question">Que voulez-vous mieux maîtriser ?</h2>
+          </div>
+          <form className="search-form">
+            <Input name="q" aria-label="Rechercher dans MMA Mastery" defaultValue={query} placeholder="Comment maîtriser…" autoFocus />
+            <Button type="submit">Rechercher</Button>
+          </form>
+          <div className="search-prompts" aria-label="Questions suggérées">
+            {QUICK_PROMPTS.map((prompt) => <Link key={prompt} href={`/search?q=${encodeURIComponent(prompt)}`}>{prompt}</Link>)}
+          </div>
+        </section>
 
         {query.length > 0 && query.trim().length < 2 ? (
           <p className="text-sm text-muted-foreground">Entrez au moins 2 caractères.</p>

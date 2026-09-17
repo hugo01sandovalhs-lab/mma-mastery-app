@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Camera, Trash2 } from "lucide-react";
+import { Camera, Ghost, MessageCircle, Share2, Trash2 } from "lucide-react";
 import { deleteTrainingPhoto, uploadTrainingPhoto } from "@/lib/usecases/training-photo-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,19 @@ import { Label } from "@/components/ui/label";
 
 type Photo = { id: string; caption: string | null; created_at: string; url: string | null };
 type Session = { id: string; date: string; title: string | null };
+
+function ShareActions({ photo }: { photo: Photo }) {
+  const url = photo.url ?? "";
+  const text = photo.caption || "Mon entraînement MMA";
+  const share = () => navigator.share?.({ title: "MMA Mastery", text, url });
+  return <div className="photo-share" aria-label="Partager la photo">
+    <Button type="button" size="icon-sm" variant="ghost" aria-label="Partager" onClick={share}><Share2 /></Button>
+    <a href={`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`} target="_blank" rel="noreferrer" aria-label="Partager sur WhatsApp"><MessageCircle /></a>
+    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noreferrer" aria-label="Partager sur Facebook"><span aria-hidden="true">f</span></a>
+    <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Ouvrir Instagram"><span aria-hidden="true">IG</span></a>
+    <a href="https://www.snapchat.com/" target="_blank" rel="noreferrer" aria-label="Ouvrir Snapchat"><Ghost /></a>
+  </div>;
+}
 
 export function PhotoGallery({ photos, sessions }: { photos: Photo[]; sessions: Session[] }) {
   const [state, action, pending] = useActionState(uploadTrainingPhoto, { error: null });
@@ -23,8 +36,8 @@ export function PhotoGallery({ photos, sessions }: { photos: Photo[]; sessions: 
     {photos.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{photos.map((photo) => <article key={photo.id} className="overflow-hidden rounded-md border bg-card">
       {/* Private signed URLs are short-lived and cannot be configured as a stable Next image source. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      {photo.url ? <img src={photo.url} alt={photo.caption ?? "Photo d’entraînement"} className="aspect-[4/3] w-full object-cover" loading="lazy" /> : <div className="aspect-[4/3] bg-muted" />}
-      <div className="flex items-center justify-between gap-3 p-3"><p className="text-sm">{photo.caption || "Entraînement"}</p><form action={deleteTrainingPhoto.bind(null, photo.id)}><Button type="submit" size="icon-sm" variant="ghost" aria-label="Supprimer la photo"><Trash2 /></Button></form></div>
+      {photo.url ? <img src={photo.url} alt={photo.caption ?? "Photo d’entraînement"} className="aspect-[4/3] w-full object-cover" loading="lazy" decoding="async" /> : <div className="aspect-[4/3] bg-muted" />}
+      <div className="grid gap-2 p-3"><div className="flex items-center justify-between gap-3"><p className="text-sm">{photo.caption || "Entraînement"}</p><form action={deleteTrainingPhoto.bind(null, photo.id)}><Button type="submit" size="icon-sm" variant="ghost" aria-label="Supprimer la photo"><Trash2 /></Button></form></div>{photo.url ? <ShareActions photo={photo} /> : null}</div>
     </article>)}</div> : <div className="editorial-empty rounded-md border bg-card p-6"><Camera /><p>Aucune photo</p><p className="text-sm text-muted-foreground">Ajoutez votre premier souvenir d’entraînement.</p></div>}
   </div>;
 }

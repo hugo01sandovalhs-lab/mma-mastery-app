@@ -1,138 +1,84 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  BookOpen,
-  Dumbbell,
-  MessageCircleQuestion,
-  Network,
-  Sparkles,
-  Target,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ArrowRight, BookOpen, Dumbbell, Network, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { LandingHero } from "@/components/landing/landing-hero";
 import { createClient } from "@/lib/infra/db/supabase-server";
 
 const FEATURES = [
-  {
-    icon: Dumbbell,
-    title: "Journal d'entraînement",
-    description:
-      "Enregistrez chaque séance: discipline, durée, RPE, techniques travaillées et observations à chaud.",
-  },
-  {
-    icon: Target,
-    title: "Système de compétences",
-    description:
-      "Un catalogue de compétences relié à vos séances: prérequis, contres, enchaînements et variations.",
-  },
-  {
-    icon: Network,
-    title: "Progression mesurée",
-    description:
-      "Le stade de maîtrise de chaque compétence est calculé à partir de vos données réelles, jamais estimé.",
-  },
-  {
-    icon: Sparkles,
-    title: "Training Intelligence",
-    description:
-      "Un moteur déterministe identifie sur quoi vous concentrer à la prochaine séance, et pourquoi.",
-  },
-  {
-    icon: BookOpen,
-    title: "Boucle d'apprentissage",
-    description:
-      "Questions non résolues, difficultés récentes et compétences en pause reviennent au bon moment.",
-  },
-  {
-    icon: MessageCircleQuestion,
-    title: "Coach IA",
-    description:
-      "Fondation en place pour un futur coach qui s'appuiera uniquement sur vos données réelles.",
-    comingSoon: true,
-  },
-];
+  { icon: Dumbbell, title: "Journal", description: "Chaque séance, technique et sensation reste exploitable." },
+  { icon: Target, title: "Maîtrise", description: "Une progression mesurée à partir de votre pratique réelle." },
+  { icon: Network, title: "Intelligence", description: "Le prochain travail prioritaire, expliqué sans score inventé." },
+  { icon: BookOpen, title: "Étude", description: "Difficultés, ressources et révisions réunies au bon moment." },
+] as const;
 
 export default async function LandingPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) redirect("/dashboard");
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-6 sm:px-6">
-        <span className="font-heading text-base font-semibold tracking-tight">MMA Mastery</span>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" render={<Link href="/login" />}>
-            Se connecter
-          </Button>
-          <Button size="sm" render={<Link href="/signup" />}>
-            Créer un compte
-          </Button>
-        </div>
+    <div className="championship-landing">
+      <header className="landing-nav">
+        <Link href="/" className="landing-brand" aria-label="MMA Mastery, accueil">
+          <span>MM</span>
+          <strong>MMA Mastery</strong>
+        </Link>
+        <nav aria-label="Compte" className="landing-account">
+          <Button variant="ghost" size="sm" render={<Link href="/login" />}>Se connecter</Button>
+          <Button size="sm" render={<Link href="/signup" />}>Entrer dans l&apos;arène</Button>
+        </nav>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-20 px-4 py-12 sm:px-6 sm:py-20">
-        <section className="flex flex-col items-start gap-6">
-          <Badge variant="outline" className="gap-1.5">
-            <Sparkles className="size-3.5 text-primary" /> Suivi d&apos;entraînement MMA
-          </Badge>
-          <h1 className="max-w-2xl font-heading text-3xl font-semibold tracking-tight sm:text-5xl">
-            Ton système personnel pour apprendre, entraîner et maîtriser le MMA.
-          </h1>
-          <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
-            Journal de séances, catalogue de compétences relié à votre pratique réelle, et un
-            moteur déterministe qui vous dit sur quoi travailler ensuite — sans données
-            inventées, sans score arbitraire.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button size="lg" render={<Link href="/signup" />}>
-              Commencer
-            </Button>
-            <Button variant="outline" size="lg" render={<Link href="/login" />}>
-              Se connecter
-            </Button>
+      <main>
+        <section className="landing-hero">
+          <LandingHero />
+          <div className="landing-hero-copy">
+            <p className="landing-kicker"><Sparkles aria-hidden="true" /> Le système d&apos;entraînement du combattant</p>
+            <h1>Transformez chaque round en progression.</h1>
+            <p className="landing-intro">
+              Structurez vos séances, comprenez vos difficultés et arrivez au prochain entraînement avec un plan clair.
+            </p>
+            <div className="landing-actions">
+              <Button size="lg" render={<Link href="/signup" />}>
+                Commencer maintenant <ArrowRight />
+              </Button>
+              <Button variant="outline" size="lg" render={<Link href="/login" />}>
+                J&apos;ai déjà un compte
+              </Button>
+            </div>
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => {
-            const Icon = f.icon;
-            return (
-              <Card key={f.title}>
-                <CardContent className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Icon className="size-4.5" />
-                    </span>
-                    {f.comingSoon ? <Badge variant="secondary">Bientôt</Badge> : null}
-                  </div>
-                  <h2 className="font-medium">{f.title}</h2>
-                  <p className="text-sm text-muted-foreground">{f.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <section className="landing-manifesto" aria-labelledby="landing-method-title">
+          <div>
+            <p className="landing-kicker">Votre camp. Vos données. Votre cap.</p>
+            <h2 id="landing-method-title">Une méthode complète, sans bruit.</h2>
+          </div>
+          <p>
+            MMA Mastery relie ce que vous entraînez, ce que vous maîtrisez et ce qui mérite votre attention. Le Coach transforme ces faits en recommandations et démonstrations utiles.
+          </p>
         </section>
 
-        <section className="flex flex-col items-start gap-4 border-t border-border pt-12">
-          <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
-            Vos données, votre progression.
-          </h2>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Aucune fonctionnalité n&apos;affiche une métrique inventée ou un score arbitraire.
-            Chaque recommandation est explicable et provient de ce que vous avez réellement
-            enregistré.
-          </p>
-          <Button render={<Link href="/signup" />}>Créer un compte gratuitement</Button>
+        <section className="landing-feature-grid" aria-label="Fonctionnalités principales">
+          {FEATURES.map(({ icon: Icon, title, description }, index) => (
+            <article key={title}>
+              <span className="landing-feature-index">0{index + 1}</span>
+              <Icon aria-hidden="true" />
+              <h2>{title}</h2>
+              <p>{description}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="landing-final">
+          <div><Sparkles aria-hidden="true" /><span>Coach IA + démonstrations vidéo</span></div>
+          <h2>Le combat se prépare avant d&apos;entrer dans la cage.</h2>
+          <Button size="lg" render={<Link href="/signup" />}>Créer mon espace <ArrowRight /></Button>
         </section>
       </main>
 
-      <footer className="border-t border-border px-4 py-6 text-center text-xs text-muted-foreground sm:px-6">
-        MMA Mastery
-      </footer>
+      <footer className="landing-footer"><span>MMA Mastery</span><span>Construire. Comprendre. Maîtriser.</span></footer>
     </div>
   );
 }

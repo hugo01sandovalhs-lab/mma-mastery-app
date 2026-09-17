@@ -20,8 +20,17 @@ export type SearchResult = {
 
 const RESULTS_PER_TYPE = 8;
 
+export function normalizeSearchQuery(query: string): string {
+  return query
+    .trim()
+    .replace(/[?!.]+$/, "")
+    .replace(/^(comment faire|qu['’]est-ce que|comment maîtriser|quelles sont les erreurs les plus courantes en)\s+/i, "")
+    .replace(/^(un|une|le|la|les|l['’])\s*/i, "")
+    .trim();
+}
+
 export async function search(query: string): Promise<SearchResult[]> {
-  const q = query.trim();
+  const q = normalizeSearchQuery(query);
   if (q.length < 2) return [];
   const like = `%${q}%`;
 
