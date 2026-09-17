@@ -70,7 +70,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ hero?: keyof typeof HEROES }>;
 }) {
   const { hero } = await searchParams;
-  const activeHero = hero && hero in HEROES ? hero : "cage";
+  const activeHero = hero && hero in HEROES ? hero : Math.random() < 0.5 ? "cage" : "ring";
   const heroImageSrc = HEROES[activeHero];
 
   const supabase = await createClient();

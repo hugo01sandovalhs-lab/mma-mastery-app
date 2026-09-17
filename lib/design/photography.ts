@@ -15,7 +15,7 @@ export const PAGE_PHOTOS = {
 
 export const PHOTO_STORIES = {
   training: [
-    { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6296025.jpg", alt: "Travail au sol pendant une séance de MMA", label: "Séances", href: "/training", position: "50% 58%" },
+    { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6296025.jpg", alt: "Travail au sol pendant une séance de MMA", label: "Séances", href: "/training#sessions", position: "50% 58%" },
     { src: "/mma-mastery-photos/anastase-maragos-F5Cdsj2HXvY-unsplash.jpg", alt: "Échange de coups de pied au sac", label: "Galerie", href: "/training/photos", position: "50% 48%" },
     { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6296015.jpg", alt: "Partenaires répétant un coup de pied", label: "À revoir", href: "/training/review", position: "50% 48%" },
   ],

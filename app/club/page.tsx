@@ -20,7 +20,7 @@ export default async function ClubListPage() {
   return (
     <AppShell>
       <div className="editorial-page editorial-club">
-        <PageHeader page="club" title="Club" description="Progresser ensemble. Retrouvez vos clubs, leurs membres et vos groupes d'entraînement." />
+        <PageHeader page="club" title="Clubs & partenaires" description="Progresser ensemble. Invitez vos amis d’entraînement et organisez vos groupes." />
 
         <ChampionshipPhotoMosaic page="club" />
 

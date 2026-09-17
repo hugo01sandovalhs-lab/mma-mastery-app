@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Video } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,14 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
                     <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
                     <span>{rec.statement}</span>
                   </p>
+                  <a
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`MMA technique ${rec.statement}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-5 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    <Video className="size-3.5" /> Voir des démonstrations
+                  </a>
                   {rec.basedOnFactIndexes.length > 0 ? (
                     <p className="pl-5 text-xs text-muted-foreground">
                       Basé sur:{" "}

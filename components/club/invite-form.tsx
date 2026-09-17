@@ -19,8 +19,8 @@ export function InviteForm({ clubId }: { clubId: string }) {
       <input type="hidden" name="club_id" value={clubId} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="invite_email">Email du membre</Label>
-          <Input id="invite_email" name="email" type="email" required placeholder="Doit déjà avoir un compte" />
+          <Label htmlFor="invite_email">Partenaire ou ami d’entraînement</Label>
+          <Input id="invite_email" name="email" type="email" required placeholder="Email de son compte MMA Mastery" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="invite_role">Rôle</Label>
@@ -41,7 +41,7 @@ export function InviteForm({ clubId }: { clubId: string }) {
       {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
-          Ajouter au club
+          Ajouter comme partenaire
         </Button>
       </div>
     </form>

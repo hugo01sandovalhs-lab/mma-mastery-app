@@ -54,6 +54,8 @@ export default async function TrainingListPage() {
           <RoundTimer />
         </section>
 
+        <section id="sessions" className="editorial-section scroll-mt-6">
+          <h2>Séances</h2>
         {sessions.length === 0 ? (
           <Card>
             <CardContent className="editorial-empty">
@@ -75,6 +77,7 @@ export default async function TrainingListPage() {
             ))}
           </ul>
         )}
+        </section>
       </div>
     </AppShell>
   );

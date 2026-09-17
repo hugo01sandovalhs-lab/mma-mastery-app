@@ -56,7 +56,7 @@
 .editorial-photo-tile>img { z-index:-2; transition:transform .45s cubic-bezier(.2,.7,.2,1),filter .3s ease; }
 .editorial-photo-tile:after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,#080906e8 0%,#08090638 55%,transparent 82%); transition:background .25s ease; }
 .editorial-photo-tile>span { position:absolute; left:16px; bottom:14px; color:#fff4dc; font-size:14px; font-weight:750; letter-spacing:-.02em; text-shadow:0 1px 10px #000; }
-.editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-goals .editorial-photo-tile { min-height:240px; }
+.editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-goals .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
 a.editorial-photo-tile:hover>img,a.editorial-photo-tile:focus-visible>img { transform:scale(1.045); filter:saturate(1.06); }
 a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset:2px; }
 @keyframes editorial-photo-reveal { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }

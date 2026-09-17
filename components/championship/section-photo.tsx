@@ -21,12 +21,11 @@ export function ChampionshipSectionPhoto({
 }) {
   return (
     <div className={cn("relative isolate h-28 w-full overflow-hidden rounded-2xl sm:h-36", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={src}
         alt={alt}
-        loading="lazy"
-        decoding="async"
+        fill
+        sizes="(max-width: 767px) 100vw, 65vw"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ objectPosition }}
       />

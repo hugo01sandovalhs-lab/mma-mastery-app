@@ -149,7 +149,7 @@
   }
 }
 
-.auth-stage { min-height:100dvh; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr); background:#f2efe7; color:#201e18; }
+.auth-stage { --primary:#a48649; --primary-foreground:#17140e; --border:#d7d0c1; --input:#c9bfad; --ring:#8c6c32; min-height:100dvh; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr); background:#f2efe7; color:#201e18; font-family:var(--font-geist-sans,Arial),sans-serif; }
 .auth-cover { position:relative; isolation:isolate; min-height:100dvh; overflow:hidden; background:#090a08; color:#fff8e8; }
 .auth-cover>img { object-fit:cover; object-position:center; z-index:-2; }
 .auth-cover:after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg,#0809068a 0%,transparent 45%,#080906e8 100%),linear-gradient(90deg,#08090638,transparent 60%); }
