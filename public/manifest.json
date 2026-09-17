@@ -4,8 +4,8 @@
   "description": "Suivi d'entraînement et de progression MMA",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#0a0a0b",
-  "theme_color": "#0a0a0b",
+  "background_color": "#f2efe7",
+  "theme_color": "#090a08",
   "orientation": "portrait-primary",
   "icons": [
     {
