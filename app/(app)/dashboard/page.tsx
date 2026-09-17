@@ -44,10 +44,10 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 };
 
 const PHOTOS = {
-  focus: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg",
-  session: "/mma-mastery-photos/pexels-duren-williams-29414623-14796246.jpg",
-  progress: "/mma-mastery-photos/pexels-eduard-perez-2158828645-38674544.jpg",
-  activity: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758867.jpg",
+  focus: { src: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg", position: "56% 48%" },
+  session: { src: "/mma-mastery-photos/pexels-duren-williams-29414623-14796246.jpg", position: "58% 58%" },
+  progress: { src: "/mma-mastery-photos/pexels-eduard-perez-2158828645-38674544.jpg", position: "50% 58%" },
+  activity: { src: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758867.jpg", position: "50% 62%" },
   club: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758994.jpg",
 } as const;
 
@@ -181,7 +181,8 @@ function StatRow({
     <div className="championship-stats">
       <ImageMetricPanel
         label="Focus du jour"
-        imageSrc={PHOTOS.focus}
+        imageSrc={PHOTOS.focus.src}
+        objectPosition={PHOTOS.focus.position}
         imageAlt="Un boxeur travaille sa garde à contre-jour"
         href={p ? `/skills/${p.focusSkillId}` : "/training/new"}
         title={p ? p.focusSkillName : "Définir mon focus"}
@@ -189,7 +190,8 @@ function StatRow({
       />
       <ImageMetricPanel
         label="Prochaine séance"
-        imageSrc={PHOTOS.session}
+        imageSrc={PHOTOS.session.src}
+        objectPosition={PHOTOS.session.position}
         imageAlt="Travail au sol"
         href="/training/new"
         title={p ? ACTION_TYPE_LABELS[p.actionType] : "Planifier une séance"}
@@ -204,6 +206,7 @@ function ImageMetricPanel({
   label,
   imageSrc,
   imageAlt,
+  objectPosition,
   href,
   title,
   detail,
@@ -211,13 +214,14 @@ function ImageMetricPanel({
   label: string;
   imageSrc: string;
   imageAlt: string;
+  objectPosition: string;
   href: string;
   title: React.ReactNode;
   detail: React.ReactNode;
 }) {
   return (
     <Link href={href} className="championship-image-panel">
-      <ProgressiveImage src={imageSrc} alt={imageAlt} fill sizes="(max-width: 767px) 100vw, 40vw" />
+      <ProgressiveImage src={imageSrc} alt={imageAlt} fill sizes="(max-width: 767px) 100vw, 40vw" style={{ objectPosition }} />
       <span className="championship-image-panel-copy">
         <span className="championship-image-panel-label">{label}</span>
         <strong>{title}</strong>
@@ -369,7 +373,7 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
 
   return (
     <Card className="championship-progress-panel rounded-2xl border-border bg-card">
-      <ProgressiveImage src={PHOTOS.progress} alt="Un combattant vu de dos à travers le grillage de la cage" fill sizes="(max-width: 767px) 100vw, 50vw" />
+      <ProgressiveImage src={PHOTOS.progress.src} alt="Deux combattantes travaillent leurs déplacements" fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectPosition: PHOTOS.progress.position }} />
       <div className="championship-progress-shade" aria-hidden="true" />
       <CardHeader className="relative z-10 pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -427,7 +431,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   return (
     <Card data-empty={sessions.length === 0 || undefined} className="championship-activity-panel rounded-2xl border-border bg-card">
       <div className="championship-activity-cover">
-        <ProgressiveImage src={PHOTOS.activity} alt="Séance de sparring" fill sizes="(max-width: 767px) 100vw, 50vw" />
+        <ProgressiveImage src={PHOTOS.activity.src} alt="Séance de grappling" fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectPosition: PHOTOS.activity.position }} />
         <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Flame className="size-3.5 text-primary" />
