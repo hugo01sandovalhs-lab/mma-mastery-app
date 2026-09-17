@@ -9,8 +9,8 @@ export const PAGE_PHOTOS = {
   competition: { src: "/mma-mastery-photos/pexels-fabriziovelez-29015506.jpg", alt: "Deux combattants s'affrontent dans la cage sous le regard de l'arbitre", position: "48% 75%" },
   club: { src: "/mma-mastery-photos/redd-francisco-iw73pbcJyg4-unsplash.jpg", alt: "Athlète saluant le public dans une cage pleine", position: "50% 36%" },
   search: { src: "/mma-mastery-photos/pexels-mjlo-28550403.jpg", alt: "Combattant observé à travers le grillage d'une cage", position: "50% 45%" },
-  profile: { src: "/mma-mastery-photos/vV0e12TcSRRwsZeaeyU7WoK-UUh7MRz3DvLnS9jPJ2FGg4LBjLV6q1rxRjlkDBmIJfh6xrBaYR7EZyhC3Vwpdm7_ESZRQOHKlZK1JQFZDJVXZXZ7DEWo42NhcYz_NscpE6vmn31HKt2X9NtvzNC1bQtHUe2DYOv4UNLdoCNvhrr046B13hRECkQ8qvmgoFR_.jpg", alt: "Portrait d'une combattante en garde", position: "50% 36%" },
-  calendar: { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295766.jpg", alt: "Groupe structuré en séance de sparring", position: "50% 47%" },
+  profile: { src: "/mma-mastery-photos/vV0e12TcSRRwsZeaeyU7WoK-UUh7MRz3DvLnS9jPJ2FGg4LBjLV6q1rxRjlkDBmIJfh6xrBaYR7EZyhC3Vwpdm7_ESZRQOHKlZK1JQFZDJVXZXZ7DEWo42NhcYz_NscpE6vmn31HKt2X9NtvzNC1bQtHUe2DYOv4UNLdoCNvhrr046B13hRECkQ8qvmgoFR_.jpg", alt: "Portrait d'une combattante en garde", position: "50% 43%" },
+  calendar: { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295766.jpg", alt: "Groupe structuré en séance de sparring", position: "50% 54%" },
 } as const;
 
 export const LANDING_SLIDES = [
@@ -60,12 +60,12 @@ export const PHOTO_STORIES = {
     { src: "/mma-mastery-photos/pexels-duren-williams-29414623-11391867.jpg", alt: "Technique de grappling en cours", label: "Compétences", position: "50% 54%" },
   ],
   profile: [
-    { src: "/mma-mastery-photos/aliya-amangeldi-RPjF4KKeEOQ-unsplash.jpg", alt: "Portrait rapproché d'une athlète", label: "Identité", position: "50% 34%" },
-    { src: "/mma-mastery-photos/anastase-maragos-G0V6_28ONZA-unsplash.jpg", alt: "Athlète après l'effort dans une lumière bleue", label: "Parcours", position: "50% 48%" },
+    { src: "/mma-mastery-photos/aliya-amangeldi-RPjF4KKeEOQ-unsplash.jpg", alt: "Portrait rapproché d'une athlète", label: "Identité", position: "50% 43%" },
+    { src: "/mma-mastery-photos/anastase-maragos-G0V6_28ONZA-unsplash.jpg", alt: "Athlète après l'effort dans une lumière bleue", label: "Parcours", position: "50% 44%" },
   ],
   calendar: [
-    { src: "/mma-mastery-photos/pexels-cottonbro-4753927.jpg", alt: "Plusieurs binômes s'entraînent dans le gym", label: "Entraînements", position: "50% 48%" },
-    { src: "/mma-mastery-photos/pexels-franco-monsalvo-252430633-13808107.jpg", alt: "Combat programmé sur un ring", label: "Compétitions", position: "50% 48%" },
+    { src: "/mma-mastery-photos/pexels-cottonbro-4753927.jpg", alt: "Plusieurs binômes s'entraînent dans le gym", label: "Entraînements", position: "46% 46%" },
+    { src: "/mma-mastery-photos/pexels-franco-monsalvo-252430633-13808107.jpg", alt: "Combat programmé sur un ring", label: "Compétitions", position: "50% 54%" },
   ],
 } as const;
 

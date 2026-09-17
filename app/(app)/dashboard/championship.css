@@ -75,7 +75,7 @@
 .championship-progress-panel .text-muted-foreground { color:#eadfca; }
 .championship-progress-panel [class*="bg-muted"] { background:#ffffff36; }
 .championship-activity-panel { padding-top:0!important; }
-.championship-activity-cover { position:relative; height:155px; flex:none; overflow:hidden; }
+.championship-activity-cover { position:relative; height:240px; flex:none; overflow:hidden; }
 .championship-activity-cover:after { content:""; position:absolute; inset:0; background:linear-gradient(0deg,#11100ce8,transparent 78%); }
 .championship-activity-cover img { width:100%; height:100%; object-fit:cover; }
 .championship-activity-cover [data-slot=card-header] { position:absolute; z-index:1; left:0; right:0; bottom:8px; }

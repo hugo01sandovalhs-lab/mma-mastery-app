@@ -10,7 +10,6 @@ export function LandingHero() {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    setActive(Math.floor(Math.random() * LANDING_SLIDES.length));
     const interval = window.setInterval(
       () => setActive((current) => (current + 1) % LANDING_SLIDES.length),
       SLIDE_DURATION,
@@ -27,7 +26,8 @@ export function LandingHero() {
           alt={index === active ? slide.alt : ""}
           fill
           priority={index === 0}
-          sizes="(max-width: 767px) 100vw, 56vw"
+          quality={90}
+          sizes="100vw"
           className="landing-visual-image"
           style={{ objectPosition: slide.position, opacity: index === active ? 1 : 0 }}
         />

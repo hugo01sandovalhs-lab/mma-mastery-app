@@ -46,8 +46,8 @@ const PRIORITY_LABELS: Record<PriorityLevel, string> = {
 const PHOTOS = {
   focus: { src: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg", position: "56% 48%" },
   session: { src: "/mma-mastery-photos/pexels-duren-williams-29414623-14796246.jpg", position: "58% 58%" },
-  progress: { src: "/mma-mastery-photos/pexels-eduard-perez-2158828645-38674544.jpg", position: "50% 58%" },
-  activity: { src: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758867.jpg", position: "50% 62%" },
+  progress: { src: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758867.jpg", position: "50% 62%" },
+  activity: { src: "/mma-mastery-photos/pexels-eduard-perez-2158828645-38674544.jpg", position: "50% 58%" },
   club: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758994.jpg",
 } as const;
 

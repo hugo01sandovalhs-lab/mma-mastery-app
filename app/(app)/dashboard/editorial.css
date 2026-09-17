@@ -84,6 +84,9 @@
 .photo-share svg { width:15px; height:15px; }
 .photo-share a>span { font-size:11px; font-weight:800; letter-spacing:-.04em; }
 .editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-goals .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
+.editorial-calendar .editorial-header { min-height:260px; }
+.editorial-profile .editorial-header { min-height:280px; }
+.editorial-calendar .editorial-photo-tile,.editorial-profile .editorial-photo-tile { min-height:300px; }
 a.editorial-photo-tile:hover>img,a.editorial-photo-tile:focus-visible>img { transform:scale(1.015); filter:saturate(1.03); }
 a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset:2px; }
 .championship-mobile-sections { position:relative; color:var(--foreground); }
