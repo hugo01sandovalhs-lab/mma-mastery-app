@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ArrowRight, Sparkles, Video } from "lucide-react";
 import Link from "next/link";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
@@ -15,7 +16,14 @@ const FACT_KIND_VARIANT: Record<string, "secondary" | "default" | "outline"> = {
   HYPOTHESIS: "outline",
 };
 
-export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
+export function CoachAnswerView({
+  answer,
+  videoSlot,
+}: {
+  answer: CoachAnswer;
+  /** Streamed in separately (e.g. behind Suspense) so the external YouTube lookup never blocks the rest of the answer. Falls back to answer.videos when omitted. */
+  videoSlot?: ReactNode;
+}) {
   const { t } = useI18n();
   const { context, response, providerName, videos, videoSuggestions } = answer;
 
@@ -97,7 +105,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
             <Video /> {t("coach.searchYoutube", "Rechercher sur YouTube")}
           </Button>
         </div>
-        {videos.length > 0 ? (
+        {videoSlot ?? (videos.length > 0 ? (
           <div className="coach-video-grid">
             {videos.map((video) => (
               <a key={video.videoId} href={video.url} target="_blank" rel="noreferrer" className="coach-video-card group">
@@ -109,7 +117,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
               </a>
             ))}
           </div>
-        ) : null}
+        ) : null)}
       </section>
 
       <details className="group rounded-lg border border-border">

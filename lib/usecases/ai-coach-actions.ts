@@ -3,6 +3,7 @@ import type { AIProvider, CoachContext, CoachFact, CoachResponse } from "@/lib/d
 import {
   buildYouTubeSearchSuggestions,
   inferVideoSearchQuery,
+  type VideoSearchQuery,
   type VideoSearchResult,
 } from "@/lib/domain/video-search";
 import { DeterministicCoachProvider } from "@/lib/infra/ai/deterministic-provider";
@@ -116,53 +117,62 @@ export async function buildCoachContext(): Promise<CoachContext> {
   return { generatedAt: new Date().toISOString(), facts };
 }
 
-export type CoachAnswer = {
+export type CoachAnswerText = {
   context: CoachContext;
   response: CoachResponse;
   providerName: string;
-  videos: VideoSearchResult[];
+  videoQuery: VideoSearchQuery;
   videoSuggestions: string[];
 };
 
-async function completeAnswer(
+export type CoachAnswer = CoachAnswerText & {
+  videos: VideoSearchResult[];
+};
+
+function buildAnswerText(
   context: CoachContext,
   response: CoachResponse,
   providerName: string,
   question?: string,
-): Promise<CoachAnswer> {
+): CoachAnswerText {
   const fallback = response.status === "ok" ? response.recommendations[0]?.statement ?? "technique" : "technique";
   const videoQuery = inferVideoSearchQuery(question, fallback);
   const videoSuggestions = buildYouTubeSearchSuggestions(videoQuery);
-  return {
-    context,
-    response,
-    providerName,
-    videoSuggestions,
-    videos: await videoProvider.search(videoQuery),
-  };
+  return { context, response, providerName, videoQuery, videoSuggestions };
+}
+
+/** Runs the external YouTube lookup — kept separate so callers can stream it in behind Suspense instead of blocking on it. */
+export async function getCoachVideos(videoQuery: VideoSearchQuery): Promise<VideoSearchResult[]> {
+  return videoProvider.search(videoQuery);
 }
 
 /**
  * Resolves the configured provider, falling back to the deterministic one on
  * any error (network failure, Ollama not running, bad response) so a broken
  * local model never takes the coach down — it just quietly becomes the
- * honest rules-based fallback again.
+ * honest rules-based fallback again. Does not fetch YouTube videos; use
+ * getCoachVideos(base.videoQuery) for that, separately.
  */
-export async function getCoachResponse(question?: string): Promise<CoachAnswer> {
+export async function getCoachResponseText(question?: string): Promise<CoachAnswerText> {
   const context = await buildCoachContext();
   const provider = resolveProvider();
   const locale = await getServerLocale();
 
   if (provider.name === defaultProvider.name) {
     const response = await defaultProvider.generateCoachResponse(context, question, locale);
-    return completeAnswer(context, response, defaultProvider.name, question);
+    return buildAnswerText(context, response, defaultProvider.name, question);
   }
 
   try {
     const response = await provider.generateCoachResponse(context, question, locale);
-    return completeAnswer(context, response, provider.name, question);
+    return buildAnswerText(context, response, provider.name, question);
   } catch {
     const response = await defaultProvider.generateCoachResponse(context, question, locale);
-    return completeAnswer(context, response, defaultProvider.name, question);
+    return buildAnswerText(context, response, defaultProvider.name, question);
   }
+}
+
+export async function getCoachResponse(question?: string): Promise<CoachAnswer> {
+  const base = await getCoachResponseText(question);
+  return { ...base, videos: await getCoachVideos(base.videoQuery) };
 }
