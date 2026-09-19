@@ -17,7 +17,7 @@ export const PAGE_PHOTOS = {
 export const LANDING_SLIDES = [
   { src: "/mma-mastery-photos/rotation-heavybag-back.jpg", alt: "Combattante travaillant au sac, vue de dos", position: "50% 30%" },
   { src: "/mma-mastery-photos/rotation-corner-embrace.jpg", alt: "Deux combattants échangeant dans un coin de salle", position: "50% 32%" },
-  { src: "/mma-mastery-photos/rotation-heavybag-laugh.jpg", alt: "Combattante souriante face au sac lourd", position: "50% 40%" },
+  { src: "/mma-mastery-photos/rotation-heavybag-laugh.jpg", alt: "Combattante souriante face au sac lourd", position: "62% 65%" },
   { src: "/mma-mastery-photos/rotation-ring-jab.jpg", alt: "Boxeur portant un direct sur le ring", position: "42% 38%" },
 ] as const;
 

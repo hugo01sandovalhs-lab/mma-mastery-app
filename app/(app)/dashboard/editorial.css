@@ -101,7 +101,10 @@
 .photo-share a:hover,.photo-share a:focus-visible { background:var(--muted); color:var(--foreground); }
 .photo-share svg { width:15px; height:15px; }
 .photo-share a>span { font-size:11px; font-weight:800; letter-spacing:-.04em; }
-.editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-goals .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
+.editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
+.editorial-goals .editorial-photo-mosaic { grid-template-columns:1fr 1fr; gap:16px; }
+.editorial-goals .editorial-photo-tile { min-height:420px; border-radius:14px; }
+.editorial-goals .editorial-photo-tile>span { font-size:22px; letter-spacing:-.03em; }
 .editorial-calendar .editorial-header { min-height:260px; }
 .editorial-profile .editorial-header { min-height:280px; }
 .editorial-calendar .editorial-photo-tile,.editorial-profile .editorial-photo-tile { min-height:300px; }
@@ -153,6 +156,8 @@ a.editorial-photo-tile:focus-visible { outline:2px solid #c8a761; outline-offset
   .editorial-photo-mosaic::-webkit-scrollbar { display:none; }
   .editorial-photo-mosaic>:nth-child(3) { grid-column:auto; min-height:170px; }
   .editorial-photo-tile { flex:0 0 82vw; min-height:170px; scroll-snap-align:start; }
+  .editorial-goals .editorial-photo-mosaic { display:grid; grid-template-columns:1fr; gap:12px; min-height:0; margin-inline:0; padding-inline:0; overflow-x:visible; }
+  .editorial-goals .editorial-photo-tile { flex:none; min-height:220px; }
   .coach-video-grid { display:flex; margin-inline:-22px; padding-inline:22px; overflow-x:auto; scroll-snap-type:x mandatory; }
   .coach-video-card { flex:0 0 78vw; scroll-snap-align:start; }
   .search-form { grid-template-columns:1fr; }
