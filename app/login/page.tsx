@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(signInWithPassword, initialState);
   const { t } = useI18n();
   return (
-    <AuthShell title={t("auth.login.title", "Retour au camp")} intro={t("auth.login.intro", "Retrouvez vos séances, vos objectifs et votre progression.")}>
+    <AuthShell hero="static" title={t("auth.login.title", "Retour au camp")} intro={t("auth.login.intro", "Retrouvez vos séances, vos objectifs et votre progression.")}>
       <form action={formAction} className="auth-form">
         <div>
           <Label htmlFor="email">{t("auth.login.emailLabel", "Email")}</Label>

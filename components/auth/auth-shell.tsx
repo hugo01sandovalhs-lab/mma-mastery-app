@@ -8,55 +8,83 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 
 const SLIDE_DURATION = 6500;
 
-const COVERS = [
+type Cover = {
+  src: string;
+  alt: string;
+  labelKey: string;
+  label: string;
+  position: string;
+};
+
+const STATIC_COVER: Cover = {
+  src: "/mma-mastery-photos/hero-white-gloves-cage.jpg",
+  alt: "Combattant en garde, gants blancs levés, dans une cage à l'éclairage dramatique",
+  labelKey: "authCover.ring",
+  label: "Ring",
+  position: "50% 34%",
+};
+
+const ROTATING_COVERS: Cover[] = [
   {
-    src: "/mma-mastery-photos/-37DpFDYsYY7HL96ovNdzGJE1lQmDKA8d1uvLlFJJQPrLgtVmsRikjMJ7czTfs--cKYwdC1cnAasvcaLH9-swbzZpui9TP5FUMwu8tHrNVjBhXgBBPRKlIPuwePmEkdVIgxSLhRBkuHHsMOwtU-QL58nsdg6do3qQTPRTraT1zyjvNbE4Hu2t9D_36iGiBXp.jpg",
-    alt: "Combattante s'entraînant dans une cage",
-    labelKey: "authCover.cage",
-    label: "Cage",
-    position: "62% 46%",
+    src: "/mma-mastery-photos/rotation-heavybag-back.jpg",
+    alt: "Combattante travaillant au sac, vue de dos",
+    labelKey: "authCover.bag",
+    label: "Sac",
+    position: "50% 28%",
   },
   {
-    src: "/mma-mastery-photos/pexels-cottonbro-4761790.jpg",
-    alt: "Combattants s'entraînant sur un ring",
-    labelKey: "authCover.ring",
-    label: "Ring",
-    position: "62% 46%",
-  },
-  {
-    src: "/mma-mastery-photos/5zYAn7DilpRIqo18MtLZWFcxEEyGNSEMLHz4MzZaAPn-aWfEkVGojp3N-cJHB9-DBQspwrFJnVjOPeoVAqkzZboTryqAzsJWkgJb-_veSUnmX7NiZLkSJ_RRFgnpw0FtwaRMzun_uEendlymBwuuL8TNDc8KF3auwIwQLBIkyYAqOV4VfND_QpXjzItHjsnd.jpg",
-    alt: "Combattante frappant des paos face à son coach",
-    labelKey: "authCover.pads",
-    label: "Paos",
+    src: "/mma-mastery-photos/rotation-corner-embrace.jpg",
+    alt: "Deux combattants échangeant dans un coin de salle",
+    labelKey: "authCover.corner",
+    label: "Coin",
     position: "50% 30%",
   },
   {
-    src: "/mma-mastery-photos/WeoAGuytjpldcsH9ZheaQ0FVFkYcK3DEIfN3OjYq-QrxbYYPw7AgU47L_Kb2H8yFK-I-ozU73wVIuWaTLGwPzm4vlBplJFZYISkczYD4ufAUram7ECjqClRhzTSAU0qlOkNUf5b_Yj-iD5KJKAD3B5dnSShB6pcqD4vocmx5WJyC6LaNyZ-LTUmsDd8itTBK.jpg",
-    alt: "Combattante portant un direct sur son adversaire",
+    src: "/mma-mastery-photos/rotation-heavybag-laugh.jpg",
+    alt: "Combattante souriante face au sac lourd",
+    labelKey: "authCover.energy",
+    label: "Énergie",
+    position: "50% 38%",
+  },
+  {
+    src: "/mma-mastery-photos/rotation-ring-jab.jpg",
+    alt: "Boxeur portant un direct sur le ring",
     labelKey: "authCover.strike",
     label: "Frappe",
-    position: "62% 32%",
+    position: "40% 36%",
   },
-] as const;
+];
 
-export function AuthShell({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
+export function AuthShell({
+  title,
+  intro,
+  children,
+  hero,
+}: {
+  title: string;
+  intro: string;
+  children: React.ReactNode;
+  hero: "static" | "rotate";
+}) {
+  const covers = hero === "rotate" ? ROTATING_COVERS : [STATIC_COVER];
   const [active, setActive] = useState(0);
   const { t } = useI18n();
 
   useEffect(() => {
+    if (hero !== "rotate") return;
     const interval = window.setInterval(
-      () => setActive((current) => (current + 1) % COVERS.length),
+      () => setActive((current) => (current + 1) % covers.length),
       SLIDE_DURATION,
     );
     return () => window.clearInterval(interval);
-  }, []);
+  }, [hero, covers.length]);
 
-  const image = COVERS[active];
+  const image = covers[active];
 
   return (
     <main className="auth-stage">
       <section className="auth-cover" aria-label={`Ambiance ${t(image.labelKey, image.label)}`}>
-        {COVERS.map((cover, index) => (
+        {covers.map((cover, index) => (
           <Image
             key={cover.src}
             src={cover.src}
