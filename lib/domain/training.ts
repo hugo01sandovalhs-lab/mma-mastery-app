@@ -77,6 +77,22 @@ export const sessionTechniqueInputSchema = z.object({
     .max(500)
     .optional()
     .transform((v) => (v ? v : undefined)),
+  /** Position/situation encountered — sparring-only, same optional pattern as `problem`. */
+  position: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+  /** Round duration in seconds — sparring-only. */
+  round_seconds: z.number().int().positive().max(3600).optional().nullable(),
+  /** Ruleset for the round (e.g. no-gi, points, submission-only) — sparring-only. */
+  ruleset: z
+    .string()
+    .trim()
+    .max(80)
+    .optional()
+    .transform((v) => (v ? v : undefined)),
 });
 export type SessionTechniqueInput = z.infer<typeof sessionTechniqueInputSchema>;
 

@@ -128,6 +128,37 @@ describe("trainingSessionInputSchema", () => {
     }
   });
 
+  it("accepts a sparring round with position, round duration and ruleset", () => {
+    const result = trainingSessionInputSchema.safeParse({
+      ...baseInput,
+      techniques: [
+        {
+          technique_name: "Armbar depuis closed guard",
+          outcome: "success",
+          position: "Garde fermée",
+          round_seconds: 300,
+          ruleset: "no-gi",
+        },
+      ],
+      observations: [{ type: "difficulty", content: "x" }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.techniques[0].position).toBe("Garde fermée");
+      expect(result.data.techniques[0].round_seconds).toBe(300);
+      expect(result.data.techniques[0].ruleset).toBe("no-gi");
+    }
+  });
+
+  it("rejects a non-positive round duration", () => {
+    const result = trainingSessionInputSchema.safeParse({
+      ...baseInput,
+      techniques: [{ technique_name: "Double leg", round_seconds: 0 }],
+      observations: [{ type: "difficulty", content: "x" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects an invalid technique outcome", () => {
     const result = trainingSessionInputSchema.safeParse({
       ...baseInput,

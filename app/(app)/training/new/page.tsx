@@ -11,13 +11,21 @@ import type { TrainingPlanSuggestion } from "@/lib/domain/training-intelligence"
 import { createTrainingSession, getDisciplines } from "@/lib/usecases/training-actions";
 import { getSkills } from "@/lib/usecases/skill-actions";
 import { getTrainingPlan } from "@/lib/usecases/training-intelligence-actions";
+import { SESSION_TYPES, type SessionType } from "@/lib/domain/training";
 
-export default async function NewTrainingSessionPage() {
+export default async function NewTrainingSessionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { type } = await searchParams;
+  const initialSessionType = SESSION_TYPES.includes(type as SessionType) ? (type as SessionType) : undefined;
 
   const [disciplines, skills, plan] = await Promise.all([
     getDisciplines(),
@@ -43,6 +51,7 @@ export default async function NewTrainingSessionPage() {
           disciplines={disciplines}
           skills={skills}
           action={createTrainingSession}
+          initialSessionType={initialSessionType}
           submitLabel={<T k="action.save" fallback="Enregistrer" />}
         />
       </div>

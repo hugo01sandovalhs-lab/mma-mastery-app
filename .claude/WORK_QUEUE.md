@@ -103,6 +103,59 @@ Closed queue items 1–3 (all fully done, not partial). Verified after each: typ
 ### Browser QA — still blocked, same as session 5
 No seeded test user, test credentials, or dev-only auth bypass exist anywhere in this repo (checked `.claude/`, `supabase/` for any seed/test-user infra — none found). Per this session's explicit instruction, did not alter production/auth code to manufacture one. All verification this session was therefore static: typecheck, lint, vitest, `next build`, and the accented-character grep sweep above. **Manual QA still required before shipping**: log in as a real user in each of the 6 locales and visually check — (a) `/club` and its 8 subpages, especially the just-rewired `EventForm`, `SessionCard`, `ClassSessionForm`; (b) `/dashboard`'s two `ImageMetricPanel`s and the `FocusCard` list (now rendering `trainingIntel.*` keys via `<T>`); (c) `/skills/[id]`'s `NextActionSection`; (d) `/training/new`'s `FocusCallout`; (e) the goal and resource creation forms' error states (submit with an empty title / invalid URL / invalid date, in each locale) to confirm the new `tServer()`-routed error messages actually render translated; (f) ru/ja long-string layout in the club sidebar/nav (`w-40` fixed width), unchanged concern carried over from session 3.
 
+## Session 8 — Phase 4 Sparring Log
+
+Built the Sparring Log feature (`docs/decisions/0011`) on top of the sparring
+groundwork already laid by `docs/decisions/0008` (session prior to i18n
+work). Verified: typecheck, lint, vitest 193/193, `next build` all pass.
+
+- Migration `00000000000013_sparring_log.sql`: additive `position`,
+  `round_seconds`, `ruleset` columns on `session_techniques`; recreated
+  `create_training_session`/`update_training_session` to persist them. No
+  trigger changes — `sync_skill_progress_for_skill` already recomputes
+  from scratch on every mutation, so the new UI's writes inherit
+  double-count protection for free.
+- `lib/domain/sparring.ts` (new): `summarizeSparringRounds()` — pure,
+  tested in `tests/domain/sparring.test.ts` (attempts/successes/null-rate,
+  recurring-difficulty grouping incl. case-fold and min-recurrence/limit).
+- `lib/domain/training.ts`: `sessionTechniqueInputSchema` extended with
+  `position`/`round_seconds`/`ruleset` (same optional pattern as
+  `problem`). Tested in `tests/domain/training.test.ts`.
+- `lib/usecases/sparring-actions.ts` (new): `getSparringSessions()`,
+  `getSparringSession(id)` — thin, reuse `getTrainingSession`.
+  `training-actions.ts`'s `TrainingSessionDetail` type + select query
+  extended with the 3 new fields.
+- `components/training/training-form.tsx`: new `initialSessionType` prop;
+  the existing `isSparring` conditional block gained position/round
+  duration/ruleset inputs.
+- `app/(app)/training/new/page.tsx`: reads `?type=` search param to
+  preselect session type — this **is** the "fast mobile-first sparring
+  entry" (reused, not duplicated).
+- `app/(app)/sparring/page.tsx` + `app/(app)/sparring/[id]/page.tsx`
+  (new): history list with aggregate summary card (attempts/successes/
+  success rate/recurring difficulties), and per-session detail with the
+  same summary scoped to one session plus full round list (outcome badge,
+  intensity, round duration, position, ruleset, partner, problem) — none
+  of which were rendered anywhere before this session despite being in
+  the DB since 0008.
+- `components/app-nav.tsx`: added `/sparring` to `SIDEBAR_ONLY_LINKS`
+  (not the 5-item mobile bottom bar, to avoid crowding it).
+- `lib/i18n.ts`: added matching `sparring*`/`nav.sparring`/`form.position*`/
+  `form.roundSeconds*`/`form.ruleset*` keys to all 6 locales.
+  `tests/design/i18n.test.ts`: added `sparringList.occurrences` to
+  `ALLOWED_LATIN` (pure `×{count}` interpolation shell, same pattern as
+  the other whitelisted keys).
+- **Deliberately not built**: no `PageHeader`/photography for `/sparring`
+  (no `PAGE_PHOTOS["sparring"]` entry exists; adding one is an art-direction
+  decision out of this lot's scope — plain header like `/training/[id]`
+  used instead). No new RLS policies (existing `session_techniques_*`
+  policies already cover the new columns, additive-only). No linking of
+  `partner_name` to the `training_partners` graph (stays free-text,
+  matches "no unnecessary personal data").
+- **Not verified**: no browser QA this session (same no-seeded-test-user
+  blocker as prior sessions, see line above). `/sparring` and
+  `/sparring/[id]` both build as dynamic routes.
+
 ## Explicit non-goals kept
 Photography/layout/art direction untouched. No schema/RLS changes made this session.
 

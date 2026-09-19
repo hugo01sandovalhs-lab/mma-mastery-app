@@ -39,10 +39,11 @@ type TrainingFormProps = {
   skills: SkillListItem[];
   action: (prevState: TrainingActionState, formData: FormData) => Promise<TrainingActionState>;
   initialData?: TrainingSessionDetail;
+  initialSessionType?: SessionType;
   submitLabel: React.ReactNode;
 };
 
-export function TrainingForm({ disciplines, skills, action, initialData, submitLabel }: TrainingFormProps) {
+export function TrainingForm({ disciplines, skills, action, initialData, initialSessionType, submitLabel }: TrainingFormProps) {
   const { t } = useI18n();
   const skillByName = new Map(skills.map((s) => [s.name.trim().toLowerCase(), s.id]));
   function resolveSkillId(name: string): string | undefined {
@@ -51,7 +52,9 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
   const initialState: TrainingActionState = { error: null };
   const [state, formAction, isPending] = useActionState(action, initialState);
 
-  const [sessionType, setSessionType] = useState<SessionType>(initialData?.session_type ?? "class");
+  const [sessionType, setSessionType] = useState<SessionType>(
+    initialData?.session_type ?? initialSessionType ?? "class",
+  );
   const isSparring = sessionType === "sparring";
 
   const [techniques, setTechniques] = useState<SessionTechniqueInput[]>(
@@ -64,6 +67,9 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
       partner_name: t.partner_name ?? undefined,
       pressure_level: t.pressure_level ?? undefined,
       problem: t.problem ?? undefined,
+      position: t.position ?? undefined,
+      round_seconds: t.round_seconds ?? undefined,
+      ruleset: t.ruleset ?? undefined,
     })) ?? [],
   );
   const [observations, setObservations] = useState<ObservationRow[]>(
@@ -221,6 +227,9 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                   partner_name: "",
                   pressure_level: undefined,
                   problem: "",
+                  position: "",
+                  round_seconds: undefined,
+                  ruleset: "",
                 },
               ])
             }
@@ -328,6 +337,43 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                       onChange={(e) =>
                         setTechniques((prev) =>
                           prev.map((row, idx) => (idx === i ? { ...row, problem: e.target.value } : row)),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label={t("form.positionAria", "Position / situation")}
+                      placeholder={t("form.positionPlaceholder", "Position / situation (optionnel)")}
+                      value={technique.position ?? ""}
+                      onChange={(e) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) => (idx === i ? { ...row, position: e.target.value } : row)),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label={t("form.roundSecondsAria", "Durée du round (secondes)")}
+                      placeholder={t("form.roundSecondsPlaceholder", "Durée du round en secondes (optionnel)")}
+                      type="number"
+                      min={1}
+                      max={3600}
+                      value={technique.round_seconds ?? ""}
+                      onChange={(e) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) =>
+                            idx === i
+                              ? { ...row, round_seconds: e.target.value ? Number(e.target.value) : undefined }
+                              : row,
+                          ),
+                        )
+                      }
+                    />
+                    <Input
+                      aria-label={t("form.rulesetAria", "Règles du round")}
+                      placeholder={t("form.rulesetPlaceholder", "Règles (optionnel, ex: no-gi, points)")}
+                      value={technique.ruleset ?? ""}
+                      onChange={(e) =>
+                        setTechniques((prev) =>
+                          prev.map((row, idx) => (idx === i ? { ...row, ruleset: e.target.value } : row)),
                         )
                       }
                     />
