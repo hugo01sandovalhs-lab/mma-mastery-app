@@ -1,53 +1,61 @@
 # I18N + product features — work queue
 
-Source mission: SESSION 2 brief (full-site i18n FR/EN/ES/DE/RU/JA + P0/P1 product features).
+Source mission: SESSION 2/3 brief (full-site i18n FR/EN/ES/DE/RU/JA + P0 product features).
 This file is the checkpoint for continuing across sessions per the repo's session-rotation policy. Read this before re-auditing from scratch.
 
-## Done (session 2, commit after this file)
+Checkpoint before this session: `089410e` (session 2) + a visual-correction commit. This session's commits (in order): `82f5cdc` (features + server-action i18n infra), `2a99dea` (training area i18n), `8f446f1` (skills catalogue i18n).
 
-- `lib/i18n.ts`: 6 locales (fr/en/es/de/ru/ja), ~140 keys per locale, `formatT()` for `{var}` interpolation.
-- `components/i18n-provider.tsx`: `t(key, fallback, vars)` now interpolates; added `<T k="..." fallback="..." vars={...}/>` — a client fragment usable **inside server components** to translate a single string without converting the whole page to a client component. Use this to keep migrating server pages.
-- Language selector confirmed already present on every authenticated page (via `DashboardShell` → all of `app/(app)/*`, including `/profile`). Added it to: landing (`/`), `/login`, `/signup`, `/forgot-password`, `/reset-password` (all via `AuthShell`).
-- Translated: nav (sidebar/mobile nav — was already wired to `t()`, just needed the dictionary filled), all `page.*.title` headers, landing page, all 4 auth pages + `AuthShell`, `/not-found`, profile's `TrainingPartners` (friend code copy+feedback, partner list, empty state), `/search` page chrome (kept `QUICK_PROMPTS` and `normalizeSearchQuery` French — see Known gaps).
-- New feature — **search history** (`components/search/search-history.tsx`): client-side, `localStorage` only (`mma-mastery-search-history`), no schema/RLS needed. Records queries ≥2 chars, shows last 8, clearable.
-- New feature — **persistent quick actions bar** (`components/quick-actions-bar.tsx`): floating bottom-right bar, desktop only (`≥768px`, hidden on mobile so it doesn't collide with `MobileNav`), links New session / Timer (`/training#timer`) / Coach / YouTube. Wired into `DashboardShell` so it's on every app page.
-- Automated i18n check: `tests/design/i18n.test.ts` — key-parity across all 6 locales, no-blank-values, and a script-heuristic that fails if a `ru`/`ja` string is still pure Latin (catches untranslated fallthrough). Run: `npx vitest run tests/design/i18n.test.ts`.
-- Verified clean: `npx tsc --noEmit`, `npx eslint .`, `npx vitest run` (170 tests), `npm run build`.
+## Done (session 3, this session)
+
+### P0 product features — all 5 implemented
+- **60-second session review**: `components/training/session-review.tsx`, rendered on `/training/[id]`. Deterministic summary computed from the already-loaded session (technique/difficulty/success counts, first difficulty as "focus next time", first success as "keep doing"). No schema change.
+- **Dashboard session counts (week/month)**: `lib/domain/training.ts` `computeSessionStats()` (pure, tested via existing session list — no new query). Wired into `/dashboard` hero footer and a new `WeeklySummaryCard` (`components/training/weekly-summary.tsx`) on `/training`.
+- **Add to goals wiring**: `quickAddGoalFromSkill()` in `lib/usecases/goals-actions.ts`, called from a new third button in `SkillActionsBar` (`components/skills/skill-actions-bar.tsx`) on `/skills/[id]`. Creates a `short`-horizon active goal linked to the skill; button flips to "Added" and stays disabled once a matching active goal exists.
+- **Export session as text**: button in `SessionReviewCard`, client-side `Blob`/`<a download>`, no server round-trip.
+- **Weekly summary**: `WeeklySummaryCard` on `/training` — session count, total minutes, technique count, disciplines worked, all from `computeSessionStats()`.
+
+### Server-action i18n infra (unblocks translating error/toast strings)
+- `components/i18n-provider.tsx`: `setLocale` now also mirrors the locale into a `mma-mastery-locale` cookie (in addition to `localStorage`), so server actions can read it.
+- `lib/i18n-server.ts` (new): `getServerLocale()` reads that cookie via `next/headers`; `tServer(key, fallback, vars?)` is the server-action equivalent of the client `t()`.
+- Applied to the actual ad-hoc validation/error/toast strings in: `auth-actions.ts`, `training-actions.ts`, `training-photo-actions.ts`, `goals-actions.ts`, `class-actions.ts`. (`"Not authenticated"` invariant throws in various `*-actions.ts` files were deliberately left alone — they're defensive guards that should never surface in normal UX, not user-facing copy.)
+
+### I18n — fully migrated pages/components (all 6 locales, verified via `tests/design/i18n.test.ts`)
+- `/training` (list + weekly summary + timer), `/training/new`, `/training/[id]/edit`, `/training/[id]` (+ new review card), `/training/photos`, `/training/review`.
+- `components/training/*`: `training-form.tsx`, `round-timer.tsx` (all timer internals), `photo-gallery.tsx`, `delete-session-dialog.tsx`, `session-review.tsx`, `weekly-summary.tsx`.
+- `/skills` catalogue page (search, filter, empty states, per-card "practiced N days ago").
+- `components/skills/skill-actions-bar.tsx` (favorite/study-queue/goal buttons).
+- New shared keys `common.today` / `common.yesterday` / `common.daysAgo` for relative-day formatting — reuse these instead of inventing new ones when translating dashboard's and skill-detail's own `relativeDays()` helpers.
 
 ## Already existed before this session (verified, do NOT rebuild)
-
 - **Max 3 priorities**: `lib/domain/training-intelligence.ts` `MAX_RECOMMENDATIONS = 3`.
 - **Next session plan**: `buildTrainingPlanSuggestion()` in the same file.
-- **Review this week / question backlog**: `lib/domain/review.ts` `buildReviewQueue()`.
+- **Review this week / question backlog**: `lib/domain/review.ts` `buildReviewQueue()`, surfaced at `/training/review` (now i18n'd chrome; item detail text itself is still French — see gaps).
 - **Favorite video**: `lib/usecases/youtube-favorites-actions.ts`.
-- **Favorite technique / resume technique**: `isBookmarked("skill", id)` + `SkillActionsBar` on `/skills/[id]` (`lib/usecases/knowledge-actions.ts`) — confirm this actually covers "favorite" semantics the mission wants (it's a bookmark/study-queue flag); if the product wants a separate lightweight favorites list distinct from the study bookmark, that's still open.
-- **Copy friend code + feedback**: `components/profile/training-partners.tsx` (now i18n'd).
-- **"Last practiced X days ago"**: already computed per-skill on `/skills/[id]` (`relativeDays()`); not yet surfaced as a dashboard-level widget across all recent skills.
+- **Favorite technique / resume technique / add to goals**: `SkillActionsBar` on `/skills/[id]` now covers bookmark, study-queue, and goal-linking as three distinct actions.
+- **Copy friend code + feedback**: `components/profile/training-partners.tsx` (i18n'd in session 2).
+- **"Last practiced X days ago"**: now available as a reusable pattern (`common.daysAgo` etc.) — see gaps for where it's still hardcoded French.
 
 ## Known gaps — not done, needs a fresh session
 
-### I18n (still hardcoded French, not yet migrated)
-Everything below `PageHeader` (titles only were done) on these pages is still French: `/training` (incl. session forms, delete dialog, photo gallery), `/skills` catalogue + skill detail body (stage descriptions, metric labels, relation group titles), `/coach`, `/study`, `/goals`, `/competition`, `/club` (+ all its subpages: admin, announcements, classes, events, members), `/calendar`, `/youtube` body copy, gallery, timer widget internals (`round-timer.tsx`), all toasts/validation errors in `lib/usecases/*-actions.ts` (server action error strings — these need a locale passed from the client into the action, or a server-side locale cookie, since server actions can't read the `I18nProvider` context).
-Approach for next session: use the new `<T k="…" fallback="…"/>` primitive for server components, `useI18n().t()` for client ones. Do NOT re-invent the wiring pattern — nav/page-titles already show the pattern that works.
+### I18n — pages/components still hardcoded French
+Below `PageHeader` (titles only were done in session 2) or entirely untouched:
+- `/skills/[id]` (skill detail) — **largest remaining single file (~500 lines)**. `SkillActionsBar` at the top is done; everything below (`WhatIKnowSection`'s generated fact sentences ("Connaissance théorique X/5", "X répétitions en drilling", etc.), `STAGE_DESCRIPTIONS` record, `ProgressionSection`, `RelationsSection`, `NextActionSection`, `NotesAndResourcesSection`, `HistorySection`, and the Hero's "Pratiqué"/"Jamais pratiqué"/"Nouvelle séance") is still French. Use the same `getServerLocale()` + `DICTIONARIES[locale]` pattern used in `/skills/page.tsx` (this page is also an async server component) rather than converting it to a client component.
+- `/coach`, `/study`, `/goals` (body — `GoalForm`/`GoalRow` including `GOAL_HORIZON_LABELS`/`GOAL_STATUS_LABELS`), `/competition` (+ `[id]`), `/club` and all 8 subpages (`admin`, `announcements` incl. `[announcementId]`, `classes` incl. `[classId]`, `events` incl. `[eventId]`, `members/[memberId]`) — **not started**, `/club` alone is ~960 lines across components + pages.
+- `/calendar` — not started.
+- `/youtube` — page title/nav done; body copy, gallery, and `components/youtube/*` not started.
+- `dashboard/page.tsx`'s own inline `relativeDays()` (French only) — swap for the new `common.today`/`common.yesterday`/`common.daysAgo` keys instead of duplicating logic.
 
-### Search / query normalization
-`lib/usecases/search-actions.ts` `normalizeSearchQuery()` strips French question phrasing (`"comment faire"`, `"qu'est-ce que"`, etc.) via regex. `QUICK_PROMPTS` in `app/(app)/search/page.tsx` were deliberately left in French because translating them would silently break that regex and degrade search quality in other locales. Fixing this properly needs locale-aware prompt sets + normalization, or dropping the French-specific stripping in favor of a language-agnostic approach.
+### Domain enum-label maps — deliberately left alone (cross-cutting, not one-file fixes)
+These `Record<Enum, string>` constants are French-only and used across many pages (dashboard, training list/detail, skill list/detail, review queue): `SESSION_TYPE_LABELS`, `OBSERVATION_TYPE_LABELS`, `SESSION_TECHNIQUE_OUTCOME_LABELS` (`lib/domain/training.ts`), `MASTERY_STAGE_LABELS` (`lib/domain/skill.ts`), `REVIEW_ITEM_TYPE_LABELS` (`lib/domain/review.ts`). Translating these requires either (a) turning each into a function of `locale`/`dict` and updating every call site, or (b) moving the labels into `lib/i18n.ts` dictionaries and looking them up by a stable key (e.g. `sessionType.${code}`) at each call site. Option (b) fits the existing architecture better. Do this as its own focused pass — don't half-convert one file's usage without the others, or the same enum will show mixed languages depending on which screen you're on.
 
-### Server action error/toast strings
-Auth errors, form validation messages, etc. returned from server actions (`lib/usecases/*.ts`) are plain French strings. Localizing these requires deciding how locale reaches the server action (cookie is the simplest: mirror `mma-mastery-locale` from `localStorage` into a cookie on `setLocale`, read it in the action).
+### Review-queue generated detail text
+`lib/domain/review.ts` `buildReviewQueue()` returns `item.detail` as a fully-formed French sentence per item (not a template key). Needs the same "return key+vars, translate at render" refactor as `training-intelligence.ts`'s recommendations, or an equivalent `tServer`/`dict` pass at the call site (`/training/review`).
 
-### P0 items not yet verified/built
-- "Sessions count this week/month" and "Last practiced X days ago" as a **dashboard-level** widget (data plumbing likely exists via `training_sessions` table — check `lib/usecases/training-*-actions.ts` before building anything new).
-- "60-second session review" — distinct from `review.ts`'s backlog queue; likely a post-session reflection prompt. Not found in the codebase under that name — confirm it doesn't exist before building, then decide UI placement (probably `/training/[id]` after logging a session).
-- "Add to goals" — check whether goal-linking already exists from a skill/session context before adding.
-- Confirm "favorite technique" bookmark semantics match product intent (see above).
-
-### P1 items not started
-- Export session as text (`/training/[id]` — deterministic serialization of an existing session record, no new schema).
-- Weekly summary (deterministic aggregation over existing `training_sessions`/`skill_progress`, no new schema).
+### Search / query normalization (from session 2, still open)
+`lib/usecases/search-actions.ts` `normalizeSearchQuery()` strips French question phrasing via regex; `QUICK_PROMPTS` in `app/(app)/search/page.tsx` are deliberately still French because translating them would silently break that regex. Needs locale-aware prompt sets + normalization, or a language-agnostic normalization approach.
 
 ### Visual / layout QA not done
-No manual/browser check yet that Russian (longer strings) and Japanese (CJK) don't break the `w-40` fixed-width sidebar (`components/championship/sidebar.tsx`) or mobile nav labels. No `truncate` class is present so text should wrap rather than clip, but this needs an actual browser check with `locale=ru`/`ja` selected.
+No manual/browser check yet that Russian (longer strings) and Japanese (CJK) don't break the `w-40` fixed-width sidebar (`components/championship/sidebar.tsx`) or mobile nav labels.
 
-## Explicit non-goals kept from this session
-Photography/layout/art direction and `/youtube` page design were not touched, per mission instruction to preserve commit `d99282a`.
+## Explicit non-goals kept
+Photography/layout/art direction untouched. No schema/RLS changes made this session (all 5 features reuse existing tables/columns).
