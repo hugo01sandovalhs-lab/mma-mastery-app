@@ -45,7 +45,7 @@ export default async function YouTubePage({
 
   const [results, favorites, { intelligence, plan }] = await Promise.all([
     query ? searchTechniqueVideos({ technique: query, discipline: effectiveDiscipline, difficulty: "" }) : Promise.resolve([]),
-    getResources(),
+    getResources().catch(() => []),
     getTrainingIntelligenceBundle(),
   ]);
 
