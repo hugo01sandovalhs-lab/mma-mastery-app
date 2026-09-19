@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SkillProgressDimensions } from "@/lib/domain/skill";
-import { buildReviewQueue } from "@/lib/domain/review";
+import { buildReviewQueue, buildWeeklyReviewDigest, findLastResolvedDifficulty } from "@/lib/domain/review";
 import type { SkillIntelligenceInput } from "@/lib/domain/training-intelligence";
 
 const NOW = new Date("2026-09-14T12:00:00.000Z");
@@ -133,5 +133,84 @@ describe("buildReviewQueue", () => {
   it("is deterministic for the same input", () => {
     const inputs = [skillInput({ lastPracticedAt: daysAgo(30) })];
     expect(buildReviewQueue(inputs, NOW)).toEqual(buildReviewQueue(inputs, NOW));
+  });
+});
+
+describe("buildWeeklyReviewDigest", () => {
+  it("returns zero counts when there is no data", () => {
+    expect(buildWeeklyReviewDigest([], NOW)).toEqual({
+      skillsTouchedCount: 0,
+      questionCount: 0,
+      difficultyCount: 0,
+    });
+  });
+
+  it("counts only observations within the last 7 days", () => {
+    const inputs = [
+      skillInput({
+        observations: [
+          { type: "question", content: "recent", occurredAt: daysAgo(2) },
+          { type: "difficulty", content: "recent", occurredAt: daysAgo(6) },
+          { type: "difficulty", content: "old", occurredAt: daysAgo(10) },
+        ],
+      }),
+    ];
+    expect(buildWeeklyReviewDigest(inputs, NOW)).toEqual({
+      skillsTouchedCount: 1,
+      questionCount: 1,
+      difficultyCount: 1,
+    });
+  });
+
+  it("counts distinct skills touched, not observation count", () => {
+    const inputs = [
+      skillInput({
+        skillId: "a",
+        observations: [{ type: "question", content: "x", occurredAt: daysAgo(1) }],
+      }),
+      skillInput({
+        skillId: "b",
+        observations: [
+          { type: "question", content: "x", occurredAt: daysAgo(1) },
+          { type: "difficulty", content: "y", occurredAt: daysAgo(2) },
+        ],
+      }),
+    ];
+    expect(buildWeeklyReviewDigest(inputs, NOW).skillsTouchedCount).toBe(2);
+  });
+});
+
+describe("findLastResolvedDifficulty", () => {
+  it("returns null when there is no data", () => {
+    expect(findLastResolvedDifficulty([], NOW)).toBeNull();
+  });
+
+  it("ignores a difficulty still inside the active review window", () => {
+    const inputs = [
+      skillInput({ observations: [{ type: "difficulty", content: "x", occurredAt: daysAgo(5) }] }),
+    ];
+    expect(findLastResolvedDifficulty(inputs, NOW)).toBeNull();
+  });
+
+  it("surfaces a difficulty that has aged out with no newer recurrence", () => {
+    const inputs = [
+      skillInput({ observations: [{ type: "difficulty", content: "guard pass", occurredAt: daysAgo(40) }] }),
+    ];
+    const result = findLastResolvedDifficulty(inputs, NOW);
+    expect(result?.skillId).toBe("skill-1");
+    expect(result?.detailVars.content).toBe("guard pass");
+  });
+
+  it("picks the most recently aged-out difficulty across skills", () => {
+    const inputs = [
+      skillInput({ skillId: "a", observations: [{ type: "difficulty", content: "older", occurredAt: daysAgo(60) }] }),
+      skillInput({ skillId: "b", observations: [{ type: "difficulty", content: "newer", occurredAt: daysAgo(31) }] }),
+    ];
+    expect(findLastResolvedDifficulty(inputs, NOW)?.skillId).toBe("b");
+  });
+
+  it("is deterministic for the same input", () => {
+    const inputs = [skillInput({ observations: [{ type: "difficulty", content: "x", occurredAt: daysAgo(40) }] })];
+    expect(findLastResolvedDifficulty(inputs, NOW)).toEqual(findLastResolvedDifficulty(inputs, NOW));
   });
 });

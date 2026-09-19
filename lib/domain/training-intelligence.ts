@@ -115,6 +115,18 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
       evidenceVars: { days: daysBetween(mostRecent.occurredAt, now), content: truncate(mostRecent.content) },
     });
   }
+  if (recentDifficulties.length >= 2) {
+    triggers.push({
+      weight: 2,
+      reasonKey: "trainingIntel.recurringDifficulty.reason",
+      reasonVars: { count: recentDifficulties.length },
+      actionKey: "trainingIntel.recurringDifficulty.action",
+      actionVars: {},
+      actionType: "REVIEW",
+      evidenceKey: "trainingIntel.recurringDifficulty.evidence",
+      evidenceVars: { count: recentDifficulties.length, days: RECENCY_WINDOW_DAYS },
+    });
+  }
 
   const recentQuestions = input.observations.filter(
     (o) => o.type === "question" && daysBetween(o.occurredAt, now) <= RECENCY_WINDOW_DAYS,

@@ -5,8 +5,11 @@ import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { CoachAnswerView } from "@/components/coach/coach-answer";
 import { CoachQuestionForm } from "@/components/coach/coach-question-form";
+import { CoachWeeklyDigest } from "@/components/coach/coach-weekly-digest";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getCoachResponse } from "@/lib/usecases/ai-coach-actions";
+import { getLastResolvedDifficulty, getWeeklyReviewDigest } from "@/lib/usecases/review-actions";
+import { getTechniqueOfTheDay } from "@/lib/usecases/skill-actions";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES } from "@/lib/i18n";
 
@@ -20,7 +23,12 @@ export default async function CoachPage() {
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
 
-  const answer = await getCoachResponse();
+  const [answer, techniqueOfTheDay, weeklyDigest, lastResolved] = await Promise.all([
+    getCoachResponse(),
+    getTechniqueOfTheDay(),
+    getWeeklyReviewDigest(),
+    getLastResolvedDifficulty(),
+  ]);
 
   return (
     <AppShell>
@@ -28,6 +36,13 @@ export default async function CoachPage() {
         <PageHeader page="coach" title={dict["page.coach.title"]} description={dict["page.coach.description"]} />
 
         <ChampionshipPhotoMosaic page="coach" />
+
+        <CoachWeeklyDigest
+          locale={locale}
+          techniqueOfTheDay={techniqueOfTheDay}
+          weeklyDigest={weeklyDigest}
+          lastResolved={lastResolved}
+        />
 
         <div className="editorial-coach-columns">
         <section className="editorial-section">

@@ -80,6 +80,43 @@ export async function getSkills(filters?: {
   });
 }
 
+export type TechniqueOfTheDay = {
+  id: string;
+  name: string;
+  slug: string;
+  disciplineName: string;
+  category: string | null;
+};
+
+/**
+ * Deterministic daily catalog spotlight: same calendar day always yields the
+ * same pick for a given catalog (no randomness, no extra query beyond
+ * `getSkills()`). Prefers skills the user has not tracked yet (stage
+ * "unknown") to bias toward discovery, falling back to the full catalog once
+ * everything has been touched at least once.
+ */
+export async function getTechniqueOfTheDay(): Promise<TechniqueOfTheDay | null> {
+  const skills = await getSkills();
+  if (skills.length === 0) return null;
+
+  const untouched = skills.filter((s) => s.stage === "unknown");
+  const pool = untouched.length > 0 ? untouched : skills;
+  const sorted = [...pool].sort((a, b) => a.id.localeCompare(b.id));
+
+  const now = new Date();
+  const startOfYear = Date.UTC(now.getUTCFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now.getTime() - startOfYear) / (1000 * 60 * 60 * 24));
+  const pick = sorted[dayOfYear % sorted.length];
+
+  return {
+    id: pick.id,
+    name: pick.name,
+    slug: pick.slug,
+    disciplineName: pick.discipline.name,
+    category: pick.category,
+  };
+}
+
 export type SkillRelationItem = {
   id: string;
   relation_type: SkillRelationType;

@@ -1,5 +1,12 @@
 import "server-only";
-import { buildReviewQueue, type ReviewItem } from "@/lib/domain/review";
+import {
+  buildReviewQueue,
+  buildWeeklyReviewDigest,
+  findLastResolvedDifficulty,
+  type ReviewItem,
+  type ResolvedDifficulty,
+  type WeeklyReviewDigest,
+} from "@/lib/domain/review";
 import { loadSkillIntelligenceInputs } from "@/lib/usecases/training-intelligence-actions";
 
 /**
@@ -10,4 +17,16 @@ export async function getReviewQueue(): Promise<ReviewItem[]> {
   const inputs = await loadSkillIntelligenceInputs();
   if (inputs.length === 0) return [];
   return buildReviewQueue(inputs);
+}
+
+export async function getWeeklyReviewDigest(): Promise<WeeklyReviewDigest> {
+  const inputs = await loadSkillIntelligenceInputs();
+  if (inputs.length === 0) return { skillsTouchedCount: 0, questionCount: 0, difficultyCount: 0 };
+  return buildWeeklyReviewDigest(inputs);
+}
+
+export async function getLastResolvedDifficulty(): Promise<ResolvedDifficulty | null> {
+  const inputs = await loadSkillIntelligenceInputs();
+  if (inputs.length === 0) return null;
+  return findLastResolvedDifficulty(inputs);
 }

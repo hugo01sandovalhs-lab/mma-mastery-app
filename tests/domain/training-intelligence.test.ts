@@ -65,6 +65,27 @@ describe("buildTrainingIntelligence", () => {
     expect(result.recommendations[0].reasons.some((r) => r.key === "trainingIntel.difficulty.reason")).toBe(true);
   });
 
+  it("flags a recurring difficulty separately from a single one", () => {
+    const result = buildTrainingIntelligence(
+      [
+        skillInput({
+          observations: [
+            { type: "difficulty", content: "Perd l'équilibre", occurredAt: daysAgo(2) },
+            { type: "difficulty", content: "Perd l'équilibre encore", occurredAt: daysAgo(10) },
+          ],
+        }),
+      ],
+      NOW,
+    );
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") return;
+    expect(
+      result.recommendations[0].reasons.some((r) => r.key === "trainingIntel.recurringDifficulty.reason"),
+    ).toBe(true);
+    expect(result.recommendations[0].reasons.find((r) => r.key === "trainingIntel.recurringDifficulty.reason")?.vars)
+      .toEqual({ count: 2 });
+  });
+
   it("flags a skill with a recent question", () => {
     const result = buildTrainingIntelligence(
       [

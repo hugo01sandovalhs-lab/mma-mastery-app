@@ -137,3 +137,77 @@ export function buildReviewQueue(
     ...neverApplied.sort(byRecency).slice(0, limitPerType),
   ];
 }
+
+const WEEK_DAYS = 7;
+
+export type WeeklyReviewDigest = {
+  skillsTouchedCount: number;
+  questionCount: number;
+  difficultyCount: number;
+};
+
+/**
+ * "Review this week": a pure count of what actually got logged in the last 7
+ * days, from the same observation data `buildReviewQueue` uses — no separate
+ * fetch, no inference, just a tighter time window.
+ */
+export function buildWeeklyReviewDigest(
+  inputs: SkillIntelligenceInput[],
+  now: Date = new Date(),
+): WeeklyReviewDigest {
+  const skillsTouched = new Set<string>();
+  let questionCount = 0;
+  let difficultyCount = 0;
+
+  for (const input of inputs) {
+    for (const obs of input.observations) {
+      if (daysBetween(obs.occurredAt, now) > WEEK_DAYS) continue;
+      skillsTouched.add(input.skillId);
+      if (obs.type === "question") questionCount += 1;
+      else difficultyCount += 1;
+    }
+  }
+
+  return { skillsTouchedCount: skillsTouched.size, questionCount, difficultyCount };
+}
+
+export type ResolvedDifficulty = {
+  skillId: string;
+  skillName: string;
+  detailKey: string;
+  detailVars: Record<string, string | number>;
+  occurredAt: string;
+};
+
+/**
+ * "Last difficulty resolved": the most recent difficulty observation that has
+ * aged out of the active review window (`RECENCY_WINDOW_DAYS`) with no newer
+ * difficulty logged for that same skill since. This never claims mastery —
+ * it only reports that a flagged difficulty has gone quiet, which is a fact
+ * directly derivable from existing observation dates, not an invented one.
+ */
+export function findLastResolvedDifficulty(
+  inputs: SkillIntelligenceInput[],
+  now: Date = new Date(),
+): ResolvedDifficulty | null {
+  let best: ResolvedDifficulty | null = null;
+
+  for (const input of inputs) {
+    const difficulties = input.observations.filter((o) => o.type === "difficulty");
+    if (difficulties.length === 0) continue;
+    const mostRecent = difficulties.reduce((a, b) => (new Date(a.occurredAt) > new Date(b.occurredAt) ? a : b));
+    if (daysBetween(mostRecent.occurredAt, now) < RECENCY_WINDOW_DAYS) continue;
+
+    if (!best || new Date(mostRecent.occurredAt) > new Date(best.occurredAt)) {
+      best = {
+        skillId: input.skillId,
+        skillName: input.skillName,
+        detailKey: "review.detail.quoted",
+        detailVars: { content: truncate(mostRecent.content) },
+        occurredAt: mostRecent.occurredAt,
+      };
+    }
+  }
+
+  return best;
+}
