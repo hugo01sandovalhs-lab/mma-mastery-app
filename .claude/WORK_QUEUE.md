@@ -159,6 +159,117 @@ work). Verified: typecheck, lint, vitest 193/193, `next build` all pass.
 ## Explicit non-goals kept
 Photography/layout/art direction untouched. No schema/RLS changes made this session.
 
+## Session 9 — Phase 5 (Coaching/Intelligence) + content coverage
+
+Ran from clean `master` after `25e67fc` (session 8's Sparring Log commit).
+Verified continuously: typecheck, lint (0 warnings), vitest (202/202, up
+from 193), `next build` all pass after each change. Main agent only,
+sequential edits, no forks/subagents. Both commits pushed to `master`
+(`1bf4350`, `33cb907`).
+
+### Priority 1: coaching intelligence — closed 3 concrete gaps
+Found that `skills.techniqueOfDay` / `skills.reviewThisWeek` /
+`skills.lastResolved` dict keys existed in all 6 locales (added by an
+earlier session) but were **never used anywhere in code** — confirmed via
+grep, zero call sites. Wired all three into a real widget:
+- `lib/domain/review.ts`: new pure functions `buildWeeklyReviewDigest()`
+  (7-day count of distinct skills touched / questions / difficulties, from
+  the same observation data `buildReviewQueue` already uses) and
+  `findLastResolvedDifficulty()` (the most recent difficulty observation
+  that has aged out of the active `RECENCY_WINDOW_DAYS` review window with
+  no newer recurrence for that skill — never claims mastery, only reports
+  that a flagged difficulty has gone quiet, which is directly derivable
+  from existing dates, not invented). Both tested in
+  `tests/domain/review.test.ts` (8 new tests).
+- `lib/usecases/review-actions.ts`: `getWeeklyReviewDigest()` /
+  `getLastResolvedDifficulty()`, reusing the existing
+  `loadSkillIntelligenceInputs()` fetch (no new query).
+- `lib/usecases/skill-actions.ts`: new `getTechniqueOfTheDay()` — a
+  deterministic daily catalog spotlight (day-of-year index into the
+  catalog sorted by id, so same day always yields the same pick; prefers
+  untracked skills for discovery, falls back to the full catalog).
+- `components/coach/coach-weekly-digest.tsx` (new) + wired into
+  `app/(app)/coach/page.tsx` above the existing two-column layout: three
+  cards (Technique of the Day / Review this week / Last resolved
+  difficulty), fully localized, all 6 locales.
+- `lib/domain/training-intelligence.ts`: added a **recurring difficulty**
+  trigger (`trainingIntel.recurringDifficulty.*`, weight 2) — fires
+  separately from the existing single-most-recent-difficulty trigger when
+  a skill has 2+ difficulty observations inside the review window, so a
+  genuinely recurring weakness now scores higher and surfaces its own
+  reason line instead of being indistinguishable from a one-off. Tested in
+  `tests/domain/training-intelligence.test.ts`.
+- New dict keys (`coach.weeklyReview.*`, `coach.lastResolved.*`,
+  `coach.techniqueOfDay.*`, `trainingIntel.recurringDifficulty.*`) added
+  to all 6 locale blocks in `lib/i18n.ts`; `tests/design/i18n.test.ts`
+  still passes (identical key sets, no untranslated-Latin leaks).
+- **Not touched this session** (already existed and verified sufficient):
+  max-3-priorities cap (`MAX_RECOMMENDATIONS`), next-session training plan
+  (`buildTrainingPlanSuggestion`), 60-second session review, question/note
+  for a real coach (`CoachQuestionForm`), AIProvider abstraction (still
+  deterministic-first with optional Ollama, no paid API dependency added).
+
+### Priority 2: content coverage — closed the biggest gap
+Audited the actual catalog: migration `00000000000003_skill_system.sql`'s
+own comment says "small usable dataset, not an exhaustive taxonomy" — only
+**28 skills across 3 disciplines** (Grappling/Striking-Muay-Thai/MMA), zero
+Judo, zero Sambo, zero dedicated Wrestling discipline. Added
+`supabase/migrations/00000000000014_content_expansion.sql` (additive only,
+`on conflict do nothing` throughout, verified no slug collisions with the
+existing seed or within itself):
+- **New disciplines**: Judo (20 skills — throws, sweeps, kumi kata,
+  osaekomi/kesa/kami-shiho pins, juji gatame, okuri eri jime), Sambo (12 —
+  leg-lock family, sambo-specific throws/takedowns/ground control, throw
+  and leg-lock defense), Wrestling (20 — tie-ups, underhook/overhook
+  control, arm drag/snap down/duck under/blast double/ankle pick/high
+  crotch/low single family, chain wrestling, cage clinch takedown).
+- **Grappling +30**: guard variants (half/butterfly/DLR/spider/X/rubber/
+  deep half/knee shield), positional escapes (mount ×2/side/back/turtle),
+  submission defenses (armbar/triangle/kimura/RNC/guillotine), and the
+  submission set that was previously missing entirely (triangle, kimura,
+  guillotine, americana, omoplata, darce, anaconda, heel hook, kneebar,
+  toe hold, ezekiel, bow and arrow — only armbar and RNC existed before).
+- **Striking +15**: uppercut/overhand/superman punch, spinning back kick/
+  calf kick/body kick/push kick, knee/elbow strikes, clinch entry,
+  combinations.
+- **MMA +8**: cage-specific underhook takedowns, dirty boxing, fence
+  escape, ground-and-pound offense/defense, combination-to-takedown.
+- Catalog total: 28 → **133 skills across 6 disciplines**. No application
+  code changes needed — the discipline filter on `/skills` reads from the
+  `disciplines` table dynamically (`getDisciplines()`), and `category` is
+  a free-text badge, not an enum — new disciplines/categories just appear.
+- **Not run against a live database this session** — no Docker available
+  in this environment, so the migration was verified statically only
+  (structure matches the proven pattern in migration 3 exactly, slug
+  uniqueness checked by grep, apostrophe escaping in `Fireman''s Carry`
+  checked by hand). **Apply and spot-check row counts on a real Supabase
+  instance before/at next deploy** — this is the one genuinely unverified
+  piece of this session's work.
+- **Not covered this session** (tracked as a smaller remaining gap, not
+  urgent — catalog is now usably deep, not exhaustive): no new
+  `skill_relations` rows were added for the new skills (the relation graph
+  only covers the original 28 skills' small illustrative slice from
+  migration 3), so the new guard variants / submissions / wrestling
+  entries won't show prerequisite/follow-up edges on `/skills/map` yet.
+
+### Priority 3 (product features) and Priority 4 (video) — audited, not touched
+Verified via grep, not rebuilt (already correct, matches this file's
+"already existed" notes from sessions 2–4): copy friend code
+(`components/profile/training-partners.tsx`), video/technique favorites
+(`lib/usecases/youtube-favorites-actions.ts`, `skill-actions-bar.tsx`),
+search history (`components/search/search-history.tsx`), persistent quick
+actions (`components/quick-actions-bar.tsx`), `/youtube` nav entry +
+24h in-memory cache + server-only API key
+(`lib/infra/video/youtube-video-search-provider.ts`, key never reaches the
+client). No changes made — these are genuinely done, not just claimed
+done; this session re-verified rather than trusting the prior checkpoint.
+
+### Priority 5 (product gaps) — not audited this session
+PWA infra (`public/manifest.json`, `public/sw.js`, `/offline` route) exists
+and builds; not deep-audited for actual offline behavior. Public gallery
+sharing, accessibility basics, and mobile nav consistency were **not
+checked this session** — genuinely open for session 10, not "done".
+
 ## Phase 3 (Skill System) status — verified session 7
 Already fully implemented and committed (`01d82e1 feat: add skill graph and progression system`), predating the i18n sessions above — the "Phase 3 not started" note in session 6 referred only to that session's own i18n scope, not the codebase. Verified this session, no code changes needed:
 - Schema: `supabase/migrations/00000000000003_skill_system.sql` (skills catalog, `skill_relations` graph enum, owner-scoped `skill_progress` with all required dimensions, nullable `skill_id`/`related_skill_id` FKs on `session_techniques`/`session_observations`, seed data), `00000000000004_skill_progress_sync.sql` (trigger auto-syncs `drilling_reps`/`evidence_count`/`last_practiced_at` from logged techniques — docs/decisions/0006).
