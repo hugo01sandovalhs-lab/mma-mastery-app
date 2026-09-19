@@ -105,7 +105,7 @@ describe("skill_relations graph integrity (static, from migration SQL)", () => {
 
   it("parsed a non-trivial catalog and graph (parser sanity check)", () => {
     const totalSkills = [...catalog.values()].reduce((n, set) => n + set.size, 0);
-    expect(totalSkills).toBeGreaterThanOrEqual(133);
+    expect(totalSkills).toBeGreaterThanOrEqual(132);
     expect(edges.length).toBeGreaterThanOrEqual(110);
   });
 
@@ -137,5 +137,29 @@ describe("skill_relations graph integrity (static, from migration SQL)", () => {
     const allowed = new Set(["prerequisite", "counter", "variation", "follow_up", "transition", "related"]);
     const invalid = edges.filter((e) => !allowed.has(e.type));
     expect(invalid).toEqual([]);
+  });
+
+  // Regression guard for the "Sprawl" bug: it was seeded under both
+  // `grappling` (correct) and `striking_muay_thai` (wrong — sprawl is a
+  // wrestling/grappling takedown defense, not a Muay Thai technique), so the
+  // UI showed it as a Muay Thai skill. Any slug declared under more than one
+  // discipline is almost always this same class of copy-paste mistake; the
+  // only legitimate exception is a handful of fundamentals every discipline
+  // teaches under its own name (stance, footwork).
+  it("never declares the same technique slug under more than one discipline", () => {
+    const genericFundamentals = new Set(["stance", "footwork"]);
+    const disciplinesBySlug = new Map<string, Set<string>>();
+    for (const [discipline, slugs] of catalog) {
+      for (const slug of slugs) {
+        if (genericFundamentals.has(slug)) continue;
+        const set = disciplinesBySlug.get(slug) ?? new Set<string>();
+        set.add(discipline);
+        disciplinesBySlug.set(slug, set);
+      }
+    }
+    const crossDisciplineSlugs = [...disciplinesBySlug.entries()]
+      .filter(([, disciplines]) => disciplines.size > 1)
+      .map(([slug, disciplines]) => `${slug}: ${[...disciplines].join(", ")}`);
+    expect(crossDisciplineSlugs).toEqual([]);
   });
 });

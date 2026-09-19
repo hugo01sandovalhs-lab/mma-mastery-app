@@ -262,8 +262,7 @@ striking_skills(name, slug, category) as (
     ('Low Kick', 'low-kick', 'kick'),
     ('Teep', 'teep', 'kick'),
     ('Check', 'check', 'defense'),
-    ('Slip', 'slip', 'defense'),
-    ('Sprawl', 'sprawl', 'defense')
+    ('Slip', 'slip', 'defense')
 ),
 mma_skills(name, slug, category) as (
   values
