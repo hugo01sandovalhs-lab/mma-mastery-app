@@ -24,10 +24,13 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const club = await getClub(id);
+  const [club, unreadAnnouncements, locale] = await Promise.all([
+    getClub(id),
+    getUnreadAnnouncementCount(id),
+    getServerLocale(),
+  ]);
   if (!club) notFound();
 
-  const [unreadAnnouncements, locale] = await Promise.all([getUnreadAnnouncementCount(id), getServerLocale()]);
   const dict = DICTIONARIES[locale];
 
   const canManageMembers = hasClubRoleAtLeast(club.myRole, "ADMIN");

@@ -88,13 +88,11 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const skill = await getSkill(id);
-  if (!skill) notFound();
-
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
 
-  const [intelligence, notes, resources, bookmarked, queued, goals] = await Promise.all([
+  const [skill, intelligence, notes, resources, bookmarked, queued, goals] = await Promise.all([
+    getSkill(id),
     getTrainingIntelligence(),
     getSkillNotes(id),
     getResourcesForSkill(id),
@@ -102,6 +100,7 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
     isInStudyQueue(id),
     getGoals(),
   ]);
+  if (!skill) notFound();
   const goaled = goals.some((g) => g.skill?.id === id && g.status === "active");
   const recommendation =
     intelligence.status === "ok" ? intelligence.recommendations.find((r) => r.skillId === id) : undefined;

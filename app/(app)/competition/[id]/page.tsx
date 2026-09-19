@@ -20,13 +20,15 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const locale = await getServerLocale();
-  const dict = DICTIONARIES[locale];
-
-  const match = await getMatch(id);
+  const [locale, match, sequences, skills] = await Promise.all([
+    getServerLocale(),
+    getMatch(id),
+    getSequencesForMatch(id),
+    getSkills(),
+  ]);
   if (!match) notFound();
 
-  const [sequences, skills] = await Promise.all([getSequencesForMatch(id), getSkills()]);
+  const dict = DICTIONARIES[locale];
 
   return (
     <AppShell>

@@ -63,13 +63,8 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const [sessions, { intelligence, plan }, progressSummary, clubSummary] = await Promise.all([
+  const [{ data: profile }, sessions, { intelligence, plan }, progressSummary, clubSummary] = await Promise.all([
+    supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle(),
     getTrainingSessions(),
     getTrainingIntelligenceBundle(),
     getSkillsProgressSummary(),
