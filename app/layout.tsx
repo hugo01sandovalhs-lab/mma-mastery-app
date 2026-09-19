@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeLabOverride } from "@/lib/design/theme-lab-override";
 import { PwaRegister } from "@/components/pwa-register";
 import { I18nProvider } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
 import { getSiteUrl } from "@/lib/site-url";
 
 const geistSans = Geist({
@@ -49,19 +50,20 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0b",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getServerLocale();
   return (
-    <html lang="fr" className="dark">
+    <html lang={locale} className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeLabOverride />
         <PwaRegister />
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider initialLocale={locale}>{children}</I18nProvider>
       </body>
     </html>
   );
