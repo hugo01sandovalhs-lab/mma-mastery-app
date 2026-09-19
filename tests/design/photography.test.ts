@@ -6,7 +6,7 @@ import { LANDING_SLIDES, PAGE_PHOTOS, PHOTO_STORIES } from "@/lib/design/photogr
 describe("production photo mapping", () => {
   it("gives each main page an existing, distinct photograph and an explicit crop", () => {
     const photos = Object.values(PAGE_PHOTOS);
-    expect(photos).toHaveLength(11);
+    expect(photos).toHaveLength(12);
     expect(PAGE_PHOTOS.calendar).toBeDefined();
     expect(new Set(photos.map(({ src }) => src)).size).toBe(photos.length);
     for (const photo of photos) {

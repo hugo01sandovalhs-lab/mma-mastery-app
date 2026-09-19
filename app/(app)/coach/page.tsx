@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
+import { MessageCircleQuestion } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { CoachAnswerView } from "@/components/coach/coach-answer";
 import { CoachQuestionForm } from "@/components/coach/coach-question-form";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -32,6 +33,13 @@ export default async function CoachPage() {
         <section className="editorial-section">
           <h2 className="font-heading text-lg font-semibold tracking-tight">Poser une question</h2>
           <CoachQuestionForm />
+          <ChampionshipSectionPhoto
+            src="/mma-mastery-photos/wade-austin-ellis-sf0qE4XehbI-unsplash.jpg"
+            alt="Coach donnant des conseils entre deux rounds"
+            label="Conseils entre les rounds"
+            icon={MessageCircleQuestion}
+            objectPosition="42% 42%"
+          />
         </section>
         </div>
       </div>

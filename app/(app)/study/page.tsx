@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { BookmarkIcon, ListChecksIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -90,6 +90,14 @@ export default async function StudyPage() {
             </div>
           )}
         </section>
+
+        <ChampionshipSectionPhoto
+          src="/mma-mastery-photos/anastase-maragos-Lmy0bxMVnBg-unsplash.jpg"
+          alt="Athlète en pause de réflexion contre le sac"
+          label="Prendre le temps de comprendre"
+          icon={BookmarkIcon}
+          objectPosition="45% 42%"
+        />
 
         <section className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-semibold tracking-tight">Mes ressources</h2>

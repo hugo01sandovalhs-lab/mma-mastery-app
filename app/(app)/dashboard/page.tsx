@@ -49,6 +49,7 @@ const PHOTOS = {
   progress: { src: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758867.jpg", position: "50% 62%" },
   activity: { src: "/mma-mastery-photos/pexels-eduard-perez-2158828645-38674544.jpg", position: "50% 58%" },
   club: "/mma-mastery-photos/pexels-gera-cejas-3616330-38758994.jpg",
+  globalProgress: { src: "/mma-mastery-photos/redd-francisco-tJVCPGzuEoA-unsplash.jpg", position: "50% 30%" },
 } as const;
 
 function relativeDays(iso: string): string {
@@ -243,7 +244,9 @@ function ProgressionCompactCard({
 }) {
   const stages = MASTERY_STAGES.filter((s) => s !== "unknown" && s !== "introduced");
   return (
-    <Card className="rounded-2xl border-border bg-card">
+    <Card className="championship-progress-compact rounded-2xl border-border bg-card">
+      <ProgressiveImage src={PHOTOS.globalProgress.src} alt="Combattant célébrant une victoire" fill sizes="(max-width: 767px) 100vw, 30vw" style={{ objectPosition: PHOTOS.globalProgress.position }} />
+      <div className="championship-progress-compact-shade" aria-hidden="true" />
       <CardContent className="flex items-center gap-4 p-4">
         {insufficientData ? <Target className="size-9 shrink-0 text-muted-foreground" aria-hidden="true" /> : <ProgressRing value={ring} size={72} strokeWidth={5} />}
         <div className="flex min-w-0 flex-1 flex-col gap-1">

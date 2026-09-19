@@ -75,6 +75,15 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
       </Card>
 
       <section aria-labelledby="coach-videos" className="coach-video-stage">
+        <ProgressiveImage
+          src="/mma-mastery-photos/michael-starkie--ktNaNqbomw-unsplash.jpg"
+          alt="Coach tenant les paos pendant une séance"
+          fill
+          sizes="(max-width: 767px) 100vw, 50vw"
+          className="coach-video-stage-bg"
+          style={{ objectPosition: "50% 45%" }}
+        />
+        <div className="coach-video-stage-shade" aria-hidden="true" />
         <div className="coach-video-heading">
           <span><Video aria-hidden="true" /> À voir maintenant</span>
           <h3 id="coach-videos">Démonstrations pour votre prochain entraînement</h3>

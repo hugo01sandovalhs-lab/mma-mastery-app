@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "cn";
 import { useI18n } from "@/components/i18n-provider";
-import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Search, Sparkles, Target, Trophy, User, Users, type LucideIcon } from "lucide-react";
+import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, PlayCircle, Search, Sparkles, Target, Trophy, User, Users, type LucideIcon } from "lucide-react";
 
 export interface ChampionshipNavItem {
   href: string;
@@ -20,6 +20,7 @@ const APP_NAV_ITEMS: ChampionshipNavItem[] = [
   { href: "/training", label: "Entraînement", icon: Dumbbell },
   { href: "/skills", label: "Compétences", icon: Target },
   { href: "/coach", label: "Coach", icon: Sparkles },
+  { href: "/youtube", label: "YouTube", icon: PlayCircle },
   { href: "/study", label: "Étude", icon: BookOpen },
   { href: "/goals", label: "Objectifs", icon: Flag },
   { href: "/competition", label: "Compétition", icon: Trophy },
