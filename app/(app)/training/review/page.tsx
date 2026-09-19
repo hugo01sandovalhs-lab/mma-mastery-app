@@ -10,6 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { T } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -45,18 +46,18 @@ export default async function ReviewPage() {
           href="/training"
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-3.5" /> Entraînement
+          <ArrowLeft className="size-3.5" /> <T k="nav.training" fallback="Entraînement" />
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
           <div className="flex items-center gap-2">
             <MessageCircleQuestion className="size-5 text-primary" />
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-              À revoir
+              <T k="review.queueTitle" fallback="À revoir" />
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Questions non résolues, difficultés récentes et compétences en attente de pratique.
+            <T k="review.queueIntro" fallback="Questions non résolues, difficultés récentes et compétences en attente de pratique." />
           </p>
         </div>
 
@@ -64,10 +65,12 @@ export default async function ReviewPage() {
           <Card>
             <CardContent className="flex flex-col items-start gap-2 py-8">
               <BookOpen className="size-6 text-muted-foreground" />
-              <p className="font-medium">Rien à revoir pour l&apos;instant</p>
+              <p className="font-medium"><T k="review.queueEmpty" fallback="Rien à revoir pour l'instant" /></p>
               <p className="max-w-md text-sm text-muted-foreground">
-                Dès qu&apos;une séance signale une question, une difficulté, ou qu&apos;une
-                compétence reste sans pratique trop longtemps, elle apparaîtra ici.
+                <T
+                  k="review.queueEmptyHint"
+                  fallback="Dès qu'une séance signale une question, une difficulté, ou qu'une compétence reste sans pratique trop longtemps, elle apparaîtra ici."
+                />
               </p>
             </CardContent>
           </Card>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { T } from "@/components/i18n-provider";
 import { TrainingForm } from "@/components/training/training-form";
 import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +30,10 @@ export default async function NewTrainingSessionPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
           <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-            Nouvelle séance
+            <T k="training.newTitle" fallback="Nouvelle séance" />
           </h1>
           <p className="text-sm text-muted-foreground">
-            Enregistrez votre séance pour alimenter votre progression.
+            <T k="training.newIntro" fallback="Enregistrez votre séance pour alimenter votre progression." />
           </p>
         </div>
 
@@ -42,7 +43,7 @@ export default async function NewTrainingSessionPage() {
           disciplines={disciplines}
           skills={skills}
           action={createTrainingSession}
-          submitLabel="Enregistrer"
+          submitLabel={<T k="action.save" fallback="Enregistrer" />}
         />
       </div>
     </AppShell>
@@ -57,7 +58,7 @@ function FocusCallout({ plan }: { plan: TrainingPlanSuggestion }) {
       <CardContent className="flex flex-col gap-2 pl-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs font-medium text-muted-foreground">
-            Focus recommandé pour cette séance
+            <T k="training.focusForSession" fallback="Focus recommandé pour cette séance" />
           </span>
           <Badge variant="default" className="flex items-center gap-1.5">
             <Icon className="size-3.5" />

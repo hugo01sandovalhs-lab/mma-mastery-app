@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { T } from "@/components/i18n-provider";
 import { TrainingForm } from "@/components/training/training-form";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import {
@@ -33,7 +34,7 @@ export default async function EditTrainingSessionPage({
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
           <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-            Modifier la séance
+            <T k="training.editTitle" fallback="Modifier la séance" />
           </h1>
         </div>
         <TrainingForm
@@ -41,7 +42,7 @@ export default async function EditTrainingSessionPage({
           skills={skills}
           action={updateTrainingSession.bind(null, id)}
           initialData={session}
-          submitLabel="Enregistrer les modifications"
+          submitLabel={<T k="action.saveChanges" fallback="Enregistrer les modifications" />}
         />
       </div>
     </AppShell>

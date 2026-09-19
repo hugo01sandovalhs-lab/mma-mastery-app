@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { T } from "@/components/i18n-provider";
 import { PageHeader } from "@/components/championship/page-header";
 import { PhotoGallery } from "@/components/training/photo-gallery";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ export default async function TrainingPhotosPage() {
   if (!user) redirect("/login");
   const [photos, sessions] = await Promise.all([getTrainingPhotos(), getTrainingSessions()]);
   return <AppShell><div className="editorial-page editorial-training">
-    <PageHeader page="training" title="Galerie d’entraînement" description="Conservez les images qui racontent votre progression." actions={<Button variant="outline" render={<Link href="/training" />}><ArrowLeft />Entraînement</Button>} />
+    <PageHeader page="training" title="Galerie d’entraînement" description={<T k="training.galleryIntro" fallback="Conservez les images qui racontent votre progression." />} actions={<Button variant="outline" render={<Link href="/training" />}><ArrowLeft /><T k="nav.training" fallback="Entraînement" /></Button>} />
     <PhotoGallery photos={photos} sessions={sessions.map(({ id, date, title }) => ({ id, date, title }))} />
   </div></AppShell>;
 }

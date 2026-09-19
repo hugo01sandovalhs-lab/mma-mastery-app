@@ -6,6 +6,7 @@ import { advanceRoundTimer, createRoundTimer, type RoundTimerConfig } from "@/li
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/components/i18n-provider";
 
 const PRESETS = {
   "3 × 3": { rounds: 3, workSeconds: 180, restSeconds: 60 },
@@ -38,6 +39,7 @@ function ringBell(context: AudioContext, strikes: number) {
 }
 
 export function RoundTimer() {
+  const { t } = useI18n();
   const [config, setConfig] = useState<RoundTimerConfig>(PRESETS["3 × 3"]);
   const [timer, setTimer] = useState(() => createRoundTimer(config));
   const [running, setRunning] = useState(false);
@@ -76,14 +78,14 @@ export function RoundTimer() {
   return (
     <section className="grid gap-5 rounded-md border bg-card p-5 lg:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]">
       <div className="flex min-h-52 flex-col items-center justify-center rounded-md bg-[#090a08] p-6 text-[#eedbb1]">
-        <p className="text-sm text-[#c7b792]">Round {timer.round} / {config.rounds} · {timer.phase === "work" ? "Travail" : timer.phase === "rest" ? "Repos" : "Terminé"}</p>
+        <p className="text-sm text-[#c7b792]">{t("timer.round", "Round")} {timer.round} / {config.rounds} · {timer.phase === "work" ? t("timer.work", "Travail") : timer.phase === "rest" ? t("timer.rest", "Repos") : t("timer.done", "Terminé")}</p>
         <strong className="font-heading text-[clamp(4rem,10vw,7rem)] leading-none tracking-[-0.07em]">{clock(timer.secondsLeft)}</strong>
         <div className="mt-5 flex gap-2">
           <Button type="button" onClick={toggleTimer} disabled={timer.phase === "done"}>
-            {isRunning ? <Pause /> : <Play />}{isRunning ? "Pause" : "Démarrer"}
+            {isRunning ? <Pause /> : <Play />}{isRunning ? t("timer.pause", "Pause") : t("timer.start", "Démarrer")}
           </Button>
-          <Button type="button" variant="outline" onClick={() => apply(config)}><RotateCcw />Réinitialiser</Button>
-          <Button type="button" variant="outline" size="icon" onClick={() => setMuted((value) => !value)} aria-label={muted ? "Activer le son" : "Couper le son"}>
+          <Button type="button" variant="outline" onClick={() => apply(config)}><RotateCcw />{t("timer.reset", "Réinitialiser")}</Button>
+          <Button type="button" variant="outline" size="icon" onClick={() => setMuted((value) => !value)} aria-label={muted ? t("timer.muteOn", "Activer le son") : t("timer.muteOff", "Couper le son")}>
             {muted ? <VolumeX /> : <Volume2 />}
           </Button>
         </div>
@@ -93,11 +95,11 @@ export function RoundTimer() {
           {Object.entries(PRESETS).map(([label, preset]) => <Button key={label} type="button" variant="outline" onClick={() => apply(preset)}>{label}</Button>)}
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <TimerInput label="Rounds" value={config.rounds} onChange={(rounds) => apply({ ...config, rounds })} />
-          <TimerInput label="Travail (min)" value={config.workSeconds / 60} onChange={(minutes) => apply({ ...config, workSeconds: minutes * 60 })} />
-          <TimerInput label="Repos (sec)" value={config.restSeconds} onChange={(restSeconds) => apply({ ...config, restSeconds })} />
+          <TimerInput label={t("timer.rounds", "Rounds")} value={config.rounds} onChange={(rounds) => apply({ ...config, rounds })} />
+          <TimerInput label={t("timer.workMinutes", "Travail (min)")} value={config.workSeconds / 60} onChange={(minutes) => apply({ ...config, workSeconds: minutes * 60 })} />
+          <TimerInput label={t("timer.restSeconds", "Repos (sec)")} value={config.restSeconds} onChange={(restSeconds) => apply({ ...config, restSeconds })} />
         </div>
-        <p className="text-sm text-muted-foreground">Une cloche signale la fin du round et la reprise. Le timer reste actif sur cet écran.</p>
+        <p className="text-sm text-muted-foreground">{t("timer.hint", "Une cloche signale la fin du round et la reprise. Le timer reste actif sur cet écran.")}</p>
       </div>
     </section>
   );

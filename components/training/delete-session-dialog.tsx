@@ -13,9 +13,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/components/i18n-provider";
 import { deleteTrainingSession, type TrainingActionState } from "@/lib/usecases/training-actions";
 
 export function DeleteSessionDialog({ sessionId }: { sessionId: string }) {
+  const { t } = useI18n();
   const [state, formAction, isPending] = useActionState<TrainingActionState, FormData>(
     deleteTrainingSession.bind(null, sessionId),
     { error: null },
@@ -24,22 +26,21 @@ export function DeleteSessionDialog({ sessionId }: { sessionId: string }) {
   return (
     <Dialog>
       <DialogTrigger render={<Button variant="destructive" size="sm" />}>
-        <TrashIcon /> Supprimer
+        <TrashIcon /> {t("action.delete", "Supprimer")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Supprimer cette séance ?</DialogTitle>
+          <DialogTitle>{t("training.deleteTitle", "Supprimer cette séance ?")}</DialogTitle>
           <DialogDescription>
-            Cette action est irréversible. Les techniques et observations associées seront
-            également supprimées.
+            {t("training.deleteBody", "Cette action est irréversible. Les techniques et observations associées seront également supprimées.")}
           </DialogDescription>
         </DialogHeader>
         {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Annuler</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>{t("action.cancel", "Annuler")}</DialogClose>
           <form action={formAction}>
             <Button type="submit" variant="destructive" className="w-full" disabled={isPending}>
-              Confirmer la suppression
+              {t("action.confirmDelete", "Confirmer la suppression")}
             </Button>
           </form>
         </DialogFooter>
