@@ -475,3 +475,77 @@ clearly marked. SEO/PWA metadata complete. All automated gates green
 (typecheck, lint, 211/211 tests, `next build`). Remaining work is human
 browser QA, the 6 manual items above, and deployment — no further
 autonomous implementation work identified.
+
+## Session 11 — final pre-QA verification pass (no code changes)
+
+Ran from clean `master` after `8317bb6` (session 10). Brief asked to verify
+and finish every remaining functional gap across Phase 5 coaching, content
+coverage, daily features, video, and product coherence. Classified every
+item in the brief DONE / PARTIAL / MISSING via deterministic checks
+(grep, live DB queries, full test/build run) instead of re-auditing from
+scratch, per this file's own "do not re-audit" precedent.
+
+**Result: everything in the brief classifies as DONE. Zero PARTIAL/MISSING
+items found. No code changes made this session.**
+
+- Phase 5 coaching: `coach-weekly-digest.tsx` (Technique of the Day, Review
+  this week, Last resolved difficulty) wired into `/coach` since session 9;
+  max-3-priorities, next-session plan, 60s review, coach question form,
+  deterministic-first `AIProvider` all reachable in UI, re-confirmed via nav
+  grep and build output (`/coach` builds, 7.91 kB).
+- Content: live DB re-queried directly — **133 skills / 6 disciplines / 110
+  skill_relations**, matches session 10's applied migrations exactly, no
+  drift. Read migration `00000000000014_content_expansion.sql` in full:
+  striking→takedown combinations, cage/underhook takedowns, guard variants,
+  positional escapes, submission defenses are all genuinely present (not
+  just claimed) — confirmed by reading the actual CTE values, not trusting
+  the prior summary.
+- **Difficulty/problem "catalog" (brief item 2's ~154 target)**: does not
+  exist and is **not intended by the architecture** — confirmed by reading
+  `00000000000005_v3_learning_and_progress.sql`: `session_techniques.problem`
+  is a free-text column (`problem text`), not an enum or lookup table. There
+  is no curated difficulty taxonomy anywhere in the schema or domain layer.
+  Per the brief's own instruction ("fill missing coverage **if** the
+  catalog exists/is intended"), building one from scratch would be inventing
+  new architecture, not finishing existing scope — correctly left undone.
+- Daily features: copy friend code, technique/video favorites, search
+  history, session text export (`session-review.tsx`), weekly summary +
+  week/month counters (`weekly-summary.tsx`, `dashboard/page.tsx`),
+  last-practiced-X-days-ago (`review.ts`, `training-intelligence.ts`),
+  quick actions bar — all re-confirmed present via targeted grep.
+- Video/YouTube: nav entry, 24h cache, server-only key, favorites/search
+  history integration — unchanged since session 9's audit, not re-touched.
+- Product coherence: `next build` succeeded end-to-end, every route from
+  dashboard→training→sparring→skills→goals→study→coach→youtube→club→
+  profile compiles and is nav-reachable (`components/app-nav.tsx`'s
+  `NAV_LINKS`/`SIDEBAR_ONLY_LINKS` cover all of them).
+- i18n: `tests/design/i18n.test.ts` still green, part of the 211/211 suite.
+- Final validation, all green: `tsc --noEmit` (0 errors), `eslint . --max-warnings=0`
+  (0 warnings), `vitest run` (211/211, 26 files), `next build` (full route
+  table above, no errors), `supabase migration list --linked` (all 15 local
+  migrations applied remotely, no drift).
+
+### STILL_MISSING
+Nothing implementable without a live browser session or owner input. Same
+6 manual items as session 10's checklist below — none require further
+autonomous work.
+
+### MANUAL_TOMORROW (unchanged from session 10, re-confirmed still accurate)
+1. Log in as a real user in each of the 6 locales; check dashboard hero,
+   focus cards, club card, quick actions (rewired session 10, never
+   browser-verified).
+2. Visit `/privacy` and `/terms` in each locale; confirm the "to be
+   completed by the publisher" badges render, then fill in real legal
+   entity name/address/registration number/governing law/contact email in
+   `lib/content/legal.ts` before shipping publicly.
+3. Set `NEXT_PUBLIC_SITE_URL` once a production domain exists.
+4. Spot-check `/skills/map` in each locale for the new Judo/Sambo/Wrestling
+   relation edges rendering sensibly.
+5. RU/JA nav label wrapping in the desktop sidebar (`w-40` fixed width) —
+   cosmetic, check visually, adjust only if actually broken.
+6. Decide whether `profiles.profile_visibility` becomes a real
+   public-profile feature or gets removed from the form — currently inert
+   either way, not a live bug.
+
+No git commit created this session — no files changed (verification-only
+pass). Tree is already clean and pushed at `8317bb6`.
