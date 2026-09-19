@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { createServiceClient } from "@/lib/infra/db/supabase-service";
 import { tServer } from "@/lib/i18n-server";
 import {
   trainingSessionInputSchema,
@@ -193,9 +195,22 @@ export async function getTrainingSession(id: string): Promise<TrainingSessionDet
   return data as unknown as TrainingSessionDetail | null;
 }
 
+/**
+ * Disciplines are static seed data with no write path in the app — cached
+ * across requests so every page that populates a discipline filter/select
+ * (skills, training) skips the round trip on each navigation.
+ */
+const getDisciplinesCached = unstable_cache(
+  async (): Promise<Discipline[]> => {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase.from("disciplines").select("id, code, name").order("name");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+  ["disciplines"],
+  { tags: ["disciplines"], revalidate: 3600 },
+);
+
 export async function getDisciplines(): Promise<Discipline[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("disciplines").select("id, code, name").order("name");
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  return getDisciplinesCached();
 }

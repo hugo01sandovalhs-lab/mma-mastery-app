@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { createServiceClient } from "@/lib/infra/db/supabase-service";
 import {
@@ -24,31 +25,48 @@ export type SkillListItem = {
   lastPracticedAt: string | null;
 };
 
+type CatalogSkill = Omit<SkillListItem, "stage" | "lastPracticedAt"> & { discipline_id: string };
+
 /**
- * Fetches the catalog (1 query) then merges in the signed-in user's progress
- * (1 query for all their skill_progress rows) so each card shows a real,
- * derived mastery stage — never N+1 per skill.
+ * The skill catalog (id/name/slug/category/discipline) is global read-only
+ * reference data — identical for every user and rarely written (only via
+ * createSkill/updateSkill below). Cached across requests with the Next Data
+ * Cache instead of re-querying on every dashboard/skills/goals/study/coach
+ * navigation; invalidated on demand by those writers via revalidateTag.
+ */
+const getSkillsCatalog = unstable_cache(
+  async (): Promise<CatalogSkill[]> => {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("skills")
+      .select("id, name, slug, category, discipline_id, discipline:disciplines(id, code, name)")
+      .order("name");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as unknown as CatalogSkill[];
+  },
+  ["skills-catalog"],
+  { tags: ["skills-catalog"], revalidate: 3600 },
+);
+
+/**
+ * Fetches the catalog (cached, see getSkillsCatalog) then merges in the
+ * signed-in user's progress (1 query for all their skill_progress rows) so
+ * each card shows a real, derived mastery stage — never N+1 per skill.
  */
 export async function getSkills(filters?: {
   disciplineId?: string;
   search?: string;
 }): Promise<SkillListItem[]> {
   const supabase = await createClient();
-  let query = supabase
-    .from("skills")
-    .select("id, name, slug, category, discipline:disciplines(id, code, name)")
-    .order("name");
+  let skills = await getSkillsCatalog();
 
   if (filters?.disciplineId) {
-    query = query.eq("discipline_id", filters.disciplineId);
+    skills = skills.filter((s) => s.discipline_id === filters.disciplineId);
   }
   if (filters?.search) {
-    query = query.ilike("name", `%${filters.search}%`);
+    const needle = filters.search.toLocaleLowerCase();
+    skills = skills.filter((s) => s.name.toLocaleLowerCase().includes(needle));
   }
-
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  const skills = (data ?? []) as unknown as Omit<SkillListItem, "stage" | "lastPracticedAt">[];
 
   const {
     data: { user },
@@ -406,6 +424,7 @@ export async function createSkill(input: SkillInput): Promise<string> {
   const supabase = createServiceClient();
   const { data, error } = await supabase.from("skills").insert(parsed).select("id").single();
   if (error) throw new Error(error.message);
+  revalidateTag("skills-catalog");
   return data.id as string;
 }
 
@@ -415,6 +434,7 @@ export async function updateSkill(id: string, input: SkillInput): Promise<void> 
   const supabase = createServiceClient();
   const { error } = await supabase.from("skills").update(parsed).eq("id", id);
   if (error) throw new Error(error.message);
+  revalidateTag("skills-catalog");
 }
 
 /** Catalog write — service role only, never exposed to arbitrary users. */
