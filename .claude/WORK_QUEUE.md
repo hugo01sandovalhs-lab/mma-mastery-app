@@ -279,3 +279,199 @@ Already fully implemented and committed (`01d82e1 feat: add skill graph and prog
 - UI: `/skills` (list/search/filter by discipline), `/skills/[id]` (detail: progress, relations, next action, history, notes), `/skills/map` (relation graph view) — all i18n'd (session 5).
 - Training integration: `components/training/training-form.tsx` resolves technique/observation names against the skill catalog via a datalist and sets `skill_id`/`related_skill_id`; free-text `technique_name` stays required and functional with no skill match (docs/decisions/0004).
 - Re-verified this session: typecheck clean, lint clean, vitest 185/185, `next build` succeeds (`/skills`, `/skills/[id]`, `/skills/map` all build as dynamic routes).
+
+## Session 10 — release hardening (final pre-QA pass)
+
+Ran from clean `master` after `cd92592` (session 9). Main agent only, sequential
+edits, no forks/subagents touching shared files. Verified continuously:
+typecheck, lint (0 warnings), vitest (211/211, up from 202), `next build` all
+pass. Committed as `acfeedc`, pushed to `master`.
+
+### Priority 1 — DB migration: done, verified against the real (linked) Supabase project
+`supabase` CLI was already logged in and linked to project `pncrtzwtojlsovpbondp`.
+Ran `supabase db push` — applied `00000000000013_sparring_log.sql` and
+`00000000000014_content_expansion.sql` (both previously only existed locally).
+Verified live via `supabase db query --linked`: 133 skills across 6 disciplines
+(Grappling 43, Judo 20, MMA 13, Sambo 12, Striking/Muay Thai 25, Wrestling 20),
+RLS still enabled on `skills`/`skill_relations`/`skill_progress`/
+`session_techniques`. No reset, no data loss, additive-only as designed.
+
+### Priority 2 — skill graph completion: done
+Added `supabase/migrations/00000000000015_skill_relation_expansion.sql` — 102
+new `skill_relations` edges (110 total incl. migration 3's original 8) covering
+guard-variant relationships, positional-escape counters, submission/defense
+pairs, position→submission follow-ups, judo throw families, sambo leg-lock
+chains, wrestling tie-up progressions, and 8 deliberate cross-discipline links
+(e.g. Judo's Juji Gatame ↔ grappling's Armbar, Sambo's hip throw ↔ Judo's Seoi
+Nage). Applied and verified live: 110 relations, 0 orphans, 0 self-relations,
+0 duplicates. Added `tests/design/skill-graph.test.ts` — a static parser over
+the migration SQL (no DB needed in CI) asserting no self/duplicate/missing-
+node edges and only valid enum relation types; passes.
+
+### Priority 3 — product gap audit: fixed a real, larger-than-expected i18n gap
+Audited PWA/offline, gallery/social, accessibility, and mobile nav per the
+brief's checklist:
+- **PWA/offline**: manifest had no real PNG icon (only `favicon.ico`, which
+  didn't even exist as a `public/` file — Next serves `app/favicon.ico`
+  automatically, so this worked by luck, not by manifest correctness).
+  Extracted the 256×256 PNG already embedded inside the existing `.ico` (no
+  new art asset invented) to `public/icon-256.png` / `app/icon.png`, added it
+  to `manifest.json`. Offline page (`/offline`) was hardcoded French — wired
+  to `useI18n()` (client component, works even with no server round-trip).
+- **Gallery/social**: friend-code flow (`training_partners`) re-verified
+  solid — owner-scoped RLS, security-definer RPCs never leak email, proper
+  error/empty states with `role="alert"`/`role="status"`. **Public gallery
+  sharing is not part of the current architecture** — `profiles.
+  profile_visibility` (`private`/`public`) exists in schema+form but nothing
+  reads it anywhere (no public profile route, no RLS policy keyed on it) —
+  it's a **dead/vestigial toggle**, not a live privacy leak (default private,
+  no public-read policy exists either way). Flagged below as a manual-review
+  item rather than built out, since a real public-profile viewing feature is
+  new scope, not a gap-to-finish.
+- **Accessibility**: found and fixed a real, widespread gap — 17 of 17 form
+  error messages across the app (`training-form`, `goal-form`, `match-form`,
+  every `club/*-form`, etc.) rendered `state.error` as a plain `<p>` with no
+  `role="alert"`, so screen readers never announced validation failures.
+  Fixed all 17. Dialogs/menus already accessible for free (`@base-ui/react`
+  primitives — focus trap, `aria-modal`, escape-to-close). Focus-visible
+  rings and `prefers-reduced-motion` already present in `globals.css`.
+- **Mobile nav**: re-verified `MobileSectionNav` (in `dashboard-shell.tsx`,
+  wraps every `(app)` route) lists every route including `/sparring`,
+  `/study`, `/goals`, `/calendar` — no unreachable core route.
+- **i18n leak sweep** (`grep` for accented chars outside `t()`/`<T>`, same
+  method session 6 used for club): found the dashboard page — the single
+  most-viewed page in the app — was still **~80% hardcoded French** despite
+  being marked "done" implicitly by omission from every prior checkpoint
+  (only the `training-intelligence`-sourced recommendation text used `<T>`;
+  the hero greeting/tagline/status, stat panels, focus cards, progression
+  card, club card, and quick actions were all plain French strings/template
+  literals). Rewired the whole page: added `getServerLocale()`/`dict` prop
+  threading through `Hero`/`StatRow`/`ImageMetricPanel`/
+  `ProgressionCompactCard`/`FocusSection`/`FocusCard`/`ProgressionSection`/
+  `RecentActivity`/`ClubCard`/`QuickActions`; ~45 new dict keys × 6 locales;
+  date formatting switched from hardcoded `"fr-FR"` to the real `locale`.
+  Also fixed smaller leaks: `profile-form.tsx` (**entirely unwired** — every
+  label hardcoded French, missed by every prior i18n session), `error.tsx`
+  (global error boundary), `checkin/[code]/page.tsx` (public QR check-in
+  page), `skills/map`'s empty state, `landing-hero`/`landing-content`'s two
+  aria-labels. `tests/design/i18n.test.ts` still passes (643+ keys, identical
+  sets across all 6 locales, no untranslated-Latin leaks) after every batch.
+
+### Priority 4 — security/data-safety audit: no live issues found
+Targeted checks, not a re-audit of already-verified sessions 1-9 work:
+- All tables have RLS enabled (scripted check across every migration).
+- `createServiceClient()` (bypasses RLS) is `server-only`-guarded and its
+  only import site (`skill-actions.ts`'s `createSkill`/`updateSkill`/
+  `createSkillRelation`) has **zero callers anywhere in the app** — dead
+  code, not reachable from any route/action today. Not a live vulnerability,
+  but flagged: if these are ever wired to a UI form, they need an
+  admin/coach-role check added at that time (service-role client bypasses
+  RLS entirely, so the function itself must gate access).
+  supabase-service.ts).
+- No `console.log`/`console.debug` in production code; no `process.env.*`
+  secret reads in any client component (`pwa-register.tsx`'s `NODE_ENV`
+  check is the only client-side env read, and it's not a secret).
+  reads.
+- `sync_skill_progress_for_skill()` (training/sparring progress) recomputes
+  from a full `count(*)` every time — inherently idempotent, no double-count
+  risk regardless of edit/re-save frequency (unchanged from session 8,
+  re-verified).
+- Checkin-code flow: 10 hex-char code (16^10 space), 20-minute expiry,
+  coach-only rotation (`is_club_member(..., 'COACH')`), public lookup RPC
+  returns only class/club name + time (no PII), self-checkin RPC requires
+  active membership. Solid, no changes needed.
+- **Known, pre-existing, NOT fixed this session** (widespread architectural
+  pattern, not a new gap — fixing it is a ~19-file cross-cutting refactor
+  that violates this session's "no unrelated refactors" constraint): most
+  `lib/usecases/*.ts` files do `throw new Error(error.message)` /
+  `return { error: error.message }`, surfacing raw Postgres/Supabase error
+  text (constraint-violation messages, not stack traces or secrets) directly
+  to the client. Low severity, consistent everywhere, worth a dedicated
+  future pass (wrap in a generic user-facing message + server-side log) but
+  out of scope for a hardening session that must stay additive/surgical.
+
+### Priority 5 — legal/privacy pages: structure done, owner fields explicitly flagged
+Added `/privacy` and `/terms`, both server components using
+`getServerLocale()`, content in `lib/content/legal.ts` (structured content
+module, same pattern as `lib/design/photography.ts`, not stuffed into the
+flat `lib/i18n.ts` key-value dictionary). All 6 locales. Every
+owner-identity-dependent field (legal entity name, registered address,
+company/SIRET number, governing law/jurisdiction, contact email) is rendered
+with a visible "to be completed by the publisher" badge instead of invented
+placeholder-that-looks-real text — verified by
+`tests/design/legal.test.ts`, which also greps for suspicious
+fabricated-identity patterns (a SIRET-shaped 14-digit number, "SARL", etc.)
+and fails if any slip in. Linked from the landing page footer
+(`landing-footer-links`). No cookie-consent banner added: verified via grep
+there is no analytics/tracking script anywhere in the codebase (only the
+locale-preference cookie and Supabase's own auth cookies, both strictly
+necessary), so one isn't required — documented as a checked, not skipped,
+decision.
+
+### Priority 6 — SEO/PWA/metadata: done
+- Added `app/robots.ts` (allow `/`, `/privacy`, `/terms`, `/login`,
+  `/signup`; disallow everything else — every authenticated app route is
+  per-user training/club data and must never be indexed) and
+  `app/sitemap.ts` (the 5 public routes only).
+- `lib/site-url.ts`: resolves the absolute site origin from
+  `NEXT_PUBLIC_SITE_URL` (not yet set — no production domain exists yet) →
+  `VERCEL_URL` (works automatically once deployed to Vercel) →
+  `localhost:3000` fallback. Used for `metadataBase`, robots' `sitemap:`
+  field, and sitemap URLs. **No domain was invented.**
+  `NEXT_PUBLIC_SITE_URL` should be set once a real domain exists.
+- Root layout: added Open Graph + Twitter Card metadata, a title template
+  (`%s | MMA Mastery`).
+- **Deliberately reverted**: first attempt made the root layout read
+  `getServerLocale()` (`cookies()`) to set `<html lang>` correctly per user —
+  this forced Next to mark *every* route dynamic, including `/login`,
+  `/signup`, `/forgot-password`, `/reset-password`, `/design`, which were
+  previously statically prerendered. Reverted to static `lang="fr"` on the
+  server shell; `components/i18n-provider.tsx` already sets
+  `document.documentElement.lang` client-side on mount and on locale switch
+  (pre-existing code, unchanged), so the correct `lang` still lands for real
+  users without paying the static-rendering cost on every page load.
+
+### Priority 7 — performance/UX polish: verified, one near-miss avoided
+No dead nav links, no missing core routes, `next build` output shows the
+expected static/dynamic split preserved (see Priority 6 note above — this
+was actively protected, not just checked). `/offline` and `/_not-found`
+exist and are wired. Did not do a full N+1/query audit beyond what session 9
+already covered (`getTrainingIntelligenceBundle`, dashboard's
+`Promise.all`-batched fetches) — no new query code was added this session
+that would introduce one.
+
+### Manual QA checklist for tomorrow
+1. Log in as a real user in each of the 6 locales and check the dashboard
+   hero, focus cards, club card, and quick actions — this session rewired
+   ~45 strings there without browser verification (no seeded test user in
+   this environment, same blocker as every prior session).
+2. Visit `/privacy` and `/terms` in each locale — confirm the amber
+   "to be completed by the publisher" badges render legibly in both the
+   light and dark theme, then fill in the actual legal entity name, address,
+   registration number, governing law, and contact email in
+   `lib/content/legal.ts` before shipping publicly.
+3. Set `NEXT_PUBLIC_SITE_URL` once a production domain is assigned (used by
+   `metadataBase`/robots/sitemap — currently falls back to `VERCEL_URL` or
+   `localhost:3000`).
+4. Spot-check `/skills/map` in each locale — confirm the new
+   `skill_relations` edges render sensibly for a few of the new Judo/Sambo/
+   Wrestling skills (e.g. Juji Gatame, O Soto Gari, Blast Double).
+5. RU/JA nav label wrapping in the desktop sidebar (`components/championship/
+   sidebar.tsx`'s fixed `w-40`) is a known, small, carried-over-since-session-3
+   cosmetic concern — not touched this session to avoid an unverified layout
+   change; check visually and only adjust if it actually looks broken.
+6. Decide whether `profiles.profile_visibility` (public/private toggle,
+   currently inert — see Priority 3 notes) should become a real public-profile
+   feature or be removed from the form; it currently does nothing either way,
+   which is safe but potentially confusing to a user who sets it to "Public"
+   expecting something to happen.
+
+### Release readiness
+STATUS: COMPLETE for everything implementable without a live browser session
+or owner-supplied legal identity. DB migration applied and verified live.
+Skill graph complete. No security issues found beyond one pre-existing,
+low-severity, documented pattern. Legal page structure done, owner fields
+clearly marked. SEO/PWA metadata complete. All automated gates green
+(typecheck, lint, 211/211 tests, `next build`). Remaining work is human
+browser QA, the 6 manual items above, and deployment — no further
+autonomous implementation work identified.
