@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PHOTO_STORIES, type PhotoStoryPage } from "@/lib/design/photography";
 import { useI18n } from "@/components/i18n-provider";
@@ -12,7 +12,7 @@ export function ChampionshipSectionPhoto({
   alt,
   label,
   labelKey,
-  icon: Icon,
+  icon,
   objectPosition = "center",
   className,
   size = "default",
@@ -21,7 +21,10 @@ export function ChampionshipSectionPhoto({
   alt: string;
   label: string;
   labelKey?: string;
-  icon: LucideIcon;
+  /** Pass a rendered element (e.g. `<Timer />`), never a component reference: this is a
+   * client component, and passing a bare function/component from a server page as a prop
+   * crashes with "Functions cannot be passed directly to Client Components". */
+  icon: ReactNode;
   objectPosition?: string;
   className?: string;
   size?: "default" | "large";
@@ -45,7 +48,7 @@ export function ChampionshipSectionPhoto({
         }}
       />
       <div className="relative flex h-full items-end gap-2 p-3 sm:p-4">
-        <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+        {icon}
         <span className="font-heading text-sm font-extrabold uppercase tracking-wide text-white sm:text-base">
           {labelKey ? t(labelKey, label) : label}
         </span>

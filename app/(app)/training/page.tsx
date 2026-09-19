@@ -61,7 +61,7 @@ export default async function TrainingListPage() {
 
         <section id="timer" className="editorial-section scroll-mt-6">
           <h2>{dict["trainingList.timerTitle"]}</h2>
-          <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cao-vi-ton-449370203-17279410.jpg" alt="Deux boxeurs répètent leurs enchaînements sur le ring" label="Cadence de travail" labelKey="photoLabel.workPace" icon={Timer} objectPosition="50% 48%" />
+          <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cao-vi-ton-449370203-17279410.jpg" alt="Deux boxeurs répètent leurs enchaînements sur le ring" label="Cadence de travail" labelKey="photoLabel.workPace" icon={<Timer className="size-4 shrink-0 text-primary" aria-hidden="true" />} objectPosition="50% 48%" />
           <RoundTimer />
         </section>
 

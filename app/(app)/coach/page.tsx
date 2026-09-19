@@ -58,7 +58,7 @@ export default async function CoachPage() {
             alt="Coach donnant des conseils entre deux rounds"
             label="Conseils entre les rounds"
             labelKey="photoLabel.roundAdvice"
-            icon={MessageCircleQuestion}
+            icon={<MessageCircleQuestion className="size-4 shrink-0 text-primary" aria-hidden="true" />}
             objectPosition="42% 42%"
           />
         </section>

@@ -141,7 +141,7 @@ export default async function YouTubePage({
           alt="Travail au pao en Muay Thai"
           label="Techniques et drills"
           labelKey="photoLabel.drills"
-          icon={Video}
+          icon={<Video className="size-4 shrink-0 text-primary" aria-hidden="true" />}
           objectPosition="45% 50%"
         />
 
@@ -159,7 +159,7 @@ export default async function YouTubePage({
           alt="Coin de coachs assistant un combattant"
           label="Coachs & partenaires"
           labelKey="photoLabel.coachesPartners"
-          icon={Sparkles}
+          icon={<Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />}
           objectPosition="45% 38%"
         />
 
@@ -169,7 +169,7 @@ export default async function YouTubePage({
             alt="Projection en grappling lors d'un combat"
             label="Grappling & lutte"
             labelKey="photoLabel.grapplingWrestling"
-            icon={Video}
+            icon={<Video className="size-4 shrink-0 text-primary" aria-hidden="true" />}
             objectPosition="50% 62%"
           />
         </Link>

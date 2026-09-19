@@ -101,7 +101,7 @@ export default async function StudyPage() {
           alt="Athlète en pause de réflexion contre le sac"
           label="Prendre le temps de comprendre"
           labelKey="photoLabel.takeTimeUnderstand"
-          icon={BookmarkIcon}
+          icon={<BookmarkIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />}
           objectPosition="45% 38%"
           size="large"
         />
