@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
   const [state, formAction, isPending] = useActionState(updatePassword, initialState);
   const { t } = useI18n();
   return (
-    <AuthShell title={t("auth.reset.title", "Nouveau mot de passe")} intro={t("auth.reset.intro", "Choisissez un accès solide pour reprendre votre progression.")}>
+    <AuthShell hero="static" title={t("auth.reset.title", "Nouveau mot de passe")} intro={t("auth.reset.intro", "Choisissez un accès solide pour reprendre votre progression.")}>
       <form action={formAction} className="auth-form">
         <div>
           <Label htmlFor="password">{t("auth.reset.passwordLabel", "Nouveau mot de passe")}</Label>

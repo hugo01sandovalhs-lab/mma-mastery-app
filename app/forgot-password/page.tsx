@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
   const [state, formAction, isPending] = useActionState(requestPasswordReset, initialState);
   const { t } = useI18n();
   return (
-    <AuthShell title={t("auth.forgot.title", "Récupérez votre accès")} intro={t("auth.forgot.intro", "Recevez un lien sécurisé pour choisir un nouveau mot de passe.")}>
+    <AuthShell hero="static" title={t("auth.forgot.title", "Récupérez votre accès")} intro={t("auth.forgot.intro", "Recevez un lien sécurisé pour choisir un nouveau mot de passe.")}>
       <form action={formAction} className="auth-form">
         <div>
           <Label htmlFor="email">{t("auth.forgot.emailLabel", "Email du compte")}</Label>

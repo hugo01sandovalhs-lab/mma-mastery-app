@@ -15,7 +15,7 @@ export default function SignupPage() {
   const [state, formAction, isPending] = useActionState(signUpWithPassword, initialState);
   const { t } = useI18n();
   return (
-    <AuthShell title={t("auth.signup.title", "Entrez dans l’arène")} intro={t("auth.signup.intro", "Créez votre espace de travail et commencez à suivre chaque round.")}>
+    <AuthShell hero="rotate" title={t("auth.signup.title", "Entrez dans l’arène")} intro={t("auth.signup.intro", "Créez votre espace de travail et commencez à suivre chaque round.")}>
       <form action={formAction} className="auth-form">
         <div>
           <Label htmlFor="email">{t("auth.signup.emailLabel", "Email")}</Label>

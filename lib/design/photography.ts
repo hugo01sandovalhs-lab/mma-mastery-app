@@ -1,6 +1,6 @@
 /** Art direction: visual audit and crop notes in docs/design-references/photography.md. */
 export const PAGE_PHOTOS = {
-  dashboard: { src: "/mma-mastery-photos/-37DpFDYsYY7HL96ovNdzGJE1lQmDKA8d1uvLlFJJQPrLgtVmsRikjMJ7czTfs--cKYwdC1cnAasvcaLH9-swbzZpui9TP5FUMwu8tHrNVjBhXgBBPRKlIPuwePmEkdVIgxSLhRBkuHHsMOwtU-QL58nsdg6do3qQTPRTraT1zyjvNbE4Hu2t9D_36iGiBXp.jpg", alt: "Combattante travaillant au sac dans une salle baignée de lumière", position: "58% 48%" },
+  dashboard: { src: "/mma-mastery-photos/hero-white-gloves-cage.jpg", alt: "Combattant en garde, gants blancs levés, dans une cage à l'éclairage dramatique", position: "50% 38%" },
   training: { src: "/mma-mastery-photos/anastase-maragos-xE2qSPzgcdE-unsplash.jpg", alt: "Athlète frappant au sac dans un gym de boxe", position: "50% 52%" },
   skills: { src: "/mma-mastery-photos/pexels-gabii-fernandez-199438359-38785755.jpg", alt: "Deux pratiquantes travaillent une technique de jiu-jitsu", position: "50% 54%" },
   coach: { src: "/mma-mastery-photos/jonathan-tomas-rX36vcriciQ-unsplash.jpg", alt: "Coach tenant les paos face à une combattante concentrée", position: "58% 42%" },
@@ -15,10 +15,10 @@ export const PAGE_PHOTOS = {
 } as const;
 
 export const LANDING_SLIDES = [
-  { src: "/mma-mastery-photos/pexels-shkrabaanthony-4398382.jpg", alt: "Combattant concentré en garde dans la cage", position: "44% 34%" },
-  { src: "/mma-mastery-photos/pexels-cristian-rojas-8810145.jpg", alt: "Athlète concentré pendant une séance de préparation", position: "50% 38%" },
-  { src: "/mma-mastery-photos/pexels-brunogobofoto-5521149.jpg", alt: "Combattant récupérant sur le tapis après l'effort", position: "58% 50%" },
-  { src: "/mma-mastery-photos/anastase-maragos-sZYPBJ3neyA-unsplash.jpg", alt: "Boxeur travaillant dans une salle à l'atmosphère brute", position: "50% 44%" },
+  { src: "/mma-mastery-photos/rotation-heavybag-back.jpg", alt: "Combattante travaillant au sac, vue de dos", position: "50% 30%" },
+  { src: "/mma-mastery-photos/rotation-corner-embrace.jpg", alt: "Deux combattants échangeant dans un coin de salle", position: "50% 32%" },
+  { src: "/mma-mastery-photos/rotation-heavybag-laugh.jpg", alt: "Combattante souriante face au sac lourd", position: "50% 40%" },
+  { src: "/mma-mastery-photos/rotation-ring-jab.jpg", alt: "Boxeur portant un direct sur le ring", position: "42% 38%" },
 ] as const;
 
 export const LANDING_FINAL_PHOTO = {

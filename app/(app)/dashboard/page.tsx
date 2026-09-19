@@ -103,6 +103,8 @@ export default async function DashboardPage() {
           lastSessionDate={sessions[0]?.date ?? null}
           highPriorityCount={highPriorityCount}
           imageSrc={PAGE_PHOTOS.dashboard.src}
+          imageAlt={PAGE_PHOTOS.dashboard.alt}
+          imagePosition={PAGE_PHOTOS.dashboard.position}
           sessionStats={sessionStats}
         />
 
@@ -131,6 +133,8 @@ function Hero({
   lastSessionDate,
   highPriorityCount,
   imageSrc,
+  imageAlt,
+  imagePosition,
   sessionStats,
 }: {
   displayName: string | null;
@@ -138,6 +142,8 @@ function Hero({
   lastSessionDate: string | null;
   highPriorityCount: number;
   imageSrc: string;
+  imageAlt: string;
+  imagePosition: string;
   sessionStats: ReturnType<typeof computeSessionStats>;
 }) {
   const status =
@@ -151,7 +157,7 @@ function Hero({
 
   return (
     <section className="championship-hero" aria-label="Votre entraînement">
-      <Image src={imageSrc} alt="Entraînement de boxe dans une salle sombre" fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" />
+      <Image src={imageSrc} alt={imageAlt} fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" style={{ objectPosition: imagePosition }} />
       <div className="championship-hero-tools">
         <Link href="/search" aria-label="Rechercher"><SearchIcon size={16} /></Link>
         <Link href="/goals" aria-label="Mes objectifs"><Flag size={16} /></Link>
