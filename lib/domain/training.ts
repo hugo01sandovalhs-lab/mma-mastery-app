@@ -143,3 +143,43 @@ export const trainingSessionSchema = z.object({
   updated_at: z.string(),
 });
 export type TrainingSession = z.infer<typeof trainingSessionSchema>;
+
+export type SessionStatsInput = {
+  date: string;
+  duration_minutes: number | null;
+  discipline: { name: string };
+  techniques: { technique_name: string }[];
+};
+
+export type SessionStats = {
+  weekCount: number;
+  monthCount: number;
+  weekMinutes: number;
+  weekTechniqueCount: number;
+  weekDisciplines: string[];
+};
+
+/**
+ * Deterministic aggregation over already-fetched sessions; no extra query.
+ * "Week" = last 7 days, "month" = last 30 days, both relative to `now`.
+ */
+export function computeSessionStats(sessions: SessionStatsInput[], now = new Date()): SessionStats {
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  const monthMs = 30 * 24 * 60 * 60 * 1000;
+  const nowMs = now.getTime();
+
+  const weekSessions = sessions.filter((s) => nowMs - new Date(s.date).getTime() <= weekMs);
+  const monthSessions = sessions.filter((s) => nowMs - new Date(s.date).getTime() <= monthMs);
+
+  const weekDisciplines = Array.from(new Set(weekSessions.map((s) => s.discipline.name)));
+  const weekTechniqueCount = weekSessions.reduce((sum, s) => sum + s.techniques.length, 0);
+  const weekMinutes = weekSessions.reduce((sum, s) => sum + (s.duration_minutes ?? 0), 0);
+
+  return {
+    weekCount: weekSessions.length,
+    monthCount: monthSessions.length,
+    weekMinutes,
+    weekTechniqueCount,
+    weekDisciplines,
+  };
+}

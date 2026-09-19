@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, PencilIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { DeleteSessionDialog } from "@/components/training/delete-session-dialog";
+import { SessionReviewCard } from "@/components/training/session-review";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,6 +67,8 @@ export default async function TrainingSessionDetailPage({
             <DeleteSessionDialog sessionId={session.id} />
           </div>
         </div>
+
+        <SessionReviewCard session={session} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>

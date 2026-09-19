@@ -16,6 +16,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     if (saved && isLocale(saved)) {
       setLocale(saved);
       document.documentElement.lang = saved;
+      document.cookie = `${STORAGE_KEY}=${saved}; path=/; max-age=31536000; samesite=lax`;
     }
   }, []);
 
@@ -23,6 +24,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocale(nextLocale);
     document.documentElement.lang = nextLocale;
     window.localStorage.setItem(STORAGE_KEY, nextLocale);
+    document.cookie = `${STORAGE_KEY}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
   }, []);
 
   const value = useMemo(() => ({

@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { tServer } from "@/lib/i18n-server";
 
 const BUCKET = "training-photos";
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -13,12 +14,12 @@ export async function uploadTrainingPhoto(
   formData: FormData,
 ): Promise<PhotoActionState> {
   const file = formData.get("photo");
-  if (!(file instanceof File) || !file.size) return { error: "Choisissez une photo." };
-  if (!ALLOWED_TYPES.has(file.type) || file.size > 8 * 1024 * 1024) return { error: "Format JPEG, PNG ou WebP, 8 Mo maximum." };
+  if (!(file instanceof File) || !file.size) return { error: await tServer("error.choosePhoto", "Choisissez une photo.") };
+  if (!ALLOWED_TYPES.has(file.type) || file.size > 8 * 1024 * 1024) return { error: await tServer("error.photoFormat", "Format JPEG, PNG ou WebP, 8 Mo maximum.") };
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Session expirée." };
+  if (!user) return { error: await tServer("error.sessionExpired", "Session expirée.") };
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const storagePath = `${user.id}/${randomUUID()}.${extension}`;

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { tServer } from "@/lib/i18n-server";
 import {
   trainingSessionInputSchema,
   type Discipline,
@@ -43,7 +44,7 @@ export async function createTrainingSession(
 ): Promise<TrainingActionState> {
   const parsed = parseFormInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: parsed.error.issues[0]?.message ?? (await tServer("error.invalidForm", "Formulaire invalide")) };
   }
   const input = parsed.data;
 
@@ -74,7 +75,7 @@ export async function updateTrainingSession(
 ): Promise<TrainingActionState> {
   const parsed = parseFormInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: parsed.error.issues[0]?.message ?? (await tServer("error.invalidForm", "Formulaire invalide")) };
   }
   const input = parsed.data;
 
@@ -114,7 +115,7 @@ export async function deleteTrainingSession(
     return { error: error.message };
   }
   if (!count) {
-    return { error: "Séance introuvable ou déjà supprimée." };
+    return { error: await tServer("error.sessionNotFound", "Séance introuvable ou déjà supprimée.") };
   }
 
   redirect("/training");

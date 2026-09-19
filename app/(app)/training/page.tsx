@@ -9,7 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
+import { computeSessionStats } from "@/lib/domain/training";
 import { RoundTimer } from "@/components/training/round-timer";
+import { WeeklySummaryCard } from "@/components/training/weekly-summary";
 import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 
 function formatDate(iso: string): string {
@@ -24,6 +26,7 @@ export default async function TrainingListPage() {
   if (!user) redirect("/login");
 
   const sessions = await getTrainingSessions();
+  const stats = computeSessionStats(sessions);
 
   return (
     <AppShell>
@@ -47,6 +50,8 @@ export default async function TrainingListPage() {
           </>} />
 
         <ChampionshipPhotoMosaic page="training" />
+
+        <WeeklySummaryCard stats={stats} />
 
         <section id="timer" className="editorial-section scroll-mt-6">
           <h2>Timer de round</h2>

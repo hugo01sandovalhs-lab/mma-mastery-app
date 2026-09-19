@@ -21,7 +21,8 @@ const fr = {
   "action.edit": "Modifier", "action.add": "Ajouter", "action.back": "Retour",
   "action.continue": "Continuer", "action.newSession": "Nouvelle séance",
   "action.copyFriendCode": "Copier mon code ami", "action.copied": "Copié",
-  "action.openYoutube": "Voir sur YouTube", "action.favorite": "Ajouter aux favoris",
+  "action.openYoutube": "Voir sur YouTube", "action.favorite": "Ajouter aux favoris", "action.favorited": "Favori",
+  "study.inQueue": "Dans la file d'étude", "study.addToQueue": "Ajouter à la file d'étude",
   "action.resumeTechnique": "Reprendre cette technique", "action.addGoal": "Ajouter aux objectifs",
   "action.timer": "Timer",
 
@@ -55,6 +56,14 @@ const fr = {
 
   "training.sessions": "Séances", "training.lastPractice": "Dernière pratique il y a {days} jours",
   "training.weekCount": "{count} séances cette semaine", "training.monthCount": "{count} séances ce mois-ci",
+  "training.weeklySummary": "Résumé de la semaine", "training.weeklyMinutes": "{count} minutes",
+  "training.weeklyTechniques": "{count} technique(s) travaillée(s)", "training.weeklyDisciplines": "Disciplines",
+  "training.weeklyEmpty": "Aucune séance cette semaine.",
+  "review.techniquesWorked": "{count} technique(s) travaillée(s)",
+  "review.difficultiesFlagged": "{count} difficulté(s) relevée(s)", "review.successesLogged": "{count} réussite(s) notée(s)",
+  "review.focusNextTime": "À travailler la prochaine fois : {text}", "review.keepDoing": "À reproduire : {text}",
+  "review.noData": "Ajoutez des observations pour une review plus riche.",
+  "action.exportText": "Exporter en texte", "action.addedGoal": "Ajouté aux objectifs",
 
   "review.title": "Review de séance", "review.sixtySeconds": "Review en 60 secondes",
 
@@ -123,6 +132,16 @@ const fr = {
 
   "notFound.title": "Page introuvable", "notFound.body": "Cette page n'existe pas ou plus.",
   "notFound.cta": "Retour à l'accueil",
+
+  "error.emailRequired": "Saisissez votre adresse email.", "error.originUnknown": "Impossible de déterminer l'adresse du site.",
+  "error.resetSent": "Si ce compte existe, un lien de réinitialisation vient d'être envoyé.",
+  "error.passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+  "error.passwordMismatch": "Les mots de passe ne correspondent pas.",
+  "error.passwordUpdated": "Mot de passe mis à jour. Vous pouvez maintenant vous connecter.",
+  "error.sessionNotFound": "Séance introuvable ou déjà supprimée.",
+  "error.choosePhoto": "Choisissez une photo.", "error.photoFormat": "Format JPEG, PNG ou WebP, 8 Mo maximum.",
+  "error.sessionExpired": "Session expirée.", "error.loginRequired": "Connexion requise.",
+  "error.invalidForm": "Formulaire invalide",
 } as const;
 
 type TranslationKey = keyof typeof fr;
@@ -145,7 +164,8 @@ const en: Dictionary = {
   "action.save": "Save", "action.cancel": "Cancel", "action.delete": "Delete", "action.edit": "Edit",
   "action.add": "Add", "action.back": "Back", "action.continue": "Continue", "action.newSession": "New session",
   "action.copyFriendCode": "Copy friend code", "action.copied": "Copied",
-  "action.openYoutube": "Watch on YouTube", "action.favorite": "Add to favorites",
+  "action.openYoutube": "Watch on YouTube", "action.favorite": "Add to favorites", "action.favorited": "Favorited",
+  "study.inQueue": "In study queue", "study.addToQueue": "Add to study queue",
   "action.resumeTechnique": "Resume this technique", "action.addGoal": "Add to goals", "action.timer": "Timer",
 
   "auth.login": "Log in", "auth.signup": "Create account", "auth.email": "Email address",
@@ -177,6 +197,14 @@ const en: Dictionary = {
 
   "training.sessions": "Sessions", "training.lastPractice": "Last practiced {days} days ago",
   "training.weekCount": "{count} sessions this week", "training.monthCount": "{count} sessions this month",
+  "training.weeklySummary": "Weekly summary", "training.weeklyMinutes": "{count} minutes",
+  "training.weeklyTechniques": "{count} technique(s) trained", "training.weeklyDisciplines": "Disciplines",
+  "training.weeklyEmpty": "No sessions this week.",
+  "review.techniquesWorked": "{count} technique(s) trained",
+  "review.difficultiesFlagged": "{count} difficulty(ies) flagged", "review.successesLogged": "{count} success(es) logged",
+  "review.focusNextTime": "Work on next time: {text}", "review.keepDoing": "Keep doing: {text}",
+  "review.noData": "Add observations for a richer review.",
+  "action.exportText": "Export as text", "action.addedGoal": "Added to goals",
 
   "review.title": "Session review", "review.sixtySeconds": "60-second review",
 
@@ -244,6 +272,16 @@ const en: Dictionary = {
 
   "notFound.title": "Page not found", "notFound.body": "This page doesn't exist anymore.",
   "notFound.cta": "Back to home",
+
+  "error.emailRequired": "Enter your email address.", "error.originUnknown": "Could not determine the site address.",
+  "error.resetSent": "If this account exists, a reset link has just been sent.",
+  "error.passwordTooShort": "Password must be at least 8 characters.",
+  "error.passwordMismatch": "Passwords do not match.",
+  "error.passwordUpdated": "Password updated. You can now sign in.",
+  "error.sessionNotFound": "Session not found or already deleted.",
+  "error.choosePhoto": "Choose a photo.", "error.photoFormat": "JPEG, PNG or WebP format, 8 MB maximum.",
+  "error.sessionExpired": "Session expired.", "error.loginRequired": "Sign in required.",
+  "error.invalidForm": "Invalid form",
 };
 
 const es: Dictionary = {
@@ -263,7 +301,8 @@ const es: Dictionary = {
   "action.save": "Guardar", "action.cancel": "Cancelar", "action.delete": "Eliminar", "action.edit": "Editar",
   "action.add": "Añadir", "action.back": "Volver", "action.continue": "Continuar", "action.newSession": "Nueva sesión",
   "action.copyFriendCode": "Copiar mi código", "action.copied": "Copiado",
-  "action.openYoutube": "Ver en YouTube", "action.favorite": "Añadir a favoritos",
+  "action.openYoutube": "Ver en YouTube", "action.favorite": "Añadir a favoritos", "action.favorited": "Favorito",
+  "study.inQueue": "En la cola de estudio", "study.addToQueue": "Añadir a la cola de estudio",
   "action.resumeTechnique": "Retomar esta técnica", "action.addGoal": "Añadir a objetivos", "action.timer": "Temporizador",
 
   "auth.login": "Iniciar sesión", "auth.signup": "Crear cuenta", "auth.email": "Correo electrónico",
@@ -295,6 +334,14 @@ const es: Dictionary = {
 
   "training.sessions": "Sesiones", "training.lastPractice": "Última práctica hace {days} días",
   "training.weekCount": "{count} sesiones esta semana", "training.monthCount": "{count} sesiones este mes",
+  "training.weeklySummary": "Resumen semanal", "training.weeklyMinutes": "{count} minutos",
+  "training.weeklyTechniques": "{count} técnica(s) trabajada(s)", "training.weeklyDisciplines": "Disciplinas",
+  "training.weeklyEmpty": "Ninguna sesión esta semana.",
+  "review.techniquesWorked": "{count} técnica(s) trabajada(s)",
+  "review.difficultiesFlagged": "{count} dificultad(es) señalada(s)", "review.successesLogged": "{count} éxito(s) registrado(s)",
+  "review.focusNextTime": "Trabajar la próxima vez: {text}", "review.keepDoing": "Repetir: {text}",
+  "review.noData": "Añada observaciones para una review más completa.",
+  "action.exportText": "Exportar como texto", "action.addedGoal": "Añadido a objetivos",
 
   "review.title": "Revisión de sesión", "review.sixtySeconds": "Revisión en 60 segundos",
 
@@ -362,6 +409,16 @@ const es: Dictionary = {
 
   "notFound.title": "Página no encontrada", "notFound.body": "Esta página ya no existe.",
   "notFound.cta": "Volver al inicio",
+
+  "error.emailRequired": "Indique su dirección de email.", "error.originUnknown": "No se pudo determinar la dirección del sitio.",
+  "error.resetSent": "Si esta cuenta existe, se acaba de enviar un enlace de restablecimiento.",
+  "error.passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+  "error.passwordMismatch": "Las contraseñas no coinciden.",
+  "error.passwordUpdated": "Contraseña actualizada. Ya puede iniciar sesión.",
+  "error.sessionNotFound": "Sesión no encontrada o ya eliminada.",
+  "error.choosePhoto": "Elija una foto.", "error.photoFormat": "Formato JPEG, PNG o WebP, 8 MB máximo.",
+  "error.sessionExpired": "Sesión caducada.", "error.loginRequired": "Inicio de sesión requerido.",
+  "error.invalidForm": "Formulario inválido",
 };
 
 const de: Dictionary = {
@@ -381,7 +438,8 @@ const de: Dictionary = {
   "action.save": "Speichern", "action.cancel": "Abbrechen", "action.delete": "Löschen", "action.edit": "Bearbeiten",
   "action.add": "Hinzufügen", "action.back": "Zurück", "action.continue": "Weiter", "action.newSession": "Neue Einheit",
   "action.copyFriendCode": "Freundescode kopieren", "action.copied": "Kopiert",
-  "action.openYoutube": "Auf YouTube ansehen", "action.favorite": "Zu Favoriten hinzufügen",
+  "action.openYoutube": "Auf YouTube ansehen", "action.favorite": "Zu Favoriten hinzufügen", "action.favorited": "Favorit",
+  "study.inQueue": "In der Lernliste", "study.addToQueue": "Zur Lernliste hinzufügen",
   "action.resumeTechnique": "Diese Technik fortsetzen", "action.addGoal": "Zu Zielen hinzufügen", "action.timer": "Timer",
 
   "auth.login": "Anmelden", "auth.signup": "Konto erstellen", "auth.email": "E-Mail-Adresse",
@@ -413,6 +471,14 @@ const de: Dictionary = {
 
   "training.sessions": "Einheiten", "training.lastPractice": "Zuletzt vor {days} Tagen trainiert",
   "training.weekCount": "{count} Einheiten diese Woche", "training.monthCount": "{count} Einheiten diesen Monat",
+  "training.weeklySummary": "Wochenübersicht", "training.weeklyMinutes": "{count} Minuten",
+  "training.weeklyTechniques": "{count} Technik(en) trainiert", "training.weeklyDisciplines": "Disziplinen",
+  "training.weeklyEmpty": "Keine Einheit diese Woche.",
+  "review.techniquesWorked": "{count} Technik(en) trainiert",
+  "review.difficultiesFlagged": "{count} Schwierigkeit(en) markiert", "review.successesLogged": "{count} Erfolg(e) notiert",
+  "review.focusNextTime": "Nächstes Mal üben: {text}", "review.keepDoing": "Beibehalten: {text}",
+  "review.noData": "Beobachtungen hinzufügen für eine ausführlichere Review.",
+  "action.exportText": "Als Text exportieren", "action.addedGoal": "Zu Zielen hinzugefügt",
 
   "review.title": "Einheiten-Review", "review.sixtySeconds": "60-Sekunden-Review",
 
@@ -480,6 +546,16 @@ const de: Dictionary = {
 
   "notFound.title": "Seite nicht gefunden", "notFound.body": "Diese Seite gibt es nicht mehr.",
   "notFound.cta": "Zurück zur Startseite",
+
+  "error.emailRequired": "Geben Sie Ihre E-Mail-Adresse ein.", "error.originUnknown": "Die Adresse der Website konnte nicht ermittelt werden.",
+  "error.resetSent": "Falls dieses Konto existiert, wurde soeben ein Link zum Zurücksetzen gesendet.",
+  "error.passwordTooShort": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+  "error.passwordMismatch": "Die Passwörter stimmen nicht überein.",
+  "error.passwordUpdated": "Passwort aktualisiert. Sie können sich jetzt anmelden.",
+  "error.sessionNotFound": "Einheit nicht gefunden oder bereits gelöscht.",
+  "error.choosePhoto": "Wählen Sie ein Foto.", "error.photoFormat": "Format JPEG, PNG oder WebP, maximal 8 MB.",
+  "error.sessionExpired": "Sitzung abgelaufen.", "error.loginRequired": "Anmeldung erforderlich.",
+  "error.invalidForm": "Ungültiges Formular",
 };
 
 const ru: Dictionary = {
@@ -499,7 +575,8 @@ const ru: Dictionary = {
   "action.save": "Сохранить", "action.cancel": "Отмена", "action.delete": "Удалить", "action.edit": "Изменить",
   "action.add": "Добавить", "action.back": "Назад", "action.continue": "Продолжить", "action.newSession": "Новая тренировка",
   "action.copyFriendCode": "Скопировать код друга", "action.copied": "Скопировано",
-  "action.openYoutube": "Смотреть на YouTube", "action.favorite": "В избранное",
+  "action.openYoutube": "Смотреть на YouTube", "action.favorite": "В избранное", "action.favorited": "В избранном",
+  "study.inQueue": "В очереди изучения", "study.addToQueue": "Добавить в очередь изучения",
   "action.resumeTechnique": "Вернуться к этой технике", "action.addGoal": "Добавить к целям", "action.timer": "Таймер",
 
   "auth.login": "Войти", "auth.signup": "Создать аккаунт", "auth.email": "Электронная почта",
@@ -531,6 +608,14 @@ const ru: Dictionary = {
 
   "training.sessions": "Тренировки", "training.lastPractice": "Последняя практика {days} дн. назад",
   "training.weekCount": "{count} тренировок на этой неделе", "training.monthCount": "{count} тренировок в этом месяце",
+  "training.weeklySummary": "Итоги недели", "training.weeklyMinutes": "{count} минут",
+  "training.weeklyTechniques": "{count} техник(и) отработано", "training.weeklyDisciplines": "Дисциплины",
+  "training.weeklyEmpty": "На этой неделе нет тренировок.",
+  "review.techniquesWorked": "{count} техник(и) отработано",
+  "review.difficultiesFlagged": "{count} трудност(и) отмечено", "review.successesLogged": "{count} успех(ов) отмечено",
+  "review.focusNextTime": "Поработать в следующий раз: {text}", "review.keepDoing": "Повторить: {text}",
+  "review.noData": "Добавьте наблюдения для более полной review.",
+  "action.exportText": "Экспорт в текст", "action.addedGoal": "Добавлено в цели",
 
   "review.title": "Разбор тренировки", "review.sixtySeconds": "Разбор за 60 секунд",
 
@@ -598,6 +683,16 @@ const ru: Dictionary = {
 
   "notFound.title": "Страница не найдена", "notFound.body": "Этой страницы больше не существует.",
   "notFound.cta": "На главную",
+
+  "error.emailRequired": "Введите ваш email.", "error.originUnknown": "Не удалось определить адрес сайта.",
+  "error.resetSent": "Если такой аккаунт существует, ссылка для сброса пароля уже отправлена.",
+  "error.passwordTooShort": "Пароль должен содержать не менее 8 символов.",
+  "error.passwordMismatch": "Пароли не совпадают.",
+  "error.passwordUpdated": "Пароль обновлён. Теперь вы можете войти.",
+  "error.sessionNotFound": "Тренировка не найдена или уже удалена.",
+  "error.choosePhoto": "Выберите фото.", "error.photoFormat": "Формат JPEG, PNG или WebP, максимум 8 МБ.",
+  "error.sessionExpired": "Сессия истекла.", "error.loginRequired": "Требуется вход.",
+  "error.invalidForm": "Неверная форма",
 };
 
 const ja: Dictionary = {
@@ -617,7 +712,8 @@ const ja: Dictionary = {
   "action.save": "保存", "action.cancel": "キャンセル", "action.delete": "削除", "action.edit": "編集",
   "action.add": "追加", "action.back": "戻る", "action.continue": "続ける", "action.newSession": "新しいセッション",
   "action.copyFriendCode": "フレンドコードをコピー", "action.copied": "コピーしました",
-  "action.openYoutube": "YouTubeで見る", "action.favorite": "お気に入りに追加",
+  "action.openYoutube": "YouTubeで見る", "action.favorite": "お気に入りに追加", "action.favorited": "お気に入り済み",
+  "study.inQueue": "学習キューに追加済み", "study.addToQueue": "学習キューに追加",
   "action.resumeTechnique": "この技を再開", "action.addGoal": "目標に追加", "action.timer": "タイマー",
 
   "auth.login": "ログイン", "auth.signup": "アカウント作成", "auth.email": "メールアドレス",
@@ -649,6 +745,14 @@ const ja: Dictionary = {
 
   "training.sessions": "セッション", "training.lastPractice": "最終練習は{days}日前",
   "training.weekCount": "今週{count}セッション", "training.monthCount": "今月{count}セッション",
+  "training.weeklySummary": "週間サマリー", "training.weeklyMinutes": "{count}分",
+  "training.weeklyTechniques": "{count}件のテクニックを練習", "training.weeklyDisciplines": "種目",
+  "training.weeklyEmpty": "今週のセッションはありません。",
+  "review.techniquesWorked": "{count}件のテクニックを練習",
+  "review.difficultiesFlagged": "{count}件の課題を記録", "review.successesLogged": "{count}件の成功を記録",
+  "review.focusNextTime": "次回取り組む: {text}", "review.keepDoing": "継続する: {text}",
+  "review.noData": "観察記録を追加すると、より詳しいレビューになります。",
+  "action.exportText": "テキストで書き出す", "action.addedGoal": "目標に追加済み",
 
   "review.title": "セッションレビュー", "review.sixtySeconds": "60秒レビュー",
 
@@ -716,6 +820,16 @@ const ja: Dictionary = {
 
   "notFound.title": "ページが見つかりません", "notFound.body": "このページはもう存在しません。",
   "notFound.cta": "ホームに戻る",
+
+  "error.emailRequired": "メールアドレスを入力してください。", "error.originUnknown": "サイトのアドレスを特定できませんでした。",
+  "error.resetSent": "このアカウントが存在する場合、再設定リンクを送信しました。",
+  "error.passwordTooShort": "パスワードは8文字以上で入力してください。",
+  "error.passwordMismatch": "パスワードが一致しません。",
+  "error.passwordUpdated": "パスワードを更新しました。ログインできます。",
+  "error.sessionNotFound": "セッションが見つからないか、既に削除されています。",
+  "error.choosePhoto": "写真を選択してください。", "error.photoFormat": "JPEG、PNG、WebP形式、最大8MB。",
+  "error.sessionExpired": "セッションが期限切れです。", "error.loginRequired": "ログインが必要です。",
+  "error.invalidForm": "フォームが無効です",
 };
 
 export const DICTIONARIES: Record<Locale, Dictionary> = { fr, en, es, de, ru, ja };

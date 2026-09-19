@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { tServer } from "@/lib/i18n-server";
 import {
   classInputSchema,
   classSessionInputSchema,
@@ -251,7 +252,7 @@ export async function checkIn(_prevState: CheckinState, formData: FormData): Pro
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { status: "error", message: "Connexion requise." };
+  if (!user) return { status: "error", message: await tServer("error.loginRequired", "Connexion requise.") };
 
   const { error } = await supabase.rpc("checkin_to_class_session", { p_code: code });
   if (error) return { status: "error", message: error.message };

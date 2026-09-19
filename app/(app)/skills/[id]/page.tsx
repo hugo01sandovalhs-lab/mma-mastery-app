@@ -30,6 +30,7 @@ import {
   type SkillRecommendation,
 } from "@/lib/domain/training-intelligence";
 import { getSkill, type SkillDetail, type SkillHistoryItem, type SkillRelationItem } from "@/lib/usecases/skill-actions";
+import { getGoals } from "@/lib/usecases/goals-actions";
 import { getTrainingIntelligence } from "@/lib/usecases/training-intelligence-actions";
 import {
   getResourcesForSkill,
@@ -86,13 +87,15 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
   const skill = await getSkill(id);
   if (!skill) notFound();
 
-  const [intelligence, notes, resources, bookmarked, queued] = await Promise.all([
+  const [intelligence, notes, resources, bookmarked, queued, goals] = await Promise.all([
     getTrainingIntelligence(),
     getSkillNotes(id),
     getResourcesForSkill(id),
     isBookmarked("skill", id),
     isInStudyQueue(id),
+    getGoals(),
   ]);
+  const goaled = goals.some((g) => g.skill?.id === id && g.status === "active");
   const recommendation =
     intelligence.status === "ok" ? intelligence.recommendations.find((r) => r.skillId === id) : undefined;
 
@@ -113,7 +116,13 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
         <Hero skill={skill} stage={stage} stageIndex={stageIndex} maxIndex={maxIndex} />
 
         <div className="-mt-4">
-          <SkillActionsBar skillId={skill.id} initiallyBookmarked={bookmarked} alreadyQueued={queued} />
+          <SkillActionsBar
+            skillId={skill.id}
+            skillName={skill.name}
+            initiallyBookmarked={bookmarked}
+            alreadyQueued={queued}
+            alreadyGoaled={goaled}
+          />
         </div>
 
         <WhatIKnowSection skill={skill} stage={stage} />

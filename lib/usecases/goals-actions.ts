@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { tServer } from "@/lib/i18n-server";
 import { goalInputSchema, goalStatusSchema, type GoalHorizon, type GoalStatus } from "@/lib/domain/knowledge";
 
 export type GoalActionState = { error: string | null };
@@ -70,13 +71,23 @@ export async function createGoal(
 ): Promise<GoalActionState> {
   const parsed = parseGoalForm(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: parsed.error.issues[0]?.message ?? (await tServer("error.invalidForm", "Formulaire invalide")) };
   }
   const { supabase, userId } = await requireUserId();
   const { error } = await supabase.from("goals").insert({ ...parsed.data, user_id: userId });
   if (error) return { error: error.message };
   revalidatePath("/goals");
   return { error: null };
+}
+
+export async function quickAddGoalFromSkill(skillId: string, skillTitle: string, path: string): Promise<void> {
+  const { supabase, userId } = await requireUserId();
+  const { error } = await supabase
+    .from("goals")
+    .insert({ user_id: userId, horizon: "short", title: skillTitle, skill_id: skillId, status: "active" });
+  if (error) throw new Error(error.message);
+  revalidatePath(path);
+  revalidatePath("/goals");
 }
 
 export async function updateGoalStatus(goalId: string, status: string): Promise<void> {

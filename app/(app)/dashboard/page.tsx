@@ -35,6 +35,7 @@ import {
   type TrainingPlanResult,
 } from "@/lib/domain/training-intelligence";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
+import { computeSessionStats } from "@/lib/domain/training";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { getSkillsProgressSummary, type SkillProgressSummary } from "@/lib/usecases/skill-actions";
 import { getMemberClubSummary, type MemberClubSummary } from "@/lib/usecases/member-club-actions";
@@ -81,6 +82,7 @@ export default async function DashboardPage() {
   ]);
 
   const recent = sessions.slice(0, 5);
+  const sessionStats = computeSessionStats(sessions);
   const highPriorityCount =
     intelligence.status === "ok"
       ? intelligence.recommendations.filter((r) => r.priority === "high").length
@@ -101,6 +103,7 @@ export default async function DashboardPage() {
           lastSessionDate={sessions[0]?.date ?? null}
           highPriorityCount={highPriorityCount}
           imageSrc={PAGE_PHOTOS.dashboard.src}
+          sessionStats={sessionStats}
         />
 
         <div className="championship-grid">
@@ -128,12 +131,14 @@ function Hero({
   lastSessionDate,
   highPriorityCount,
   imageSrc,
+  sessionStats,
 }: {
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
   highPriorityCount: number;
   imageSrc: string;
+  sessionStats: ReturnType<typeof computeSessionStats>;
 }) {
   const status =
     sessionCount === 0
@@ -158,7 +163,16 @@ function Hero({
         <p className="championship-status">{status}</p>
       </div>
       <div className="championship-hero-footer">
-        <span>{sessionCount > 0 ? `${sessionCount} séance${sessionCount > 1 ? "s" : ""} enregistrée${sessionCount > 1 ? "s" : ""}` : "Votre parcours commence ici"}</span>
+        <span className="flex flex-col gap-0.5">
+          <span>{sessionCount > 0 ? `${sessionCount} séance${sessionCount > 1 ? "s" : ""} enregistrée${sessionCount > 1 ? "s" : ""}` : "Votre parcours commence ici"}</span>
+          {sessionCount > 0 ? (
+            <span className="text-xs text-muted-foreground">
+              <T k="training.weekCount" fallback="{count} séances cette semaine" vars={{ count: sessionStats.weekCount }} />
+              {" · "}
+              <T k="training.monthCount" fallback="{count} séances ce mois-ci" vars={{ count: sessionStats.monthCount }} />
+            </span>
+          ) : null}
+        </span>
         <Button size="sm" render={<Link href="/training/new" />}><Dumbbell /> Nouvelle séance</Button>
       </div>
     </section>
