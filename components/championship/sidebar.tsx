@@ -64,7 +64,7 @@ export function ChampionshipSidebar({
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative isolate flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-200",
+                "relative isolate flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-1.5 text-[13px] font-medium transition-[background-color,color,transform] duration-150 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c8a761]",
                 item.imageSrc && "championship-nav-photo",
                 active && !item.imageSrc
                   ? "bg-primary text-primary-foreground"

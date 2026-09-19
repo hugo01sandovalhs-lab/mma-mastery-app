@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowRight, CalendarClock, CheckCircle2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
+import { PHOTO_STORIES } from "@/lib/design/photography";
 import type { TechniqueOfTheDay } from "@/lib/usecases/skill-actions";
 import type { ResolvedDifficulty, WeeklyReviewDigest } from "@/lib/domain/review";
 import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
@@ -28,70 +29,68 @@ export function CoachWeeklyDigest({
   lastResolved: ResolvedDifficulty | null;
 }) {
   const dict = DICTIONARIES[locale];
+  const [watchPhoto, adjustPhoto, repeatPhoto] = PHOTO_STORIES.coach;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
-      <Card>
-        <CardContent className="flex flex-col gap-2 py-4">
-          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <Sparkles className="size-3.5" /> {dict["skills.techniqueOfDay"]}
-          </span>
-          {techniqueOfTheDay ? (
-            <>
-              <p className="text-sm font-semibold">{techniqueOfTheDay.name}</p>
-              <p className="text-xs text-muted-foreground">{techniqueOfTheDay.disciplineName}</p>
-              <Button variant="outline" size="sm" render={<Link href={`/skills/${techniqueOfTheDay.id}`} />} className="mt-1 w-fit">
-                {dict["coach.techniqueOfDay.cta"]} <ArrowRight />
-              </Button>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">{dict["coach.techniqueOfDay.empty"]}</p>
-          )}
-        </CardContent>
-      </Card>
+    <div className="coach-modules">
+      <div className="coach-module-card">
+        <ProgressiveImage src={watchPhoto.src} alt={watchPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: watchPhoto.position }} />
+        <span className="coach-module-eyebrow">
+          <Sparkles className="size-3.5" /> {dict["photoLabel.watch"]} · {dict["skills.techniqueOfDay"]}
+        </span>
+        {techniqueOfTheDay ? (
+          <>
+            <p className="text-sm font-semibold">{techniqueOfTheDay.name}</p>
+            <p className="text-xs opacity-80">{techniqueOfTheDay.disciplineName}</p>
+            <Button variant="outline" size="sm" render={<Link href={`/skills/${techniqueOfTheDay.id}`} />} className="mt-1 w-fit">
+              {dict["coach.techniqueOfDay.cta"]} <ArrowRight />
+            </Button>
+          </>
+        ) : (
+          <p className="text-sm opacity-80">{dict["coach.techniqueOfDay.empty"]}</p>
+        )}
+      </div>
 
-      <Card>
-        <CardContent className="flex flex-col gap-2 py-4">
-          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <CalendarClock className="size-3.5" /> {dict["skills.reviewThisWeek"]}
-          </span>
-          {weeklyDigest.skillsTouchedCount === 0 && weeklyDigest.questionCount === 0 && weeklyDigest.difficultyCount === 0 ? (
-            <p className="text-sm text-muted-foreground">{dict["coach.weeklyReview.empty"]}</p>
-          ) : (
+      <div className="coach-module-card">
+        <ProgressiveImage src={adjustPhoto.src} alt={adjustPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: adjustPhoto.position }} />
+        <span className="coach-module-eyebrow">
+          <CalendarClock className="size-3.5" /> {dict["photoLabel.adjust"]} · {dict["skills.reviewThisWeek"]}
+        </span>
+        {weeklyDigest.skillsTouchedCount === 0 && weeklyDigest.questionCount === 0 && weeklyDigest.difficultyCount === 0 ? (
+          <p className="text-sm opacity-80">{dict["coach.weeklyReview.empty"]}</p>
+        ) : (
+          <p className="text-sm">
+            {formatT(dict["coach.weeklyReview.summary"], {
+              skills: weeklyDigest.skillsTouchedCount,
+              difficulties: weeklyDigest.difficultyCount,
+              questions: weeklyDigest.questionCount,
+            })}
+          </p>
+        )}
+      </div>
+
+      <div className="coach-module-card">
+        <ProgressiveImage src={repeatPhoto.src} alt={repeatPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: repeatPhoto.position }} />
+        <span className="coach-module-eyebrow">
+          <CheckCircle2 className="size-3.5" /> {dict["photoLabel.repeat"]} · {dict["skills.lastResolved"]}
+        </span>
+        {lastResolved ? (
+          <>
             <p className="text-sm">
-              {formatT(dict["coach.weeklyReview.summary"], {
-                skills: weeklyDigest.skillsTouchedCount,
-                difficulties: weeklyDigest.difficultyCount,
-                questions: weeklyDigest.questionCount,
+              {formatT(dict["coach.lastResolved.summary"], {
+                skill: lastResolved.skillName,
+                content: String(lastResolved.detailVars.content ?? ""),
+                when: relativeDays(lastResolved.occurredAt, dict),
               })}
             </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex flex-col gap-2 py-4">
-          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <CheckCircle2 className="size-3.5" /> {dict["skills.lastResolved"]}
-          </span>
-          {lastResolved ? (
-            <>
-              <p className="text-sm">
-                {formatT(dict["coach.lastResolved.summary"], {
-                  skill: lastResolved.skillName,
-                  content: String(lastResolved.detailVars.content ?? ""),
-                  when: relativeDays(lastResolved.occurredAt, dict),
-                })}
-              </p>
-              <Badge variant="outline" className="w-fit text-[0.65rem]">
-                {lastResolved.skillName}
-              </Badge>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">{dict["coach.lastResolved.empty"]}</p>
-          )}
-        </CardContent>
-      </Card>
+            <Badge variant="outline" className="w-fit text-[0.65rem]">
+              {lastResolved.skillName}
+            </Badge>
+          </>
+        ) : (
+          <p className="text-sm opacity-80">{dict["coach.lastResolved.empty"]}</p>
+        )}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { MessageCircleQuestion } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
+import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { CoachAnswerView } from "@/components/coach/coach-answer";
 import { CoachQuestionForm } from "@/components/coach/coach-question-form";
 import { CoachWeeklyDigest } from "@/components/coach/coach-weekly-digest";
@@ -34,8 +34,6 @@ export default async function CoachPage() {
     <AppShell>
       <div className="editorial-page editorial-coach">
         <PageHeader page="coach" title={dict["page.coach.title"]} description={dict["page.coach.description"]} />
-
-        <ChampionshipPhotoMosaic page="coach" />
 
         <CoachWeeklyDigest
           locale={locale}

@@ -188,12 +188,21 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--muted-foreground);
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.15s, color 0.15s, transform 0.1s;
   white-space: nowrap;
 }
 .quick-actions-bar-item:hover {
   background: var(--secondary);
   color: var(--foreground);
+}
+.quick-actions-bar-item:active {
+  transform: scale(0.94);
+  background: var(--secondary);
+  color: var(--foreground);
+}
+.quick-actions-bar-item:focus-visible {
+  outline: 2px solid #c8a761;
+  outline-offset: 2px;
 }
 .auth-form-wrap { width:min(100%,440px); }
 .auth-panel-top { display:flex; justify-content:flex-end; margin-bottom:16px; }

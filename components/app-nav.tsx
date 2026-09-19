@@ -74,7 +74,7 @@ export function MobileNav() {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex min-w-16 flex-col items-center gap-0.5 rounded-md px-2 py-1.5 text-[0.7rem] font-medium transition-colors",
+              "flex min-w-16 flex-col items-center gap-0.5 rounded-md px-2 py-1.5 text-[0.7rem] font-medium transition-[color,transform] duration-150 active:scale-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c8a761]",
               active ? "text-primary" : "text-muted-foreground hover:text-foreground"
             )}
           >

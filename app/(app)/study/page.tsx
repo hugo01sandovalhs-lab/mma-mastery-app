@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import { BookmarkIcon, ListChecksIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { STUDY_STATUSES, STUDY_STATUS_LABEL_KEYS } from "@/lib/domain/knowledge";
 import { getSkills } from "@/lib/usecases/skill-actions";
@@ -78,13 +79,21 @@ export default async function StudyPage() {
           )}
         </section>
 
-        <section className="flex flex-col gap-3">
+        <section className="study-favorites-photo">
+          <ProgressiveImage
+            src="/mma-mastery-photos/anastase-maragos-Lmy0bxMVnBg-unsplash.jpg"
+            alt="Athlète en pause de réflexion contre le sac"
+            fill
+            sizes="(max-width: 767px) 100vw, 50vw"
+            style={{ objectFit: "cover", objectPosition: "45% 38%" }}
+          />
           <div className="flex items-center gap-2">
-            <BookmarkIcon className="size-4 text-primary" />
+            <BookmarkIcon className="size-4 shrink-0" aria-hidden="true" />
             <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.favoritesHeading"]}</h2>
           </div>
+          <p className="text-xs opacity-80">{dict["photoLabel.takeTimeUnderstand"]}</p>
           {bookmarks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{dict["study.noFavorites"]}</p>
+            <p className="text-sm opacity-80">{dict["study.noFavorites"]}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {bookmarks.map((s) => (
@@ -95,16 +104,6 @@ export default async function StudyPage() {
             </div>
           )}
         </section>
-
-        <ChampionshipSectionPhoto
-          src="/mma-mastery-photos/anastase-maragos-Lmy0bxMVnBg-unsplash.jpg"
-          alt="Athlète en pause de réflexion contre le sac"
-          label="Prendre le temps de comprendre"
-          labelKey="photoLabel.takeTimeUnderstand"
-          icon={<BookmarkIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />}
-          objectPosition="45% 38%"
-          size="large"
-        />
 
         <section className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.resourcesHeading"]}</h2>
