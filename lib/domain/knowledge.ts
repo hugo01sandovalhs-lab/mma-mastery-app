@@ -11,11 +11,15 @@ export const RESOURCE_TYPES = ["video", "article", "channel", "course"] as const
 export const resourceTypeSchema = z.enum(RESOURCE_TYPES);
 export type ResourceType = z.infer<typeof resourceTypeSchema>;
 
-export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
-  video: "Vidéo",
-  article: "Article",
-  channel: "Chaîne",
-  course: "Cours",
+/** i18n dictionary key for each enum value — look up via `dict[RESOURCE_TYPE_LABEL_KEYS[type]]`. */
+export const RESOURCE_TYPE_LABEL_KEYS: Record<
+  ResourceType,
+  "resourceType.video" | "resourceType.article" | "resourceType.channel" | "resourceType.course"
+> = {
+  video: "resourceType.video",
+  article: "resourceType.article",
+  channel: "resourceType.channel",
+  course: "resourceType.course",
 };
 
 export const resourceInputSchema = z.object({
@@ -48,10 +52,14 @@ export const STUDY_STATUSES = ["queued", "studying", "studied"] as const;
 export const studyStatusSchema = z.enum(STUDY_STATUSES);
 export type StudyStatus = z.infer<typeof studyStatusSchema>;
 
-export const STUDY_STATUS_LABELS: Record<StudyStatus, string> = {
-  queued: "À étudier",
-  studying: "En cours",
-  studied: "Étudié",
+/** i18n dictionary key for each enum value — look up via `dict[STUDY_STATUS_LABEL_KEYS[status]]`. */
+export const STUDY_STATUS_LABEL_KEYS: Record<
+  StudyStatus,
+  "studyStatus.queued" | "studyStatus.studying" | "studyStatus.studied"
+> = {
+  queued: "studyStatus.queued",
+  studying: "studyStatus.studying",
+  studied: "studyStatus.studied",
 };
 
 export const skillNoteInputSchema = z.object({
@@ -64,20 +72,28 @@ export const GOAL_HORIZONS = ["short", "medium", "long"] as const;
 export const goalHorizonSchema = z.enum(GOAL_HORIZONS);
 export type GoalHorizon = z.infer<typeof goalHorizonSchema>;
 
-export const GOAL_HORIZON_LABELS: Record<GoalHorizon, string> = {
-  short: "Court terme",
-  medium: "Moyen terme",
-  long: "Long terme",
+/** i18n dictionary key for each enum value — look up via `dict[GOAL_HORIZON_LABEL_KEYS[horizon]]`. */
+export const GOAL_HORIZON_LABEL_KEYS: Record<
+  GoalHorizon,
+  "goalHorizon.short" | "goalHorizon.medium" | "goalHorizon.long"
+> = {
+  short: "goalHorizon.short",
+  medium: "goalHorizon.medium",
+  long: "goalHorizon.long",
 };
 
 export const GOAL_STATUSES = ["active", "done", "abandoned"] as const;
 export const goalStatusSchema = z.enum(GOAL_STATUSES);
 export type GoalStatus = z.infer<typeof goalStatusSchema>;
 
-export const GOAL_STATUS_LABELS: Record<GoalStatus, string> = {
-  active: "En cours",
-  done: "Atteint",
-  abandoned: "Abandonné",
+/** i18n dictionary key for each enum value — look up via `dict[GOAL_STATUS_LABEL_KEYS[status]]`. */
+export const GOAL_STATUS_LABEL_KEYS: Record<
+  GoalStatus,
+  "goalStatus.active" | "goalStatus.done" | "goalStatus.abandoned"
+> = {
+  active: "goalStatus.active",
+  done: "goalStatus.done",
+  abandoned: "goalStatus.abandoned",
 };
 
 export const goalInputSchema = z.object({

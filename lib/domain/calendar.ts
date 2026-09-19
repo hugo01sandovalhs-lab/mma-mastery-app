@@ -8,11 +8,15 @@
 export const CALENDAR_EVENT_TYPES = ["class", "club_event", "training", "competition"] as const;
 export type CalendarEventType = (typeof CALENDAR_EVENT_TYPES)[number];
 
-export const CALENDAR_EVENT_TYPE_LABELS: Record<CalendarEventType, string> = {
-  class: "Cours",
-  club_event: "Événement club",
-  training: "Entraînement perso",
-  competition: "Compétition",
+/** i18n dictionary key for each event type — look up via `dict[CALENDAR_EVENT_TYPE_LABEL_KEYS[type]]`. */
+export const CALENDAR_EVENT_TYPE_LABEL_KEYS: Record<
+  CalendarEventType,
+  "calendarEventType.class" | "calendarEventType.club_event" | "calendarEventType.training" | "calendarEventType.competition"
+> = {
+  class: "calendarEventType.class",
+  club_event: "calendarEventType.club_event",
+  training: "calendarEventType.training",
+  competition: "calendarEventType.competition",
 };
 
 export type CalendarEvent = {

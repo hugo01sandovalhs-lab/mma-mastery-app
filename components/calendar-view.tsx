@@ -6,11 +6,13 @@ import { cn } from "cn";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CALENDAR_EVENT_TYPES,
-  CALENDAR_EVENT_TYPE_LABELS,
+  CALENDAR_EVENT_TYPE_LABEL_KEYS,
   toDateKey,
   type CalendarEvent,
   type CalendarEventType,
 } from "@/lib/domain/calendar";
+import { useI18n } from "@/components/i18n-provider";
+import type { Locale } from "@/lib/i18n";
 
 const TYPE_DOT: Record<CalendarEventType, string> = {
   class: "bg-chart-1",
@@ -19,17 +21,22 @@ const TYPE_DOT: Record<CalendarEventType, string> = {
   competition: "bg-chart-3",
 };
 
-const WEEKDAY_HEADERS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+/** 2024-01-01 through 2024-01-07 is a Monday-first week, used only to derive localized short weekday names. */
+const REFERENCE_MONDAY_WEEK = [1, 2, 3, 4, 5, 6, 7].map((day) => new Date(2024, 0, day));
 
 export function CalendarView({
   events,
   gridDays,
   currentMonth,
+  locale,
 }: {
   events: CalendarEvent[];
   gridDays: string[];
   currentMonth: number;
+  locale: Locale;
 }) {
+  const { t } = useI18n();
+  const weekdayHeaders = REFERENCE_MONDAY_WEEK.map((d) => d.toLocaleDateString(locale, { weekday: "short" }));
   const todayKey = toDateKey(new Date());
   const [activeTypes, setActiveTypes] = useState<Set<CalendarEventType>>(
     new Set(CALENDAR_EVENT_TYPES),
@@ -83,15 +90,15 @@ export function CalendarView({
               )}
             >
               <span className={cn("size-2 rounded-full", TYPE_DOT[type])} />
-              {CALENDAR_EVENT_TYPE_LABELS[type]}
+              {t(CALENDAR_EVENT_TYPE_LABEL_KEYS[type])}
             </button>
           );
         })}
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground sm:gap-1.5">
-        {WEEKDAY_HEADERS.map((d) => (
-          <div key={d} className="py-1 font-medium">
+        {weekdayHeaders.map((d, i) => (
+          <div key={i} className="py-1 font-medium">
             {d}
           </div>
         ))}
@@ -131,14 +138,14 @@ export function CalendarView({
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          {new Date(`${selectedDate}T00:00:00`).toLocaleDateString("fr-FR", {
+          {new Date(`${selectedDate}T00:00:00`).toLocaleDateString(locale, {
             weekday: "long",
             day: "numeric",
             month: "long",
           })}
         </h2>
         {selectedEvents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aucun événement ce jour-là.</p>
+          <p className="text-sm text-muted-foreground">{t("calendar.noEvents", "Aucun événement ce jour-là.")}</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {selectedEvents.map((e) => (

@@ -7,7 +7,7 @@ import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { STUDY_STATUSES, STUDY_STATUS_LABELS } from "@/lib/domain/knowledge";
+import { STUDY_STATUSES, STUDY_STATUS_LABEL_KEYS } from "@/lib/domain/knowledge";
 import { getSkills } from "@/lib/usecases/skill-actions";
 import {
   getBookmarkedSkills,
@@ -17,6 +17,8 @@ import {
 import { StudyQueueItemRow } from "@/components/study/study-queue-item-row";
 import { ResourceForm } from "@/components/study/resource-form";
 import { ResourceRow } from "@/components/study/resource-row";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 export default async function StudyPage() {
   const supabase = await createClient();
@@ -24,6 +26,9 @@ export default async function StudyPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
 
   const [queue, bookmarks, resources, skills] = await Promise.all([
     getStudyQueue(),
@@ -35,7 +40,7 @@ export default async function StudyPage() {
   return (
     <AppShell>
       <div className="editorial-page editorial-study">
-        <PageHeader page="study" title="Étude" description="Comprendre avant de répéter. Votre file d'étude, vos favoris et vos ressources." />
+        <PageHeader page="study" title={dict["page.study.title"]} description={dict["page.study.description"]} />
 
         <ChampionshipPhotoMosaic page="study" />
 
@@ -43,12 +48,12 @@ export default async function StudyPage() {
         <section className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <ListChecksIcon className="size-4 text-primary" />
-            <h2 className="font-heading text-lg font-semibold tracking-tight">File d&apos;étude</h2>
+            <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.queueHeading"]}</h2>
           </div>
           {queue.length === 0 ? (
             <Card>
               <CardContent className="py-6 text-sm text-muted-foreground">
-                Aucune compétence en file d&apos;étude. Ajoutez-en depuis une page compétence.
+                {dict["study.emptyQueue"]}
               </CardContent>
             </Card>
           ) : (
@@ -59,7 +64,7 @@ export default async function StudyPage() {
                 return (
                   <div key={status} className="flex flex-col gap-2">
                     <h3 className="text-xs font-medium text-muted-foreground uppercase">
-                      {STUDY_STATUS_LABELS[status]} ({items.length})
+                      {dict[STUDY_STATUS_LABEL_KEYS[status]]} ({items.length})
                     </h3>
                     <div className="flex flex-col gap-2">
                       {items.map((item) => (
@@ -76,10 +81,10 @@ export default async function StudyPage() {
         <section className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <BookmarkIcon className="size-4 text-primary" />
-            <h2 className="font-heading text-lg font-semibold tracking-tight">Favoris</h2>
+            <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.favoritesHeading"]}</h2>
           </div>
           {bookmarks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune compétence en favori.</p>
+            <p className="text-sm text-muted-foreground">{dict["study.noFavorites"]}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {bookmarks.map((s) => (
@@ -102,9 +107,9 @@ export default async function StudyPage() {
         />
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Mes ressources</h2>
+          <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.resourcesHeading"]}</h2>
           {resources.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune ressource enregistrée.</p>
+            <p className="text-sm text-muted-foreground">{dict["study.noResources"]}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {resources.map((r) => (

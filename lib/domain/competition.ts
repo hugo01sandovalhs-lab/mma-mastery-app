@@ -23,11 +23,15 @@ export const MATCH_RESULTS = ["win", "loss", "draw", "no_contest"] as const;
 export const matchResultSchema = z.enum(MATCH_RESULTS);
 export type MatchResult = z.infer<typeof matchResultSchema>;
 
-export const MATCH_RESULT_LABELS: Record<MatchResult, string> = {
-  win: "Victoire",
-  loss: "Défaite",
-  draw: "Nul",
-  no_contest: "No contest",
+/** i18n dictionary key for each match result — look up via `dict[MATCH_RESULT_LABEL_KEYS[result]]`. */
+export const MATCH_RESULT_LABEL_KEYS: Record<
+  MatchResult,
+  "matchResult.win" | "matchResult.loss" | "matchResult.draw" | "matchResult.no_contest"
+> = {
+  win: "matchResult.win",
+  loss: "matchResult.loss",
+  draw: "matchResult.draw",
+  no_contest: "matchResult.no_contest",
 };
 
 export const matchInputSchema = z.object({

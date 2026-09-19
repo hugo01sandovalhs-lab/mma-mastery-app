@@ -9,6 +9,8 @@ import { getCalendarEvents } from "@/lib/usecases/calendar-actions";
 import { monthParam, parseCalendarMonth } from "@/lib/domain/calendar";
 import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 function shiftMonth(year: number, month: number, delta: number) {
   const d = new Date(year, month + delta, 1);
@@ -26,6 +28,9 @@ export default async function CalendarPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
+
   const { month: monthQuery } = await searchParams;
   const current = parseCalendarMonth(monthQuery);
   const prev = shiftMonth(current.year, current.month, -1);
@@ -33,7 +38,7 @@ export default async function CalendarPage({
 
   const { events, gridDays } = await getCalendarEvents(current);
 
-  const monthLabel = new Date(current.year, current.month, 1).toLocaleDateString("fr-FR", {
+  const monthLabel = new Date(current.year, current.month, 1).toLocaleDateString(locale, {
     month: "long",
     year: "numeric",
   });
@@ -41,13 +46,13 @@ export default async function CalendarPage({
   return (
     <AppShell>
       <div className="editorial-page editorial-calendar">
-        <PageHeader page="calendar" title={monthLabel} description="Cours, événements club, entraînements et compétitions" actions={
+        <PageHeader page="calendar" title={monthLabel} description={dict["page.calendar.description"]} actions={
           <div className="flex w-fit gap-2">
             <Button variant="outline" size="icon" render={<Link href={`/calendar?month=${monthParam(prev)}`} />}>
               <ChevronLeft />
             </Button>
             <Button variant="outline" render={<Link href="/calendar" />}>
-              Aujourd&apos;hui
+              {dict["calendar.today"]}
             </Button>
             <Button variant="outline" size="icon" render={<Link href={`/calendar?month=${monthParam(next)}`} />}>
               <ChevronRight />
@@ -57,7 +62,7 @@ export default async function CalendarPage({
 
         <ChampionshipPhotoMosaic page="calendar" />
 
-        <CalendarView events={events} gridDays={gridDays} currentMonth={current.month} />
+        <CalendarView events={events} gridDays={gridDays} currentMonth={current.month} locale={locale} />
       </div>
     </AppShell>
   );

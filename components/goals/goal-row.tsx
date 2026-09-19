@@ -6,19 +6,21 @@ import { CheckIcon, XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GOAL_HORIZON_LABELS, GOAL_STATUS_LABELS } from "@/lib/domain/knowledge";
+import { GOAL_HORIZON_LABEL_KEYS, GOAL_STATUS_LABEL_KEYS } from "@/lib/domain/knowledge";
 import { deleteGoal, updateGoalStatus, type GoalListItem } from "@/lib/usecases/goals-actions";
+import { useI18n } from "@/components/i18n-provider";
 
-function relativeDueDate(iso: string): { text: string; overdue: boolean } {
+function relativeDueDate(iso: string, t: (key: string, fallback?: string, vars?: Record<string, string | number>) => string): { text: string; overdue: boolean } {
   const days = Math.ceil((new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  if (days < 0) return { text: `En retard de ${Math.abs(days)} jour${Math.abs(days) > 1 ? "s" : ""}`, overdue: true };
-  if (days === 0) return { text: "Échéance aujourd'hui", overdue: false };
-  return { text: `Échéance dans ${days} jour${days > 1 ? "s" : ""}`, overdue: false };
+  if (days < 0) return { text: t("goalRow.overdue", "En retard de {days} jour(s)", { days: Math.abs(days) }), overdue: true };
+  if (days === 0) return { text: t("goalRow.dueToday", "Échéance aujourd'hui"), overdue: false };
+  return { text: t("goalRow.dueIn", "Échéance dans {days} jour(s)", { days }), overdue: false };
 }
 
 export function GoalRow({ goal }: { goal: GoalListItem }) {
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
-  const due = goal.due_date ? relativeDueDate(goal.due_date) : null;
+  const due = goal.due_date ? relativeDueDate(goal.due_date, t) : null;
 
   return (
     <Card>
@@ -26,9 +28,9 @@ export function GoalRow({ goal }: { goal: GoalListItem }) {
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium">{goal.title}</span>
-            <Badge variant="outline">{GOAL_HORIZON_LABELS[goal.horizon]}</Badge>
+            <Badge variant="outline">{t(GOAL_HORIZON_LABEL_KEYS[goal.horizon])}</Badge>
             <Badge variant={goal.status === "active" ? "secondary" : "outline"}>
-              {GOAL_STATUS_LABELS[goal.status]}
+              {t(GOAL_STATUS_LABEL_KEYS[goal.status])}
             </Badge>
           </div>
           {goal.description ? <p className="text-sm text-muted-foreground">{goal.description}</p> : null}
@@ -47,7 +49,7 @@ export function GoalRow({ goal }: { goal: GoalListItem }) {
               type="button"
               variant="outline"
               size="icon-sm"
-              aria-label="Marquer atteint"
+              aria-label={t("goalRow.markDone", "Marquer atteint")}
               disabled={isPending}
               onClick={() => startTransition(() => updateGoalStatus(goal.id, "done"))}
             >
@@ -57,7 +59,7 @@ export function GoalRow({ goal }: { goal: GoalListItem }) {
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="Abandonner"
+              aria-label={t("goalRow.abandon", "Abandonner")}
               disabled={isPending}
               onClick={() => startTransition(() => updateGoalStatus(goal.id, "abandoned"))}
             >
@@ -72,7 +74,7 @@ export function GoalRow({ goal }: { goal: GoalListItem }) {
             disabled={isPending}
             onClick={() => startTransition(() => deleteGoal(goal.id))}
           >
-            Supprimer
+            {t("goalRow.delete", "Supprimer")}
           </Button>
         )}
       </CardContent>

@@ -4,6 +4,7 @@
  * be traceable to real user data; a provider must never claim knowledge that
  * isn't present in the context.
  */
+import type { Locale } from "@/lib/i18n";
 
 /**
  * OBSERVED: a fact read directly from stored data (counts, dates, quoted
@@ -43,7 +44,7 @@ export type CoachResponse =
  */
 export interface AIProvider {
   readonly name: string;
-  generateCoachResponse(context: CoachContext, question?: string): Promise<CoachResponse>;
+  generateCoachResponse(context: CoachContext, question?: string, locale?: Locale): Promise<CoachResponse>;
 }
 
 export function hasEnoughContext(context: CoachContext): boolean {

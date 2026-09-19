@@ -8,6 +8,8 @@ import { getSkills } from "@/lib/usecases/skill-actions";
 import { GoalForm } from "@/components/goals/goal-form";
 import { GoalRow } from "@/components/goals/goal-row";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 export default async function GoalsPage() {
   const supabase = await createClient();
@@ -16,27 +18,30 @@ export default async function GoalsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
+
   const [goals, skills] = await Promise.all([getGoals(), getSkills()]);
 
   return (
     <AppShell>
       <div className="editorial-page editorial-goals">
-        <PageHeader page="goals" title="Objectifs" description="Donner une direction à l'effort. Vos objectifs à court, moyen et long terme, liés à vos compétences." />
+        <PageHeader page="goals" title={dict["page.goals.title"]} description={dict["page.goals.description"]} />
 
         <ChampionshipPhotoMosaic page="goals" />
 
         <div className="editorial-secondary-columns">
         <section className="editorial-section">
-        <h2>Définir un objectif</h2>
+        <h2>{dict["goals.defineGoal"]}</h2>
         <GoalForm skills={skills} />
         </section>
 
         <section className="editorial-section">
-        <h2>Votre feuille de route</h2>
+        <h2>{dict["goals.roadmap"]}</h2>
         {goals.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-sm text-muted-foreground">
-              Aucun objectif pour l&apos;instant.
+              {dict["goals.noneYet"]}
             </CardContent>
           </Card>
         ) : (

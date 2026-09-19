@@ -1,5 +1,6 @@
 import type { AIProvider, CoachContext, CoachResponse } from "@/lib/domain/ai-coach";
 import { hasEnoughContext } from "@/lib/domain/ai-coach";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
 
 /**
  * Default AIProvider: no model call, no network, no secret. It only
@@ -10,11 +11,13 @@ import { hasEnoughContext } from "@/lib/domain/ai-coach";
 export class DeterministicCoachProvider implements AIProvider {
   readonly name = "deterministic-fallback";
 
-  async generateCoachResponse(context: CoachContext): Promise<CoachResponse> {
+  async generateCoachResponse(context: CoachContext, _question?: string, locale: Locale = "fr"): Promise<CoachResponse> {
+    const dict = DICTIONARIES[locale];
+
     if (!hasEnoughContext(context)) {
       return {
         status: "insufficient_data",
-        reason: "Pas assez de données enregistrées pour un retour du coach.",
+        reason: dict["coach.insufficientDataReason"],
       };
     }
 
@@ -22,16 +25,16 @@ export class DeterministicCoachProvider implements AIProvider {
     const inferred = context.facts.filter((f) => f.kind === "INFERRED");
 
     const summaryParts = [
-      observed.length > 0 ? `${observed.length} observation(s) directe(s)` : null,
-      inferred.length > 0 ? `${inferred.length} déduction(s) de Training Intelligence` : null,
+      observed.length > 0 ? formatT(dict["coach.observedCount"], { count: observed.length }) : null,
+      inferred.length > 0 ? formatT(dict["coach.inferredCount"], { count: inferred.length }) : null,
     ].filter((p): p is string => p !== null);
 
     return {
       status: "ok",
       summary:
         summaryParts.length > 0
-          ? `Résumé basé sur ${summaryParts.join(" et ")}.`
-          : "Résumé basé sur les données disponibles.",
+          ? formatT(dict["coach.summaryJoined"], { parts: summaryParts.join(dict["coach.joinAnd"]) })
+          : dict["coach.summaryDefault"],
       recommendations: inferred.map((fact) => ({
         statement: fact.statement,
         basedOnFactIndexes: [context.facts.indexOf(fact)].filter((idx) => idx >= 0),

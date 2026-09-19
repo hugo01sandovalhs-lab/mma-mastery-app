@@ -14,6 +14,7 @@ import { getStudyQueue } from "@/lib/usecases/knowledge-actions";
 import { YouTubeVideoSearchProvider } from "@/lib/infra/video/youtube-video-search-provider";
 import { MASTERY_STAGE_LABEL_KEYS, type MasteryStage } from "@/lib/domain/skill";
 import { DICTIONARIES, formatT } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
 
 const defaultProvider: AIProvider = new DeterministicCoachProvider();
 const videoProvider = new YouTubeVideoSearchProvider(process.env.YOUTUBE_API_KEY);
@@ -37,19 +38,21 @@ function resolveProvider(): AIProvider {
  * new query path, no fact invented for the occasion.
  */
 export async function buildCoachContext(): Promise<CoachContext> {
-  const [{ intelligence, plan }, reviewItems, upcomingGoals, studyQueue] = await Promise.all([
+  const [{ intelligence, plan }, reviewItems, upcomingGoals, studyQueue, locale] = await Promise.all([
     getTrainingIntelligenceBundle(),
     getReviewQueue(),
     getUpcomingGoals(),
     getStudyQueue(),
+    getServerLocale(),
   ]);
+  const dict = DICTIONARIES[locale];
 
   const facts: CoachFact[] = [];
 
   if (plan.status === "ok") {
     facts.push({
       kind: "INFERRED",
-      statement: `Focus recommandé: ${plan.plan.focusSkillName} — ${plan.plan.objective}`,
+      statement: formatT(dict["coach.fact.focus"], { skill: plan.plan.focusSkillName, objective: plan.plan.objective }),
       skillId: plan.plan.focusSkillId,
     });
     for (const evidence of plan.plan.evidence) {
@@ -62,7 +65,7 @@ export async function buildCoachContext(): Promise<CoachContext> {
       if (plan.status === "ok" && rec.skillId === plan.plan.focusSkillId) continue;
       facts.push({
         kind: "INFERRED",
-        statement: `${rec.skillName}: ${rec.action}`,
+        statement: formatT(dict["coach.fact.recommendation"], { skill: rec.skillName, action: rec.action }),
         skillId: rec.skillId,
       });
     }
@@ -71,12 +74,12 @@ export async function buildCoachContext(): Promise<CoachContext> {
   for (const item of reviewItems) {
     const vars = { ...item.detailVars };
     if (item.type === "developing" && typeof vars.stage === "string") {
-      vars.stage = DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[vars.stage as MasteryStage]];
+      vars.stage = dict[MASTERY_STAGE_LABEL_KEYS[vars.stage as MasteryStage]];
     }
-    const detail = formatT(DICTIONARIES.fr[item.detailKey as keyof (typeof DICTIONARIES)["fr"]], vars);
+    const detail = formatT(dict[item.detailKey as keyof (typeof DICTIONARIES)["fr"]], vars);
     facts.push({
       kind: "OBSERVED",
-      statement: `${item.skillName}: ${detail}`,
+      statement: formatT(dict["coach.fact.reviewItem"], { skill: item.skillName, detail }),
       skillId: item.skillId,
     });
   }
@@ -84,7 +87,9 @@ export async function buildCoachContext(): Promise<CoachContext> {
   for (const goal of upcomingGoals) {
     facts.push({
       kind: "OBSERVED",
-      statement: `Objectif "${goal.title}"${goal.due_date ? ` — échéance ${goal.due_date}` : ""}`,
+      statement: goal.due_date
+        ? formatT(dict["coach.fact.goalWithDue"], { title: goal.title, date: goal.due_date })
+        : formatT(dict["coach.fact.goalNoDue"], { title: goal.title }),
       skillId: goal.skill?.id,
     });
   }
@@ -93,7 +98,7 @@ export async function buildCoachContext(): Promise<CoachContext> {
   if (queued.length > 0) {
     facts.push({
       kind: "OBSERVED",
-      statement: `${queued.length} compétence(s) en file d'étude non terminée(s)`,
+      statement: formatT(dict["coach.fact.studyQueueCount"], { count: queued.length }),
     });
   }
 
@@ -135,17 +140,18 @@ async function completeAnswer(
 export async function getCoachResponse(question?: string): Promise<CoachAnswer> {
   const context = await buildCoachContext();
   const provider = resolveProvider();
+  const locale = await getServerLocale();
 
   if (provider.name === defaultProvider.name) {
-    const response = await defaultProvider.generateCoachResponse(context, question);
+    const response = await defaultProvider.generateCoachResponse(context, question, locale);
     return completeAnswer(context, response, defaultProvider.name, question);
   }
 
   try {
-    const response = await provider.generateCoachResponse(context, question);
+    const response = await provider.generateCoachResponse(context, question, locale);
     return completeAnswer(context, response, provider.name, question);
   } catch {
-    const response = await defaultProvider.generateCoachResponse(context, question);
+    const response = await defaultProvider.generateCoachResponse(context, question, locale);
     return completeAnswer(context, response, defaultProvider.name, question);
   }
 }

@@ -2,6 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+vi.mock("@/lib/i18n-server", () => ({
+  getServerLocale: vi.fn(async () => "fr"),
+}));
+
 vi.mock("@/lib/usecases/training-intelligence-actions", () => ({
   getTrainingIntelligenceBundle: vi.fn(async () => ({
     intelligence: { status: "ok", recommendations: [] },

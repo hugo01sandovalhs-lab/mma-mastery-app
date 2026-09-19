@@ -13,9 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from "@/lib/domain/knowledge";
+import { RESOURCE_TYPES, RESOURCE_TYPE_LABEL_KEYS } from "@/lib/domain/knowledge";
 import { createResource, type KnowledgeActionState } from "@/lib/usecases/knowledge-actions";
 import type { SkillListItem } from "@/lib/usecases/skill-actions";
+import { useI18n } from "@/components/i18n-provider";
 
 type ResourceFormProps = {
   skills: SkillListItem[];
@@ -24,6 +25,7 @@ type ResourceFormProps = {
 };
 
 export function ResourceForm({ skills, fixedSkillId }: ResourceFormProps) {
+  const { t } = useI18n();
   const initialState: KnowledgeActionState = { error: null };
   const [state, formAction, isPending] = useActionState(createResource, initialState);
   const formRef = useRef<HTMLFormElement>(null);
@@ -43,47 +45,47 @@ export function ResourceForm({ skills, fixedSkillId }: ResourceFormProps) {
       {fixedSkillId ? <input type="hidden" name="skill_id" value={fixedSkillId} /> : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="resource_type">Type</Label>
+          <Label htmlFor="resource_type">{t("resourceForm.type", "Type")}</Label>
           <Select
             name="type"
             defaultValue="video"
-            items={RESOURCE_TYPES.map((t) => ({ value: t, label: RESOURCE_TYPE_LABELS[t] }))}
+            items={RESOURCE_TYPES.map((rt) => ({ value: rt, label: t(RESOURCE_TYPE_LABEL_KEYS[rt]) }))}
           >
             <SelectTrigger id="resource_type" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {RESOURCE_TYPES.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {RESOURCE_TYPE_LABELS[t]}
+              {RESOURCE_TYPES.map((rt) => (
+                <SelectItem key={rt} value={rt}>
+                  {t(RESOURCE_TYPE_LABEL_KEYS[rt])}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="resource_title">Titre</Label>
+          <Label htmlFor="resource_title">{t("resourceForm.title", "Titre")}</Label>
           <Input id="resource_title" name="title" required maxLength={160} />
         </div>
         <div className="flex flex-col gap-1.5 sm:col-span-2">
-          <Label htmlFor="resource_url">URL</Label>
+          <Label htmlFor="resource_url">{t("resourceForm.url", "URL")}</Label>
           <Input id="resource_url" name="url" type="url" required placeholder="https://..." />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="resource_author">Auteur / chaîne (optionnel)</Label>
+          <Label htmlFor="resource_author">{t("resourceForm.author", "Auteur / chaîne (optionnel)")}</Label>
           <Input id="resource_author" name="author" maxLength={120} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="resource_timestamp">Timestamp vidéo, secondes (optionnel)</Label>
+          <Label htmlFor="resource_timestamp">{t("resourceForm.timestamp", "Timestamp vidéo, secondes (optionnel)")}</Label>
           <Input id="resource_timestamp" name="timestamp_seconds" type="number" min={0} />
         </div>
         {!fixedSkillId ? (
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <Label htmlFor="resource_skill">Compétence liée (optionnel)</Label>
+            <Label htmlFor="resource_skill">{t("resourceForm.skill", "Compétence liée (optionnel)")}</Label>
             <Input
               id="resource_skill"
               list="resource-skills-datalist"
-              placeholder="Rechercher une compétence"
+              placeholder={t("resourceForm.skillPlaceholder", "Rechercher une compétence")}
               onChange={(e) => setResolvedSkillId(skillByName.get(e.target.value.trim().toLowerCase()) ?? "")}
             />
             <datalist id="resource-skills-datalist">
@@ -95,14 +97,14 @@ export function ResourceForm({ skills, fixedSkillId }: ResourceFormProps) {
           </div>
         ) : null}
         <div className="flex flex-col gap-1.5 sm:col-span-2">
-          <Label htmlFor="resource_notes">Notes (optionnel)</Label>
+          <Label htmlFor="resource_notes">{t("resourceForm.notes", "Notes (optionnel)")}</Label>
           <Textarea id="resource_notes" name="notes" rows={2} />
         </div>
       </div>
       {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
-          <PlusIcon /> Ajouter la ressource
+          <PlusIcon /> {t("resourceForm.submit", "Ajouter la ressource")}
         </Button>
       </div>
     </form>

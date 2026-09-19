@@ -7,32 +7,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CoachAnswerView } from "@/components/coach/coach-answer";
 import type { CoachAnswer } from "@/lib/usecases/ai-coach-actions";
-
-const SUGGESTED_QUESTIONS = [
-  "Comment améliorer mon open guard ?",
-  "Quelles erreurs dois-je corriger en priorité ?",
-  "Comment préparer ma prochaine séance ?",
-];
+import { useI18n } from "@/components/i18n-provider";
 
 async function askAction(_prev: CoachAnswer | null, formData: FormData): Promise<CoachAnswer> {
   return askCoachAction(String(formData.get("question") ?? ""));
 }
 
 export function CoachQuestionForm() {
+  const { t } = useI18n();
   const [answer, formAction, isPending] = useActionState(askAction, null);
+  const SUGGESTED_QUESTIONS = [
+    t("coach.suggested1", "Comment améliorer mon open guard ?"),
+    t("coach.suggested2", "Quelles erreurs dois-je corriger en priorité ?"),
+    t("coach.suggested3", "Comment préparer ma prochaine séance ?"),
+  ];
 
   return (
     <div className="flex flex-col gap-4">
       <form action={formAction} className="flex flex-col gap-2 sm:flex-row">
         <Input
           name="question"
-          aria-label="Votre question au coach"
-          placeholder="Pose une question au coach..."
+          aria-label={t("coach.askLabel", "Votre question au coach")}
+          placeholder={t("coach.askPlaceholder", "Pose une question au coach...")}
           className="flex-1"
           disabled={isPending}
         />
         <Button type="submit" disabled={isPending} className="sm:w-fit">
-          <Send className="size-4" /> {isPending ? "..." : "Demander"}
+          <Send className="size-4" /> {isPending ? t("coach.askPending", "...") : t("coach.askButton", "Demander")}
         </Button>
       </form>
 

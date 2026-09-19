@@ -10,13 +10,16 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
 import { computeSessionStats } from "@/lib/domain/training";
-import { DICTIONARIES } from "@/lib/i18n";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
 import { RoundTimer } from "@/components/training/round-timer";
 import { WeeklySummaryCard } from "@/components/training/weekly-summary";
 import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+type Dict = (typeof DICTIONARIES)[Locale];
+
+function formatDate(iso: string, locale: Locale): string {
+  return new Date(iso).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default async function TrainingListPage() {
@@ -26,27 +29,29 @@ export default async function TrainingListPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
+
   const sessions = await getTrainingSessions();
   const stats = computeSessionStats(sessions);
 
   return (
     <AppShell>
       <div className="editorial-page editorial-training">
-        <PageHeader page="training" title="Entraînement" description={<>
-            <p>Le travail se construit séance après séance.</p>
+        <PageHeader page="training" title={dict["page.training.title"]} description={<>
+            <p>{dict["page.training.tagline"]}</p>
             <p className="editorial-caption">
-              {sessions.length} séance{sessions.length > 1 ? "s" : ""} enregistrée
-              {sessions.length > 1 ? "s" : ""}
+              {formatT(dict["trainingList.sessionCount"], { count: sessions.length })}
             </p>
           </>} actions={<>
             <Button variant="outline" size="lg" render={<Link href="/training/photos" />}>
-              <Camera /> Galerie
+              <Camera /> {dict["trainingList.gallery"]}
             </Button>
             <Button variant="outline" size="lg" render={<Link href="/training/review" />}>
-              <BookOpen /> À revoir
+              <BookOpen /> {dict["trainingList.toReview"]}
             </Button>
             <Button size="lg" render={<Link href="/training/new" />}>
-              <PlusIcon /> Nouvelle séance
+              <PlusIcon /> {dict["action.newSession"]}
             </Button>
           </>} />
 
@@ -55,31 +60,30 @@ export default async function TrainingListPage() {
         <WeeklySummaryCard stats={stats} />
 
         <section id="timer" className="editorial-section scroll-mt-6">
-          <h2>Timer de round</h2>
+          <h2>{dict["trainingList.timerTitle"]}</h2>
           <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cao-vi-ton-449370203-17279410.jpg" alt="Deux boxeurs répètent leurs enchaînements sur le ring" label="Cadence de travail" labelKey="photoLabel.workPace" icon={Timer} objectPosition="50% 48%" />
           <RoundTimer />
         </section>
 
         <section id="sessions" className="editorial-section scroll-mt-6">
-          <h2>Séances</h2>
+          <h2>{dict["trainingList.sessionsTitle"]}</h2>
         {sessions.length === 0 ? (
           <Card>
             <CardContent className="editorial-empty">
               <Dumbbell className="size-6 text-muted-foreground" />
-              <p className="font-medium">Aucune séance enregistrée</p>
+              <p className="font-medium">{dict["trainingList.noSessionsTitle"]}</p>
               <p className="max-w-md text-sm text-muted-foreground">
-                Enregistrez votre première séance pour commencer à suivre vos compétences et
-                déclencher Training Intelligence.
+                {dict["trainingList.noSessionsDesc"]}
               </p>
               <Button variant="outline" size="sm" render={<Link href="/training/new" />} className="mt-1">
-                Nouvelle séance
+                {dict["action.newSession"]}
               </Button>
             </CardContent>
           </Card>
         ) : (
           <ul className="flex flex-col">
             {sessions.map((s, i) => (
-              <SessionRow key={s.id} session={s} isLast={i === sessions.length - 1} />
+              <SessionRow key={s.id} session={s} isLast={i === sessions.length - 1} dict={dict} locale={locale} />
             ))}
           </ul>
         )}
@@ -89,7 +93,17 @@ export default async function TrainingListPage() {
   );
 }
 
-function SessionRow({ session: s, isLast }: { session: TrainingSessionListItem; isLast: boolean }) {
+function SessionRow({
+  session: s,
+  isLast,
+  dict,
+  locale,
+}: {
+  session: TrainingSessionListItem;
+  isLast: boolean;
+  dict: Dict;
+  locale: Locale;
+}) {
   const techniqueNames = s.techniques.map((t) => t.technique_name);
   const observationCount = s.observations[0]?.count ?? 0;
 
@@ -105,18 +119,18 @@ function SessionRow({ session: s, isLast }: { session: TrainingSessionListItem; 
           <CardContent className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-medium group-hover/item:underline">
-                {s.title || DICTIONARIES.fr[SESSION_TYPE_LABEL_KEYS[s.session_type]]}
+                {s.title || dict[SESSION_TYPE_LABEL_KEYS[s.session_type]]}
               </span>
-              <span className="text-xs text-muted-foreground">{formatDate(s.date)}</span>
+              <span className="text-xs text-muted-foreground">{formatDate(s.date, locale)}</span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="secondary">{s.discipline.name}</Badge>
-              <Badge variant="outline">{DICTIONARIES.fr[SESSION_TYPE_LABEL_KEYS[s.session_type]]}</Badge>
+              <Badge variant="outline">{dict[SESSION_TYPE_LABEL_KEYS[s.session_type]]}</Badge>
               {s.duration_minutes ? <Badge variant="outline">{s.duration_minutes} min</Badge> : null}
               {s.rpe ? <Badge variant="outline">RPE {s.rpe}</Badge> : null}
               {observationCount > 0 ? (
                 <span className="text-xs text-muted-foreground">
-                  {observationCount} observation{observationCount > 1 ? "s" : ""}
+                  {formatT(dict["trainingList.observationCount"], { count: observationCount })}
                 </span>
               ) : null}
             </div>

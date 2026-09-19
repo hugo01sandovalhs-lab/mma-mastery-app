@@ -88,6 +88,8 @@ const fr = {
   "coach.askButton": "Demander", "coach.askPending": "...",
   "coach.suggested1": "Comment améliorer mon open guard ?", "coach.suggested2": "Quelles erreurs dois-je corriger en priorité ?",
   "coach.suggested3": "Comment préparer ma prochaine séance ?",
+  "coach.insufficientDataReason": "Pas assez de données enregistrées pour un retour du coach.",
+  "coach.localModelEmpty": "Le modèle local n'a rien retourné.",
 
   "study.queueHeading": "File d'étude", "study.emptyQueue": "Aucune compétence en file d'étude. Ajoutez-en depuis une page compétence.",
   "study.favoritesHeading": "Favoris", "study.noFavorites": "Aucune compétence en favori.",
@@ -151,6 +153,16 @@ const fr = {
   "action.saving": "Enregistrement...", "action.addItem": "Ajouter", "action.saveChanges": "Enregistrer les modifications",
   "training.newTitle": "Nouvelle séance", "training.newIntro": "Enregistrez votre séance pour alimenter votre progression.",
   "training.editTitle": "Modifier la séance", "training.focusForSession": "Focus recommandé pour cette séance",
+  "page.training.tagline": "Le travail se construit séance après séance.",
+  "trainingList.sessionCount": "{count} séance(s) enregistrée(s)",
+  "trainingList.gallery": "Galerie", "trainingList.toReview": "À revoir",
+  "trainingList.timerTitle": "Timer de round", "trainingList.sessionsTitle": "Séances",
+  "trainingList.noSessionsTitle": "Aucune séance enregistrée",
+  "trainingList.noSessionsDesc": "Enregistrez votre première séance pour commencer à suivre vos compétences et déclencher Training Intelligence.",
+  "trainingList.observationCount": "{count} observation(s)",
+  "trainingDetail.editButton": "Modifier", "trainingDetail.skillsWorkedTitle": "Compétences travaillées",
+  "trainingDetail.noTechniques": "Aucune technique renseignée.", "trainingDetail.noObservations": "Aucune observation renseignée.",
+  "trainingDetail.skillFallback": "Compétence",
   "training.galleryTitle": "Galerie d'entraînement", "training.galleryIntro": "Conservez les images qui racontent votre progression.",
   "photo.label": "Photo", "photo.captionLabel": "Légende", "photo.linkedSession": "Séance liée", "photo.none": "Aucune",
   "photo.sessionFallback": "Séance", "photo.uploading": "Envoi…", "photo.addToGallery": "Ajouter à la galerie",
@@ -259,6 +271,9 @@ const fr = {
   "error.sessionExpired": "Session expirée.", "error.loginRequired": "Connexion requise.",
   "error.invalidForm": "Formulaire invalide",
 
+  "page.coach.description": "Prendre du recul. Préparer la suite. Des réponses fondées sur vos séances, votre progression et vos révisions.",
+  "page.study.description": "Comprendre avant de répéter. Votre file d'étude, vos favoris et vos ressources.",
+  "page.goals.description": "Donner une direction à l'effort. Vos objectifs à court, moyen et long terme, liés à vos compétences.",
   "page.competition.description": "L'épreuve du combat. Retrouvez votre historique et les séquences vidéo liées à vos compétences.",
   "competition.recordMatch": "Enregistrer un combat", "competition.matchHistory": "Historique des combats",
   "competition.noMatches": "Aucune compétition pour l'instant.", "competition.videoSequences": "Séquences vidéo",
@@ -323,6 +338,8 @@ const fr = {
   "skillDetail.historyTitle": "Historique", "skillDetail.relatedSessions": "Séances et observations liées",
   "skillDetail.noHistory": "Aucune séance ou observation liée à cette compétence pour l'instant.",
   "skillDetail.techniqueBadge": "Technique", "skillDetail.observationFallback": "Observation",
+  "skillNote.placeholder": "Ajouter une note personnelle sur cette compétence...", "skillNote.submit": "Ajouter la note",
+  "skillNote.empty": "Aucune note pour l'instant.", "skillNote.deleteAria": "Supprimer la note",
 
   "club.description": "Progresser ensemble. Invitez vos amis d'entraînement et organisez vos groupes.",
   "club.classesDesc": "Retrouvez le planning et les séances de votre club.",
@@ -353,6 +370,11 @@ const fr = {
   "attendanceStatus.present": "Présent", "attendanceStatus.absent": "Absent",
   "weekday.0": "Dimanche", "weekday.1": "Lundi", "weekday.2": "Mardi", "weekday.3": "Mercredi",
   "weekday.4": "Jeudi", "weekday.5": "Vendredi", "weekday.6": "Samedi",
+
+  "page.calendar.description": "Cours, événements club, entraînements et compétitions",
+  "calendar.today": "Aujourd'hui", "calendar.noEvents": "Aucun événement ce jour-là.",
+  "calendarEventType.class": "Cours", "calendarEventType.club_event": "Événement club",
+  "calendarEventType.training": "Entraînement perso", "calendarEventType.competition": "Compétition",
 } as const;
 
 type TranslationKey = keyof typeof fr;
@@ -440,6 +462,8 @@ const en: Dictionary = {
   "coach.askButton": "Ask", "coach.askPending": "...",
   "coach.suggested1": "How can I improve my open guard?", "coach.suggested2": "Which mistakes should I fix first?",
   "coach.suggested3": "How should I prepare my next session?",
+  "coach.insufficientDataReason": "Not enough data logged for coach feedback.",
+  "coach.localModelEmpty": "The local model returned nothing.",
 
   "study.queueHeading": "Study queue", "study.emptyQueue": "No skills in the study queue. Add some from a skill page.",
   "study.favoritesHeading": "Favorites", "study.noFavorites": "No skills favorited.",
@@ -503,6 +527,16 @@ const en: Dictionary = {
   "action.saving": "Saving...", "action.addItem": "Add", "action.saveChanges": "Save changes",
   "training.newTitle": "New session", "training.newIntro": "Log your session to fuel your progression.",
   "training.editTitle": "Edit session", "training.focusForSession": "Recommended focus for this session",
+  "page.training.tagline": "Progress is built session after session.",
+  "trainingList.sessionCount": "{count} session(s) logged",
+  "trainingList.gallery": "Gallery", "trainingList.toReview": "To review",
+  "trainingList.timerTitle": "Round timer", "trainingList.sessionsTitle": "Sessions",
+  "trainingList.noSessionsTitle": "No session logged yet",
+  "trainingList.noSessionsDesc": "Log your first session to start tracking your skills and trigger Training Intelligence.",
+  "trainingList.observationCount": "{count} observation(s)",
+  "trainingDetail.editButton": "Edit", "trainingDetail.skillsWorkedTitle": "Skills worked",
+  "trainingDetail.noTechniques": "No technique logged.", "trainingDetail.noObservations": "No observation logged.",
+  "trainingDetail.skillFallback": "Skill",
   "training.galleryTitle": "Training gallery", "training.galleryIntro": "Keep the images that tell your progression story.",
   "photo.label": "Photo", "photo.captionLabel": "Caption", "photo.linkedSession": "Linked session", "photo.none": "None",
   "photo.sessionFallback": "Session", "photo.uploading": "Uploading…", "photo.addToGallery": "Add to gallery",
@@ -610,6 +644,9 @@ const en: Dictionary = {
   "error.sessionExpired": "Session expired.", "error.loginRequired": "Sign in required.",
   "error.invalidForm": "Invalid form",
 
+  "page.coach.description": "Step back. Plan what's next. Answers grounded in your sessions, progress, and reviews.",
+  "page.study.description": "Understand before you repeat. Your study queue, favorites, and resources.",
+  "page.goals.description": "Give your effort direction. Your short-, medium-, and long-term goals, linked to your skills.",
   "page.competition.description": "The test of the fight. Find your history and the video sequences linked to your skills.",
   "competition.recordMatch": "Record a match", "competition.matchHistory": "Match history",
   "competition.noMatches": "No competition yet.", "competition.videoSequences": "Video sequences",
@@ -674,6 +711,8 @@ const en: Dictionary = {
   "skillDetail.historyTitle": "History", "skillDetail.relatedSessions": "Linked sessions and observations",
   "skillDetail.noHistory": "No session or observation linked to this skill yet.",
   "skillDetail.techniqueBadge": "Technique", "skillDetail.observationFallback": "Observation",
+  "skillNote.placeholder": "Add a personal note about this skill...", "skillNote.submit": "Add note",
+  "skillNote.empty": "No notes yet.", "skillNote.deleteAria": "Delete note",
 
   "club.description": "Progress together. Invite your training partners and organize your groups.",
   "club.classesDesc": "Find your club's schedule and sessions.",
@@ -704,6 +743,11 @@ const en: Dictionary = {
   "attendanceStatus.present": "Present", "attendanceStatus.absent": "Absent",
   "weekday.0": "Sunday", "weekday.1": "Monday", "weekday.2": "Tuesday", "weekday.3": "Wednesday",
   "weekday.4": "Thursday", "weekday.5": "Friday", "weekday.6": "Saturday",
+
+  "page.calendar.description": "Classes, club events, training sessions and competitions",
+  "calendar.today": "Today", "calendar.noEvents": "No events that day.",
+  "calendarEventType.class": "Class", "calendarEventType.club_event": "Club event",
+  "calendarEventType.training": "Personal training", "calendarEventType.competition": "Competition",
 };
 
 const es: Dictionary = {
@@ -788,6 +832,8 @@ const es: Dictionary = {
   "coach.askButton": "Preguntar", "coach.askPending": "...",
   "coach.suggested1": "¿Cómo mejoro mi guardia abierta?", "coach.suggested2": "¿Qué errores debo corregir primero?",
   "coach.suggested3": "¿Cómo preparo mi próxima sesión?",
+  "coach.insufficientDataReason": "No hay suficientes datos registrados para un retorno del coach.",
+  "coach.localModelEmpty": "El modelo local no devolvió nada.",
 
   "study.queueHeading": "Cola de estudio", "study.emptyQueue": "No hay habilidades en la cola de estudio. Añade alguna desde la página de una habilidad.",
   "study.favoritesHeading": "Favoritos", "study.noFavorites": "No hay habilidades favoritas.",
@@ -851,6 +897,16 @@ const es: Dictionary = {
   "action.saving": "Guardando...", "action.addItem": "Añadir", "action.saveChanges": "Guardar los cambios",
   "training.newTitle": "Nueva sesión", "training.newIntro": "Registre su sesión para alimentar su progresión.",
   "training.editTitle": "Editar sesión", "training.focusForSession": "Enfoque recomendado para esta sesión",
+  "page.training.tagline": "El progreso se construye sesión tras sesión.",
+  "trainingList.sessionCount": "{count} sesión(es) registrada(s)",
+  "trainingList.gallery": "Galería", "trainingList.toReview": "Por repasar",
+  "trainingList.timerTitle": "Temporizador de round", "trainingList.sessionsTitle": "Sesiones",
+  "trainingList.noSessionsTitle": "Aún no hay sesiones registradas",
+  "trainingList.noSessionsDesc": "Registra tu primera sesión para empezar a hacer seguimiento de tus habilidades y activar Training Intelligence.",
+  "trainingList.observationCount": "{count} observación(es)",
+  "trainingDetail.editButton": "Editar", "trainingDetail.skillsWorkedTitle": "Habilidades trabajadas",
+  "trainingDetail.noTechniques": "No hay técnicas registradas.", "trainingDetail.noObservations": "No hay observaciones registradas.",
+  "trainingDetail.skillFallback": "Habilidad",
   "training.galleryTitle": "Galería de entrenamiento", "training.galleryIntro": "Conserve las imágenes que cuentan su progresión.",
   "photo.label": "Foto", "photo.captionLabel": "Leyenda", "photo.linkedSession": "Sesión vinculada", "photo.none": "Ninguna",
   "photo.sessionFallback": "Sesión", "photo.uploading": "Enviando…", "photo.addToGallery": "Añadir a la galería",
@@ -958,6 +1014,9 @@ const es: Dictionary = {
   "error.sessionExpired": "Sesión caducada.", "error.loginRequired": "Inicio de sesión requerido.",
   "error.invalidForm": "Formulario inválido",
 
+  "page.coach.description": "Tomar distancia. Preparar lo que sigue. Respuestas basadas en tus sesiones, tu progreso y tus repasos.",
+  "page.study.description": "Comprender antes de repetir. Tu cola de estudio, tus favoritos y tus recursos.",
+  "page.goals.description": "Dar dirección al esfuerzo. Tus objetivos a corto, medio y largo plazo, vinculados a tus competencias.",
   "page.competition.description": "La prueba del combate. Encuentre su historial y las secuencias de vídeo vinculadas a sus competencias.",
   "competition.recordMatch": "Registrar un combate", "competition.matchHistory": "Historial de combates",
   "competition.noMatches": "Aún no hay competiciones.", "competition.videoSequences": "Secuencias de vídeo",
@@ -1022,6 +1081,8 @@ const es: Dictionary = {
   "skillDetail.historyTitle": "Historial", "skillDetail.relatedSessions": "Sesiones y observaciones vinculadas",
   "skillDetail.noHistory": "Aún no hay sesión u observación vinculada a esta habilidad.",
   "skillDetail.techniqueBadge": "Técnica", "skillDetail.observationFallback": "Observación",
+  "skillNote.placeholder": "Añade una nota personal sobre esta habilidad...", "skillNote.submit": "Añadir nota",
+  "skillNote.empty": "Aún no hay notas.", "skillNote.deleteAria": "Eliminar nota",
 
   "club.description": "Progresen juntos. Invita a tus compañeros de entrenamiento y organiza tus grupos.",
   "club.classesDesc": "Consulta el horario y las sesiones de tu club.",
@@ -1052,6 +1113,11 @@ const es: Dictionary = {
   "attendanceStatus.present": "Presente", "attendanceStatus.absent": "Ausente",
   "weekday.0": "Domingo", "weekday.1": "Lunes", "weekday.2": "Martes", "weekday.3": "Miércoles",
   "weekday.4": "Jueves", "weekday.5": "Viernes", "weekday.6": "Sábado",
+
+  "page.calendar.description": "Clases, eventos del club, entrenamientos y competiciones",
+  "calendar.today": "Hoy", "calendar.noEvents": "No hay eventos ese día.",
+  "calendarEventType.class": "Clase", "calendarEventType.club_event": "Evento del club",
+  "calendarEventType.training": "Entrenamiento personal", "calendarEventType.competition": "Competición",
 };
 
 const de: Dictionary = {
@@ -1136,6 +1202,8 @@ const de: Dictionary = {
   "coach.askButton": "Fragen", "coach.askPending": "...",
   "coach.suggested1": "Wie verbessere ich meinen Open Guard?", "coach.suggested2": "Welche Fehler sollte ich zuerst korrigieren?",
   "coach.suggested3": "Wie bereite ich meine nächste Einheit vor?",
+  "coach.insufficientDataReason": "Nicht genug erfasste Daten für ein Coach-Feedback.",
+  "coach.localModelEmpty": "Das lokale Modell hat nichts zurückgegeben.",
 
   "study.queueHeading": "Lernliste", "study.emptyQueue": "Keine Fertigkeiten in der Lernliste. Füge welche über eine Fertigkeitsseite hinzu.",
   "study.favoritesHeading": "Favoriten", "study.noFavorites": "Keine favorisierten Fertigkeiten.",
@@ -1199,6 +1267,16 @@ const de: Dictionary = {
   "action.saving": "Speichern...", "action.addItem": "Hinzufügen", "action.saveChanges": "Änderungen speichern",
   "training.newTitle": "Neue Einheit", "training.newIntro": "Erfassen Sie Ihre Einheit, um Ihren Fortschritt zu speisen.",
   "training.editTitle": "Einheit bearbeiten", "training.focusForSession": "Empfohlener Fokus für diese Einheit",
+  "page.training.tagline": "Fortschritt entsteht Einheit für Einheit.",
+  "trainingList.sessionCount": "{count} Einheit(en) erfasst",
+  "trainingList.gallery": "Galerie", "trainingList.toReview": "Zu wiederholen",
+  "trainingList.timerTitle": "Runden-Timer", "trainingList.sessionsTitle": "Einheiten",
+  "trainingList.noSessionsTitle": "Noch keine Einheit erfasst",
+  "trainingList.noSessionsDesc": "Erfasse deine erste Einheit, um deine Fertigkeiten zu verfolgen und Training Intelligence zu aktivieren.",
+  "trainingList.observationCount": "{count} Beobachtung(en)",
+  "trainingDetail.editButton": "Bearbeiten", "trainingDetail.skillsWorkedTitle": "Bearbeitete Fertigkeiten",
+  "trainingDetail.noTechniques": "Keine Technik erfasst.", "trainingDetail.noObservations": "Keine Beobachtung erfasst.",
+  "trainingDetail.skillFallback": "Fertigkeit",
   "training.galleryTitle": "Trainingsgalerie", "training.galleryIntro": "Bewahren Sie die Bilder auf, die Ihren Fortschritt erzählen.",
   "photo.label": "Foto", "photo.captionLabel": "Bildunterschrift", "photo.linkedSession": "Verknüpfte Einheit", "photo.none": "Keine",
   "photo.sessionFallback": "Einheit", "photo.uploading": "Wird gesendet…", "photo.addToGallery": "Zur Galerie hinzufügen",
@@ -1306,6 +1384,9 @@ const de: Dictionary = {
   "error.sessionExpired": "Sitzung abgelaufen.", "error.loginRequired": "Anmeldung erforderlich.",
   "error.invalidForm": "Ungültiges Formular",
 
+  "page.coach.description": "Abstand gewinnen. Nächste Schritte planen. Antworten basierend auf deinen Einheiten, deinem Fortschritt und deinen Wiederholungen.",
+  "page.study.description": "Verstehen, bevor man wiederholt. Deine Lernliste, deine Favoriten und deine Ressourcen.",
+  "page.goals.description": "Dem Einsatz eine Richtung geben. Deine kurz-, mittel- und langfristigen Ziele, verknüpft mit deinen Fertigkeiten.",
   "page.competition.description": "Die Bewährungsprobe des Kampfes. Finden Sie Ihre Historie und die Videosequenzen zu Ihren Fähigkeiten.",
   "competition.recordMatch": "Kampf erfassen", "competition.matchHistory": "Kampfhistorie",
   "competition.noMatches": "Noch kein Wettkampf.", "competition.videoSequences": "Videosequenzen",
@@ -1370,6 +1451,8 @@ const de: Dictionary = {
   "skillDetail.historyTitle": "Verlauf", "skillDetail.relatedSessions": "Verknüpfte Einheiten und Beobachtungen",
   "skillDetail.noHistory": "Noch keine Einheit oder Beobachtung mit dieser Fähigkeit verknüpft.",
   "skillDetail.techniqueBadge": "Technik", "skillDetail.observationFallback": "Beobachtung",
+  "skillNote.placeholder": "Persönliche Notiz zu dieser Fähigkeit hinzufügen...", "skillNote.submit": "Notiz hinzufügen",
+  "skillNote.empty": "Noch keine Notizen.", "skillNote.deleteAria": "Notiz löschen",
 
   "club.description": "Gemeinsam vorankommen. Lade deine Trainingspartner ein und organisiere deine Gruppen.",
   "club.classesDesc": "Finde den Kursplan und die Einheiten deines Clubs.",
@@ -1400,6 +1483,11 @@ const de: Dictionary = {
   "attendanceStatus.present": "Anwesend", "attendanceStatus.absent": "Abwesend",
   "weekday.0": "Sonntag", "weekday.1": "Montag", "weekday.2": "Dienstag", "weekday.3": "Mittwoch",
   "weekday.4": "Donnerstag", "weekday.5": "Freitag", "weekday.6": "Samstag",
+
+  "page.calendar.description": "Kurse, Vereinsveranstaltungen, Trainingseinheiten und Wettkämpfe",
+  "calendar.today": "Heute", "calendar.noEvents": "Keine Termine an diesem Tag.",
+  "calendarEventType.class": "Kurs", "calendarEventType.club_event": "Vereinsveranstaltung",
+  "calendarEventType.training": "Eigenes Training", "calendarEventType.competition": "Wettkampf",
 };
 
 const ru: Dictionary = {
@@ -1484,6 +1572,8 @@ const ru: Dictionary = {
   "coach.askButton": "Спросить", "coach.askPending": "...",
   "coach.suggested1": "Как улучшить открытую гвардию?", "coach.suggested2": "Какие ошибки исправить в первую очередь?",
   "coach.suggested3": "Как подготовиться к следующей тренировке?",
+  "coach.insufficientDataReason": "Недостаточно записанных данных для ответа тренера.",
+  "coach.localModelEmpty": "Локальная модель ничего не вернула.",
 
   "study.queueHeading": "Очередь изучения", "study.emptyQueue": "В очереди изучения нет навыков. Добавьте их со страницы навыка.",
   "study.favoritesHeading": "Избранное", "study.noFavorites": "Нет избранных навыков.",
@@ -1547,6 +1637,16 @@ const ru: Dictionary = {
   "action.saving": "Сохранение...", "action.addItem": "Добавить", "action.saveChanges": "Сохранить изменения",
   "training.newTitle": "Новая тренировка", "training.newIntro": "Запишите тренировку, чтобы отслеживать прогресс.",
   "training.editTitle": "Редактировать тренировку", "training.focusForSession": "Рекомендуемый фокус для этой тренировки",
+  "page.training.tagline": "Прогресс строится тренировка за тренировкой.",
+  "trainingList.sessionCount": "{count} тренировок записано",
+  "trainingList.gallery": "Галерея", "trainingList.toReview": "На повтор",
+  "trainingList.timerTitle": "Таймер раунда", "trainingList.sessionsTitle": "Тренировки",
+  "trainingList.noSessionsTitle": "Пока нет записанных тренировок",
+  "trainingList.noSessionsDesc": "Запишите первую тренировку, чтобы начать отслеживать навыки и запустить Training Intelligence.",
+  "trainingList.observationCount": "{count} наблюдений",
+  "trainingDetail.editButton": "Изменить", "trainingDetail.skillsWorkedTitle": "Отработанные навыки",
+  "trainingDetail.noTechniques": "Нет записанных техник.", "trainingDetail.noObservations": "Нет записанных наблюдений.",
+  "trainingDetail.skillFallback": "Навык",
   "training.galleryTitle": "Галерея тренировок", "training.galleryIntro": "Сохраняйте изображения, рассказывающие о вашем прогрессе.",
   "photo.label": "Фото", "photo.captionLabel": "Подпись", "photo.linkedSession": "Связанная тренировка", "photo.none": "Нет",
   "photo.sessionFallback": "Тренировка", "photo.uploading": "Отправка…", "photo.addToGallery": "Добавить в галерею",
@@ -1654,6 +1754,9 @@ const ru: Dictionary = {
   "error.sessionExpired": "Сессия истекла.", "error.loginRequired": "Требуется вход.",
   "error.invalidForm": "Неверная форма",
 
+  "page.coach.description": "Сделать шаг назад. Спланировать дальнейшее. Ответы на основе ваших тренировок, прогресса и повторений.",
+  "page.study.description": "Понять прежде, чем повторять. Ваша очередь изучения, избранное и материалы.",
+  "page.goals.description": "Задать направление усилиям. Ваши краткосрочные, среднесрочные и долгосрочные цели, связанные с навыками.",
   "page.competition.description": "Испытание боем. Ваша история и видеофрагменты, связанные с вашими навыками.",
   "competition.recordMatch": "Записать бой", "competition.matchHistory": "История боёв",
   "competition.noMatches": "Пока нет соревнований.", "competition.videoSequences": "Видеофрагменты",
@@ -1718,6 +1821,8 @@ const ru: Dictionary = {
   "skillDetail.historyTitle": "История", "skillDetail.relatedSessions": "Связанные тренировки и наблюдения",
   "skillDetail.noHistory": "Пока нет тренировок или наблюдений, связанных с этим навыком.",
   "skillDetail.techniqueBadge": "Техника", "skillDetail.observationFallback": "Наблюдение",
+  "skillNote.placeholder": "Добавить личную заметку об этом навыке...", "skillNote.submit": "Добавить заметку",
+  "skillNote.empty": "Пока нет заметок.", "skillNote.deleteAria": "Удалить заметку",
 
   "club.description": "Прогрессируйте вместе. Пригласите партнёров по тренировкам и организуйте свои группы.",
   "club.classesDesc": "Смотрите расписание и занятия вашего клуба.",
@@ -1748,6 +1853,11 @@ const ru: Dictionary = {
   "attendanceStatus.present": "Присутствовал", "attendanceStatus.absent": "Отсутствовал",
   "weekday.0": "Воскресенье", "weekday.1": "Понедельник", "weekday.2": "Вторник", "weekday.3": "Среда",
   "weekday.4": "Четверг", "weekday.5": "Пятница", "weekday.6": "Суббота",
+
+  "page.calendar.description": "Занятия, клубные мероприятия, тренировки и соревнования",
+  "calendar.today": "Сегодня", "calendar.noEvents": "В этот день нет событий.",
+  "calendarEventType.class": "Занятие", "calendarEventType.club_event": "Клубное мероприятие",
+  "calendarEventType.training": "Личная тренировка", "calendarEventType.competition": "Соревнование",
 };
 
 const ja: Dictionary = {
@@ -1832,6 +1942,8 @@ const ja: Dictionary = {
   "coach.askButton": "質問する", "coach.askPending": "...",
   "coach.suggested1": "オープンガードを改善するには?", "coach.suggested2": "最初に直すべきミスは?",
   "coach.suggested3": "次のセッションの準備方法は?",
+  "coach.insufficientDataReason": "コーチのフィードバックに十分なデータが記録されていません。",
+  "coach.localModelEmpty": "ローカルモデルから応答がありませんでした。",
 
   "study.queueHeading": "学習キュー", "study.emptyQueue": "学習キューにスキルがありません。スキルページから追加してください。",
   "study.favoritesHeading": "お気に入り", "study.noFavorites": "お気に入りのスキルがありません。",
@@ -1895,6 +2007,16 @@ const ja: Dictionary = {
   "action.saving": "保存中...", "action.addItem": "追加", "action.saveChanges": "変更を保存",
   "training.newTitle": "新しいセッション", "training.newIntro": "セッションを記録して進捗を積み上げましょう。",
   "training.editTitle": "セッションを編集", "training.focusForSession": "このセッションで推奨するフォーカス",
+  "page.training.tagline": "上達はセッションの積み重ねで作られます。",
+  "trainingList.sessionCount": "記録済み{count}セッション",
+  "trainingList.gallery": "ギャラリー", "trainingList.toReview": "復習",
+  "trainingList.timerTitle": "ラウンドタイマー", "trainingList.sessionsTitle": "セッション",
+  "trainingList.noSessionsTitle": "まだセッションが記録されていません",
+  "trainingList.noSessionsDesc": "最初のセッションを記録して、スキルの追跡とTraining Intelligenceを開始しましょう。",
+  "trainingList.observationCount": "観察記録{count}件",
+  "trainingDetail.editButton": "編集", "trainingDetail.skillsWorkedTitle": "練習したスキル",
+  "trainingDetail.noTechniques": "記録されたテクニックはありません。", "trainingDetail.noObservations": "記録された観察はありません。",
+  "trainingDetail.skillFallback": "スキル",
   "training.galleryTitle": "トレーニングギャラリー", "training.galleryIntro": "あなたの成長を物語る写真を残しましょう。",
   "photo.label": "写真", "photo.captionLabel": "キャプション", "photo.linkedSession": "関連セッション", "photo.none": "なし",
   "photo.sessionFallback": "セッション", "photo.uploading": "送信中…", "photo.addToGallery": "ギャラリーに追加",
@@ -2002,6 +2124,9 @@ const ja: Dictionary = {
   "error.sessionExpired": "セッションが期限切れです。", "error.loginRequired": "ログインが必要です。",
   "error.invalidForm": "フォームが無効です",
 
+  "page.coach.description": "一歩下がって考える。次の準備をする。セッション、進捗、復習に基づいた回答。",
+  "page.study.description": "繰り返す前に理解する。学習キュー、お気に入り、リソース。",
+  "page.goals.description": "努力に方向性を与える。スキルに紐づいた短期・中期・長期の目標。",
   "page.competition.description": "戦いの試練。あなたの履歴とスキルに関連する動画シーケンスを確認できます。",
   "competition.recordMatch": "試合を記録", "competition.matchHistory": "試合履歴",
   "competition.noMatches": "まだ試合がありません。", "competition.videoSequences": "動画シーケンス",
@@ -2066,6 +2191,8 @@ const ja: Dictionary = {
   "skillDetail.historyTitle": "履歴", "skillDetail.relatedSessions": "関連するセッションと記録",
   "skillDetail.noHistory": "このスキルに関連するセッションや記録はまだありません。",
   "skillDetail.techniqueBadge": "テクニック", "skillDetail.observationFallback": "記録",
+  "skillNote.placeholder": "このスキルについて個人的なメモを追加...", "skillNote.submit": "メモを追加",
+  "skillNote.empty": "まだメモがありません。", "skillNote.deleteAria": "メモを削除",
 
   "club.description": "共に成長しましょう。トレーニング仲間を招待してグループを作りましょう。",
   "club.classesDesc": "クラブのスケジュールとセッションを確認できます。",
@@ -2096,6 +2223,11 @@ const ja: Dictionary = {
   "attendanceStatus.present": "出席", "attendanceStatus.absent": "欠席",
   "weekday.0": "日曜日", "weekday.1": "月曜日", "weekday.2": "火曜日", "weekday.3": "水曜日",
   "weekday.4": "木曜日", "weekday.5": "金曜日", "weekday.6": "土曜日",
+
+  "page.calendar.description": "クラス、クラブイベント、トレーニング、試合",
+  "calendar.today": "今日", "calendar.noEvents": "この日の予定はありません。",
+  "calendarEventType.class": "クラス", "calendarEventType.club_event": "クラブイベント",
+  "calendarEventType.training": "個人トレーニング", "calendarEventType.competition": "試合",
 };
 
 export const DICTIONARIES: Record<Locale, Dictionary> = { fr, en, es, de, ru, ja };

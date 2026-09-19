@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowRight, Sparkles, Video } from "lucide-react";
 import Link from "next/link";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
@@ -5,12 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { CoachAnswer } from "@/lib/usecases/ai-coach-actions";
-
-const FACT_KIND_LABELS: Record<string, string> = {
-  OBSERVED: "Observé",
-  INFERRED: "Déduit",
-  HYPOTHESIS: "Hypothèse",
-};
+import { useI18n } from "@/components/i18n-provider";
 
 const FACT_KIND_VARIANT: Record<string, "secondary" | "default" | "outline"> = {
   OBSERVED: "secondary",
@@ -19,6 +16,7 @@ const FACT_KIND_VARIANT: Record<string, "secondary" | "default" | "outline"> = {
 };
 
 export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
+  const { t } = useI18n();
   const { context, response, providerName, videos, videoSuggestions } = answer;
 
   if (response.status === "insufficient_data") {
@@ -26,10 +24,10 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
       <Card>
         <CardContent className="editorial-empty flex flex-col items-start gap-2 py-8">
           <Sparkles className="size-6 text-muted-foreground" />
-          <p className="font-medium">Pas encore assez de données</p>
+          <p className="font-medium">{t("coach.notEnoughDataTitle", "Pas encore assez de données")}</p>
           <p className="max-w-md text-sm text-muted-foreground">{response.reason}</p>
           <Button variant="outline" size="sm" render={<Link href="/training/new" />} className="mt-1">
-            Enregistrer une séance <ArrowRight />
+            {t("coach.logSession", "Enregistrer une séance")} <ArrowRight />
           </Button>
         </CardContent>
       </Card>
@@ -43,9 +41,11 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
       <Card>
         <CardContent className="flex flex-col gap-4 py-5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Réponse du coach</span>
+            <span className="text-xs font-medium text-muted-foreground">{t("coach.responseLabel", "Réponse du coach")}</span>
             <Badge variant="outline" className="text-[0.65rem]">
-              {providerName === "deterministic-fallback" ? "Règles déterministes" : `Modèle local · ${providerName}`}
+              {providerName === "deterministic-fallback"
+                ? t("coach.deterministicRules", "Règles déterministes")
+                : t("coach.localModel", "Modèle local · {name}", { name: providerName })}
             </Badge>
           </div>
           <p className="text-sm leading-relaxed">{response.summary}</p>
@@ -60,7 +60,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
                   </p>
                   {rec.basedOnFactIndexes.length > 0 ? (
                     <p className="pl-5 text-xs text-muted-foreground">
-                      Basé sur:{" "}
+                      {t("coach.basedOn", "Basé sur:")}{" "}
                       {rec.basedOnFactIndexes
                         .map((idx) => context.facts[idx]?.statement)
                         .filter(Boolean)
@@ -85,8 +85,8 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
         />
         <div className="coach-video-stage-shade" aria-hidden="true" />
         <div className="coach-video-heading">
-          <span><Video aria-hidden="true" /> À voir maintenant</span>
-          <h3 id="coach-videos">Démonstrations pour votre prochain entraînement</h3>
+          <span><Video aria-hidden="true" /> {t("coach.watchNow", "À voir maintenant")}</span>
+          <h3 id="coach-videos">{t("coach.demosHeading", "Démonstrations pour votre prochain entraînement")}</h3>
           <p className="font-medium text-[#fff5e2]">{primaryVideoQuery}</p>
           {videoSuggestions.length > 1 ? (
             <ul className="grid gap-1 text-xs text-[#bcb3a4]">
@@ -94,7 +94,7 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
             </ul>
           ) : null}
           <Button render={<a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(primaryVideoQuery)}`} target="_blank" rel="noreferrer" />} className="w-fit">
-            <Video /> Rechercher sur YouTube
+            <Video /> {t("coach.searchYoutube", "Rechercher sur YouTube")}
           </Button>
         </div>
         {videos.length > 0 ? (
@@ -114,13 +114,13 @@ export function CoachAnswerView({ answer }: { answer: CoachAnswer }) {
 
       <details className="group rounded-lg border border-border">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-muted-foreground marker:content-none">
-          Voir les {context.facts.length} fait(s) utilisé(s)
+          {t("coach.factsUsed", "Voir les {count} fait(s) utilisé(s)", { count: context.facts.length })}
         </summary>
         <ul className="flex flex-col gap-2 border-t border-border px-4 py-3">
           {context.facts.map((fact, i) => (
             <li key={i} className="flex items-start gap-2 text-sm">
               <Badge variant={FACT_KIND_VARIANT[fact.kind]} className="mt-0.5 shrink-0 text-[0.65rem]">
-                {FACT_KIND_LABELS[fact.kind]}
+                {t(`factKind.${fact.kind.toLowerCase()}`, fact.kind)}
               </Badge>
               <span className="text-muted-foreground">{fact.statement}</span>
             </li>

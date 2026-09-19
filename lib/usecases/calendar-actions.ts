@@ -8,9 +8,9 @@ import {
   type CalendarEvent,
   type CalendarMonth,
 } from "@/lib/domain/calendar";
-import { EVENT_TYPE_LABELS, type EventType } from "@/lib/domain/club-event";
+import { EVENT_TYPE_LABEL_KEYS, type EventType } from "@/lib/domain/club-event";
 import { SESSION_TYPE_LABEL_KEYS, type SessionType } from "@/lib/domain/training";
-import { MATCH_RESULT_LABELS, type MatchResult } from "@/lib/domain/competition";
+import { MATCH_RESULT_LABEL_KEYS, type MatchResult } from "@/lib/domain/competition";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES } from "@/lib/i18n";
 
@@ -102,7 +102,7 @@ export async function getCalendarEvents(
         date: toDateKey(startsAt),
         time: toTimeString(startsAt),
         href: `/club/${e.club_id}/events/${e.id}`,
-        subtitle: EVENT_TYPE_LABELS[e.event_type as EventType],
+        subtitle: dict[EVENT_TYPE_LABEL_KEYS[e.event_type as EventType]],
       });
     }
   }
@@ -142,11 +142,11 @@ export async function getCalendarEvents(
     events.push({
       id: `match:${m.id}`,
       type: "competition",
-      title: (m.event_name as string | null) || "Compétition",
+      title: (m.event_name as string | null) || dict["calendarEventType.competition"],
       date: m.date as string,
       time: null,
       href: `/competition/${m.id}`,
-      subtitle: result ? MATCH_RESULT_LABELS[result] : ((m.discipline as unknown as { name: string } | null)?.name ?? null),
+      subtitle: result ? dict[MATCH_RESULT_LABEL_KEYS[result]] : ((m.discipline as unknown as { name: string } | null)?.name ?? null),
     });
   }
 
