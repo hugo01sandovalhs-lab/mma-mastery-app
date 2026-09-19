@@ -8,6 +8,7 @@ import { MobileNav, MobileSectionNav } from "@/components/app-nav";
 import { ChampionshipAppSidebar } from "@/components/championship/sidebar";
 import { ShellRoot } from "@/components/championship/shell-root";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { QuickActionsBar } from "@/components/quick-actions-bar";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
@@ -36,6 +37,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <MobileNav />
+      <QuickActionsBar />
     </ShellRoot>
   );
 }

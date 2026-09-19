@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useI18n } from "@/components/i18n-provider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const COVER = {
   src: "/mma-mastery-photos/pexels-cottonbro-4761790.jpg",
@@ -12,6 +14,7 @@ const COVER = {
 
 export function AuthShell({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
   const image = COVER;
+  const { t } = useI18n();
 
   return (
     <main className="auth-stage">
@@ -22,12 +25,15 @@ export function AuthShell({ title, intro, children }: { title: string; intro: st
         </Link>
         <div className="auth-cover-copy">
           <p>{image.label}</p>
-          <strong>Chaque round compte.</strong>
-          <span>Documentez le travail. Mesurez la progression. Revenez plus fort.</span>
+          <strong>{t("auth.shell.tagline", "Chaque round compte.")}</strong>
+          <span>{t("auth.shell.taglineBody", "Documentez le travail. Mesurez la progression. Revenez plus fort.")}</span>
         </div>
       </section>
       <section className="auth-panel">
         <div className="auth-form-wrap">
+          <div className="auth-panel-top">
+            <LanguageSwitcher />
+          </div>
           <div className="auth-heading">
             <h1>{title}</h1>
             <p>{intro}</p>

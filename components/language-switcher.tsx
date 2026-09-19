@@ -14,7 +14,7 @@ export function LanguageSwitcher() {
         onChange={(event) => setLocale(event.target.value as Locale)}
         className="h-8 rounded-md border border-border bg-background px-2 font-semibold uppercase text-foreground"
       >
-        {LOCALES.map((item) => <option key={item} value={item}>{item}</option>)}
+        {LOCALES.map((item) => <option key={item} value={item}>{t(`language.${item}`, item.toUpperCase())}</option>)}
       </select>
     </label>
   );

@@ -1,52 +1,639 @@
-export const LOCALES = ["fr", "en", "es", "de"] as const;
+export const LOCALES = ["fr", "en", "es", "de", "ru", "ja"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 const fr = {
+  "language.label": "Langue",
+  "language.fr": "Français", "language.en": "Anglais", "language.es": "Espagnol",
+  "language.de": "Allemand", "language.ru": "Russe", "language.ja": "Japonais",
+
   "nav.dashboard": "Accueil", "nav.training": "Entraînement", "nav.skills": "Compétences",
   "nav.coach": "Coach", "nav.study": "Étude", "nav.goals": "Objectifs",
   "nav.competition": "Compétition", "nav.club": "Club", "nav.search": "Recherche",
   "nav.profile": "Profil", "nav.calendar": "Calendrier", "nav.youtube": "YouTube", "nav.menu": "Menu",
-  "nav.all": "Toutes les rubriques", "language.label": "Langue",
+  "nav.all": "Toutes les rubriques", "nav.gallery": "Galerie", "nav.timer": "Timer",
+
   "page.training.title": "Entraînement", "page.skills.title": "Compétences", "page.coach.title": "Coach",
   "page.study.title": "Étude", "page.goals.title": "Objectifs", "page.competition.title": "Compétition",
   "page.club.title": "Club", "page.search.title": "Recherche", "page.profile.title": "Profil",
   "page.youtube.title": "YouTube",
+
+  "action.save": "Enregistrer", "action.cancel": "Annuler", "action.delete": "Supprimer",
+  "action.edit": "Modifier", "action.add": "Ajouter", "action.back": "Retour",
+  "action.continue": "Continuer", "action.newSession": "Nouvelle séance",
+  "action.copyFriendCode": "Copier mon code ami", "action.copied": "Copié",
+  "action.openYoutube": "Voir sur YouTube", "action.favorite": "Ajouter aux favoris",
+  "action.resumeTechnique": "Reprendre cette technique", "action.addGoal": "Ajouter aux objectifs",
+  "action.timer": "Timer",
+
+  "auth.login": "Se connecter", "auth.signup": "Créer un compte", "auth.email": "Adresse e-mail",
+  "auth.password": "Mot de passe", "auth.forgot": "Mot de passe oublié ?",
+  "auth.reset": "Réinitialiser le mot de passe",
+  "auth.login.title": "Retour au camp", "auth.login.intro": "Retrouvez vos séances, vos objectifs et votre progression.",
+  "auth.login.emailLabel": "Email", "auth.login.passwordLabel": "Mot de passe",
+  "auth.login.submit": "Se connecter", "auth.login.submitPending": "Connexion…",
+  "auth.login.noAccount": "Pas encore de compte ?", "auth.login.createAccount": "Créer un compte",
+  "auth.signup.title": "Entrez dans l’arène", "auth.signup.intro": "Créez votre espace de travail et commencez à suivre chaque round.",
+  "auth.signup.emailLabel": "Email", "auth.signup.passwordLabel": "Mot de passe",
+  "auth.signup.passwordHint": "8 caractères minimum.", "auth.signup.submit": "Créer mon compte",
+  "auth.signup.submitPending": "Création…", "auth.signup.haveAccount": "Déjà membre ?",
+  "auth.forgot.title": "Récupérez votre accès", "auth.forgot.intro": "Recevez un lien sécurisé pour choisir un nouveau mot de passe.",
+  "auth.forgot.emailLabel": "Email du compte", "auth.forgot.submit": "Envoyer le lien",
+  "auth.forgot.submitPending": "Envoi…", "auth.forgot.backToLogin": "Retour à la connexion",
+  "auth.reset.title": "Nouveau mot de passe", "auth.reset.intro": "Choisissez un accès solide pour reprendre votre progression.",
+  "auth.reset.passwordLabel": "Nouveau mot de passe", "auth.reset.confirmLabel": "Confirmer le mot de passe",
+  "auth.reset.submit": "Mettre à jour", "auth.reset.submitPending": "Mise à jour…",
+  "auth.shell.tagline": "Chaque round compte.",
+  "auth.shell.taglineBody": "Documentez le travail. Mesurez la progression. Revenez plus fort.",
+
+  "coach.focus": "Focus recommandé", "coach.ask": "Poser une question",
+  "coach.workOn": "Sur quoi dois-je travailler ?", "coach.review": "Que dois-je revoir ?",
+  "coach.problem": "Qu'est-ce qui me pose problème ?", "coach.topPriorities": "3 priorités maximum",
+  "coach.realCoachQuestion": "Question à poser au coach", "coach.nextPlan": "Plan de prochaine séance",
+
+  "youtube.title": "Apprenez. Observez. Réessayez.", "youtube.forYou": "Pour vous aujourd’hui",
+  "youtube.suggested": "Recherches suggérées", "youtube.history": "Historique", "youtube.favorites": "Favoris",
+
+  "training.sessions": "Séances", "training.lastPractice": "Dernière pratique il y a {days} jours",
+  "training.weekCount": "{count} séances cette semaine", "training.monthCount": "{count} séances ce mois-ci",
+
+  "review.title": "Review de séance", "review.sixtySeconds": "Review en 60 secondes",
+
+  "goals.title": "Objectifs",
+
+  "skills.techniqueOfDay": "Technique du jour", "skills.reviewThisWeek": "À revoir cette semaine",
+  "skills.lastResolved": "Dernière difficulté résolue",
+
+  "empty.sessions": "Aucune séance pour le moment.", "empty.goals": "Aucun objectif pour l'instant.",
+  "empty.videos": "Aucune vidéo enregistrée.", "empty.partners": "Aucun partenaire ajouté.",
+
+  "profile.firstName": "Prénom", "profile.lastName": "Nom", "profile.age": "Âge",
+  "profile.height": "Taille", "profile.weight": "Poids", "profile.yearsPractice": "Années de pratique",
+  "profile.stance": "Garde dominante", "profile.weightClass": "Catégorie de poids",
+  "profile.disciplines": "Disciplines pratiquées",
+  "profile.friendCode.label": "Votre code ami", "profile.friendCode.hint": "Ce code révèle uniquement votre nom d’affichage après ajout.",
+  "profile.partners.title": "Partenaires d’entraînement", "profile.partners.addByCode": "Ajouter par code",
+  "profile.partners.add": "Ajouter", "profile.partners.adding": "Ajout…",
+  "profile.partners.added": "Partenaire ajouté.", "profile.partners.empty": "Ajoutez votre premier partenaire avec son code ami.",
+  "profile.partners.remove": "Supprimer {name}",
+  "profile.partners.count": "{count} partenaire", "profile.partners.countPlural": "{count} partenaires",
+
+  "timer.round": "Round", "timer.work": "Travail", "timer.rest": "Repos",
+  "timer.start": "Démarrer", "timer.pause": "Pause", "timer.reset": "Réinitialiser",
+
+  "search.history": "Recherches récentes", "search.clearHistory": "Effacer l’historique",
+  "search.placeholder": "Rechercher une technique, une séance, un objectif…",
+  "search.description": "Explorez vos compétences, séances, observations, objectifs et ressources.",
+  "search.stageKicker": "Interrogez votre parcours", "search.stageQuestion": "Que voulez-vous mieux maîtriser ?",
+  "search.submit": "Rechercher", "search.suggestedLabel": "Questions suggérées",
+  "search.minChars": "Entrez au moins 2 caractères.", "search.noResults": "Aucun résultat pour \"{query}\".",
+  "search.type.skill": "Compétence", "search.type.resource": "Ressource", "search.type.session": "Séance",
+  "search.type.observation": "Observation", "search.type.goal": "Objectif",
+
+  "landing.kicker": "Le système d'entraînement du combattant",
+  "landing.title": "Transformez chaque round en progression.",
+  "landing.intro": "Structurez vos séances, comprenez vos difficultés et arrivez au prochain entraînement avec un plan clair.",
+  "landing.ctaStart": "Commencer maintenant", "landing.ctaHaveAccount": "J'ai déjà un compte",
+  "landing.ctaEnterArena": "Entrer dans l'arène",
+  "landing.manifestoKicker": "Votre camp. Vos données. Votre cap.",
+  "landing.manifestoTitle": "Une méthode complète, sans bruit.",
+  "landing.manifestoBody": "MMA Mastery relie ce que vous entraînez, ce que vous maîtrisez et ce qui mérite votre attention. Le Coach transforme ces faits en recommandations et démonstrations utiles.",
+  "landing.feature1.title": "Journal", "landing.feature1.desc": "Chaque séance, technique et sensation reste exploitable.",
+  "landing.feature2.title": "Maîtrise", "landing.feature2.desc": "Une progression mesurée à partir de votre pratique réelle.",
+  "landing.feature3.title": "Intelligence", "landing.feature3.desc": "Le prochain travail prioritaire, expliqué sans score inventé.",
+  "landing.feature4.title": "Étude", "landing.feature4.desc": "Difficultés, ressources et révisions réunies au bon moment.",
+  "landing.finalTag": "Coach IA + démonstrations vidéo",
+  "landing.finalTitle": "Le combat se prépare avant d'entrer dans la cage.",
+  "landing.finalCta": "Créer mon espace",
+  "landing.footerTagline": "Construire. Comprendre. Maîtriser.",
+
+  "notFound.title": "Page introuvable", "notFound.body": "Cette page n'existe pas ou plus.",
+  "notFound.cta": "Retour à l'accueil",
 } as const;
 
 type TranslationKey = keyof typeof fr;
 type Dictionary = Record<TranslationKey, string>;
 
-export const DICTIONARIES: Record<Locale, Dictionary> = {
-  fr,
-  en: {
-    "nav.dashboard": "Home", "nav.training": "Training", "nav.skills": "Skills", "nav.coach": "Coach",
-    "nav.study": "Study", "nav.goals": "Goals", "nav.competition": "Competition", "nav.club": "Club",
-    "nav.search": "Search", "nav.profile": "Profile", "nav.calendar": "Calendar", "nav.youtube": "YouTube", "nav.menu": "Menu",
-    "nav.all": "All sections", "language.label": "Language", "page.training.title": "Training",
-    "page.skills.title": "Skills", "page.coach.title": "Coach", "page.study.title": "Study",
-    "page.goals.title": "Goals", "page.competition.title": "Competition", "page.club.title": "Club",
-    "page.search.title": "Search", "page.profile.title": "Profile", "page.youtube.title": "YouTube",
-  },
-  es: {
-    "nav.dashboard": "Inicio", "nav.training": "Entrenamiento", "nav.skills": "Habilidades", "nav.coach": "Coach",
-    "nav.study": "Estudio", "nav.goals": "Objetivos", "nav.competition": "Competición", "nav.club": "Club",
-    "nav.search": "Buscar", "nav.profile": "Perfil", "nav.calendar": "Calendario", "nav.youtube": "YouTube", "nav.menu": "Menú",
-    "nav.all": "Todas las secciones", "language.label": "Idioma", "page.training.title": "Entrenamiento",
-    "page.skills.title": "Habilidades", "page.coach.title": "Coach", "page.study.title": "Estudio",
-    "page.goals.title": "Objetivos", "page.competition.title": "Competición", "page.club.title": "Club",
-    "page.search.title": "Buscar", "page.profile.title": "Perfil", "page.youtube.title": "YouTube",
-  },
-  de: {
-    "nav.dashboard": "Start", "nav.training": "Training", "nav.skills": "Fähigkeiten", "nav.coach": "Coach",
-    "nav.study": "Lernen", "nav.goals": "Ziele", "nav.competition": "Wettkampf", "nav.club": "Verein",
-    "nav.search": "Suche", "nav.profile": "Profil", "nav.calendar": "Kalender", "nav.youtube": "YouTube", "nav.menu": "Menü",
-    "nav.all": "Alle Bereiche", "language.label": "Sprache", "page.training.title": "Training",
-    "page.skills.title": "Fähigkeiten", "page.coach.title": "Coach", "page.study.title": "Lernen",
-    "page.goals.title": "Ziele", "page.competition.title": "Wettkampf", "page.club.title": "Verein",
-    "page.search.title": "Suche", "page.profile.title": "Profil", "page.youtube.title": "YouTube",
-  },
+const en: Dictionary = {
+  "language.label": "Language",
+  "language.fr": "French", "language.en": "English", "language.es": "Spanish",
+  "language.de": "German", "language.ru": "Russian", "language.ja": "Japanese",
+
+  "nav.dashboard": "Home", "nav.training": "Training", "nav.skills": "Skills", "nav.coach": "Coach",
+  "nav.study": "Study", "nav.goals": "Goals", "nav.competition": "Competition", "nav.club": "Club",
+  "nav.search": "Search", "nav.profile": "Profile", "nav.calendar": "Calendar", "nav.youtube": "YouTube", "nav.menu": "Menu",
+  "nav.all": "All sections", "nav.gallery": "Gallery", "nav.timer": "Timer",
+
+  "page.training.title": "Training", "page.skills.title": "Skills", "page.coach.title": "Coach",
+  "page.study.title": "Study", "page.goals.title": "Goals", "page.competition.title": "Competition",
+  "page.club.title": "Club", "page.search.title": "Search", "page.profile.title": "Profile", "page.youtube.title": "YouTube",
+
+  "action.save": "Save", "action.cancel": "Cancel", "action.delete": "Delete", "action.edit": "Edit",
+  "action.add": "Add", "action.back": "Back", "action.continue": "Continue", "action.newSession": "New session",
+  "action.copyFriendCode": "Copy friend code", "action.copied": "Copied",
+  "action.openYoutube": "Watch on YouTube", "action.favorite": "Add to favorites",
+  "action.resumeTechnique": "Resume this technique", "action.addGoal": "Add to goals", "action.timer": "Timer",
+
+  "auth.login": "Log in", "auth.signup": "Create account", "auth.email": "Email address",
+  "auth.password": "Password", "auth.forgot": "Forgot password?", "auth.reset": "Reset password",
+  "auth.login.title": "Back to camp", "auth.login.intro": "Pick up your sessions, goals and progress.",
+  "auth.login.emailLabel": "Email", "auth.login.passwordLabel": "Password",
+  "auth.login.submit": "Log in", "auth.login.submitPending": "Signing in…",
+  "auth.login.noAccount": "No account yet?", "auth.login.createAccount": "Create account",
+  "auth.signup.title": "Step into the arena", "auth.signup.intro": "Create your workspace and start tracking every round.",
+  "auth.signup.emailLabel": "Email", "auth.signup.passwordLabel": "Password",
+  "auth.signup.passwordHint": "8 characters minimum.", "auth.signup.submit": "Create my account",
+  "auth.signup.submitPending": "Creating…", "auth.signup.haveAccount": "Already a member?",
+  "auth.forgot.title": "Recover access", "auth.forgot.intro": "Get a secure link to choose a new password.",
+  "auth.forgot.emailLabel": "Account email", "auth.forgot.submit": "Send link",
+  "auth.forgot.submitPending": "Sending…", "auth.forgot.backToLogin": "Back to login",
+  "auth.reset.title": "New password", "auth.reset.intro": "Choose a strong password to resume your progress.",
+  "auth.reset.passwordLabel": "New password", "auth.reset.confirmLabel": "Confirm password",
+  "auth.reset.submit": "Update", "auth.reset.submitPending": "Updating…",
+  "auth.shell.tagline": "Every round counts.",
+  "auth.shell.taglineBody": "Log the work. Measure the progress. Come back stronger.",
+
+  "coach.focus": "Recommended focus", "coach.ask": "Ask a question",
+  "coach.workOn": "What should I work on?", "coach.review": "What should I review?",
+  "coach.problem": "What am I struggling with?", "coach.topPriorities": "Up to 3 priorities",
+  "coach.realCoachQuestion": "Question for your coach", "coach.nextPlan": "Next session plan",
+
+  "youtube.title": "Learn. Watch. Try again.", "youtube.forYou": "For you today",
+  "youtube.suggested": "Suggested searches", "youtube.history": "History", "youtube.favorites": "Favorites",
+
+  "training.sessions": "Sessions", "training.lastPractice": "Last practiced {days} days ago",
+  "training.weekCount": "{count} sessions this week", "training.monthCount": "{count} sessions this month",
+
+  "review.title": "Session review", "review.sixtySeconds": "60-second review",
+
+  "goals.title": "Goals",
+
+  "skills.techniqueOfDay": "Technique of the day", "skills.reviewThisWeek": "Review this week",
+  "skills.lastResolved": "Latest resolved difficulty",
+
+  "empty.sessions": "No sessions yet.", "empty.goals": "No goals yet.",
+  "empty.videos": "No saved videos.", "empty.partners": "No partners added yet.",
+
+  "profile.firstName": "First name", "profile.lastName": "Last name", "profile.age": "Age",
+  "profile.height": "Height", "profile.weight": "Weight", "profile.yearsPractice": "Years of practice",
+  "profile.stance": "Dominant stance", "profile.weightClass": "Weight class", "profile.disciplines": "Disciplines practiced",
+  "profile.friendCode.label": "Your friend code", "profile.friendCode.hint": "This code only reveals your display name once added.",
+  "profile.partners.title": "Training partners", "profile.partners.addByCode": "Add by code",
+  "profile.partners.add": "Add", "profile.partners.adding": "Adding…",
+  "profile.partners.added": "Partner added.", "profile.partners.empty": "Add your first partner with their friend code.",
+  "profile.partners.remove": "Remove {name}",
+  "profile.partners.count": "{count} partner", "profile.partners.countPlural": "{count} partners",
+
+  "timer.round": "Round", "timer.work": "Work", "timer.rest": "Rest",
+  "timer.start": "Start", "timer.pause": "Pause", "timer.reset": "Reset",
+
+  "search.history": "Recent searches", "search.clearHistory": "Clear history",
+  "search.placeholder": "Search a technique, session, goal…",
+  "search.description": "Explore your skills, sessions, observations, goals and resources.",
+  "search.stageKicker": "Question your journey", "search.stageQuestion": "What do you want to master better?",
+  "search.submit": "Search", "search.suggestedLabel": "Suggested questions",
+  "search.minChars": "Enter at least 2 characters.", "search.noResults": "No results for \"{query}\".",
+  "search.type.skill": "Skill", "search.type.resource": "Resource", "search.type.session": "Session",
+  "search.type.observation": "Observation", "search.type.goal": "Goal",
+
+  "landing.kicker": "The fighter's training system",
+  "landing.title": "Turn every round into progress.",
+  "landing.intro": "Structure your sessions, understand your difficulties and walk into the next training with a clear plan.",
+  "landing.ctaStart": "Get started", "landing.ctaHaveAccount": "I already have an account",
+  "landing.ctaEnterArena": "Step into the arena",
+  "landing.manifestoKicker": "Your camp. Your data. Your direction.",
+  "landing.manifestoTitle": "A complete method, without the noise.",
+  "landing.manifestoBody": "MMA Mastery connects what you train, what you master and what deserves your attention. Coach turns those facts into useful recommendations and demonstrations.",
+  "landing.feature1.title": "Journal", "landing.feature1.desc": "Every session, technique and feeling stays usable.",
+  "landing.feature2.title": "Mastery", "landing.feature2.desc": "Progress measured from your real practice.",
+  "landing.feature3.title": "Intelligence", "landing.feature3.desc": "The next priority, explained without a made-up score.",
+  "landing.feature4.title": "Study", "landing.feature4.desc": "Difficulties, resources and reviews gathered at the right time.",
+  "landing.finalTag": "AI Coach + video demonstrations",
+  "landing.finalTitle": "The fight is prepared before entering the cage.",
+  "landing.finalCta": "Create my space",
+  "landing.footerTagline": "Build. Understand. Master.",
+
+  "notFound.title": "Page not found", "notFound.body": "This page doesn't exist anymore.",
+  "notFound.cta": "Back to home",
 };
+
+const es: Dictionary = {
+  "language.label": "Idioma",
+  "language.fr": "Francés", "language.en": "Inglés", "language.es": "Español",
+  "language.de": "Alemán", "language.ru": "Ruso", "language.ja": "Japonés",
+
+  "nav.dashboard": "Inicio", "nav.training": "Entrenamiento", "nav.skills": "Habilidades", "nav.coach": "Coach",
+  "nav.study": "Estudio", "nav.goals": "Objetivos", "nav.competition": "Competición", "nav.club": "Club",
+  "nav.search": "Buscar", "nav.profile": "Perfil", "nav.calendar": "Calendario", "nav.youtube": "YouTube", "nav.menu": "Menú",
+  "nav.all": "Todas las secciones", "nav.gallery": "Galería", "nav.timer": "Temporizador",
+
+  "page.training.title": "Entrenamiento", "page.skills.title": "Habilidades", "page.coach.title": "Coach",
+  "page.study.title": "Estudio", "page.goals.title": "Objetivos", "page.competition.title": "Competición",
+  "page.club.title": "Club", "page.search.title": "Buscar", "page.profile.title": "Perfil", "page.youtube.title": "YouTube",
+
+  "action.save": "Guardar", "action.cancel": "Cancelar", "action.delete": "Eliminar", "action.edit": "Editar",
+  "action.add": "Añadir", "action.back": "Volver", "action.continue": "Continuar", "action.newSession": "Nueva sesión",
+  "action.copyFriendCode": "Copiar mi código", "action.copied": "Copiado",
+  "action.openYoutube": "Ver en YouTube", "action.favorite": "Añadir a favoritos",
+  "action.resumeTechnique": "Retomar esta técnica", "action.addGoal": "Añadir a objetivos", "action.timer": "Temporizador",
+
+  "auth.login": "Iniciar sesión", "auth.signup": "Crear cuenta", "auth.email": "Correo electrónico",
+  "auth.password": "Contraseña", "auth.forgot": "¿Olvidaste tu contraseña?", "auth.reset": "Restablecer contraseña",
+  "auth.login.title": "Volver al campamento", "auth.login.intro": "Recupera tus sesiones, objetivos y progreso.",
+  "auth.login.emailLabel": "Email", "auth.login.passwordLabel": "Contraseña",
+  "auth.login.submit": "Iniciar sesión", "auth.login.submitPending": "Conectando…",
+  "auth.login.noAccount": "¿Aún no tienes cuenta?", "auth.login.createAccount": "Crear cuenta",
+  "auth.signup.title": "Entra en la arena", "auth.signup.intro": "Crea tu espacio y empieza a registrar cada asalto.",
+  "auth.signup.emailLabel": "Email", "auth.signup.passwordLabel": "Contraseña",
+  "auth.signup.passwordHint": "Mínimo 8 caracteres.", "auth.signup.submit": "Crear mi cuenta",
+  "auth.signup.submitPending": "Creando…", "auth.signup.haveAccount": "¿Ya eres miembro?",
+  "auth.forgot.title": "Recupera tu acceso", "auth.forgot.intro": "Recibe un enlace seguro para elegir una nueva contraseña.",
+  "auth.forgot.emailLabel": "Email de la cuenta", "auth.forgot.submit": "Enviar enlace",
+  "auth.forgot.submitPending": "Enviando…", "auth.forgot.backToLogin": "Volver a iniciar sesión",
+  "auth.reset.title": "Nueva contraseña", "auth.reset.intro": "Elige un acceso sólido para retomar tu progreso.",
+  "auth.reset.passwordLabel": "Nueva contraseña", "auth.reset.confirmLabel": "Confirmar contraseña",
+  "auth.reset.submit": "Actualizar", "auth.reset.submitPending": "Actualizando…",
+  "auth.shell.tagline": "Cada asalto cuenta.",
+  "auth.shell.taglineBody": "Documenta el trabajo. Mide el progreso. Vuelve más fuerte.",
+
+  "coach.focus": "Foco recomendado", "coach.ask": "Hacer una pregunta",
+  "coach.workOn": "¿En qué debo trabajar?", "coach.review": "¿Qué debo repasar?",
+  "coach.problem": "¿Qué me está costando?", "coach.topPriorities": "Hasta 3 prioridades",
+  "coach.realCoachQuestion": "Pregunta para tu entrenador", "coach.nextPlan": "Plan de la próxima sesión",
+
+  "youtube.title": "Aprende. Observa. Inténtalo de nuevo.", "youtube.forYou": "Para ti hoy",
+  "youtube.suggested": "Búsquedas sugeridas", "youtube.history": "Historial", "youtube.favorites": "Favoritos",
+
+  "training.sessions": "Sesiones", "training.lastPractice": "Última práctica hace {days} días",
+  "training.weekCount": "{count} sesiones esta semana", "training.monthCount": "{count} sesiones este mes",
+
+  "review.title": "Revisión de sesión", "review.sixtySeconds": "Revisión en 60 segundos",
+
+  "goals.title": "Objetivos",
+
+  "skills.techniqueOfDay": "Técnica del día", "skills.reviewThisWeek": "Repasar esta semana",
+  "skills.lastResolved": "Última dificultad resuelta",
+
+  "empty.sessions": "Aún no hay sesiones.", "empty.goals": "Aún no hay objetivos.",
+  "empty.videos": "No hay vídeos guardados.", "empty.partners": "Aún no hay compañeros.",
+
+  "profile.firstName": "Nombre", "profile.lastName": "Apellido", "profile.age": "Edad",
+  "profile.height": "Altura", "profile.weight": "Peso", "profile.yearsPractice": "Años de práctica",
+  "profile.stance": "Guardia dominante", "profile.weightClass": "Categoría de peso", "profile.disciplines": "Disciplinas practicadas",
+  "profile.friendCode.label": "Tu código de amigo", "profile.friendCode.hint": "Este código solo revela tu nombre visible al ser añadido.",
+  "profile.partners.title": "Compañeros de entrenamiento", "profile.partners.addByCode": "Añadir por código",
+  "profile.partners.add": "Añadir", "profile.partners.adding": "Añadiendo…",
+  "profile.partners.added": "Compañero añadido.", "profile.partners.empty": "Añade tu primer compañero con su código de amigo.",
+  "profile.partners.remove": "Eliminar a {name}",
+  "profile.partners.count": "{count} compañero", "profile.partners.countPlural": "{count} compañeros",
+
+  "timer.round": "Round", "timer.work": "Trabajo", "timer.rest": "Descanso",
+  "timer.start": "Iniciar", "timer.pause": "Pausa", "timer.reset": "Reiniciar",
+
+  "search.history": "Búsquedas recientes", "search.clearHistory": "Borrar historial",
+  "search.placeholder": "Buscar una técnica, sesión, objetivo…",
+  "search.description": "Explora tus habilidades, sesiones, observaciones, objetivos y recursos.",
+  "search.stageKicker": "Interroga tu trayectoria", "search.stageQuestion": "¿Qué quieres dominar mejor?",
+  "search.submit": "Buscar", "search.suggestedLabel": "Preguntas sugeridas",
+  "search.minChars": "Introduce al menos 2 caracteres.", "search.noResults": "Sin resultados para \"{query}\".",
+  "search.type.skill": "Habilidad", "search.type.resource": "Recurso", "search.type.session": "Sesión",
+  "search.type.observation": "Observación", "search.type.goal": "Objetivo",
+
+  "landing.kicker": "El sistema de entrenamiento del luchador",
+  "landing.title": "Convierte cada asalto en progreso.",
+  "landing.intro": "Estructura tus sesiones, comprende tus dificultades y llega al próximo entrenamiento con un plan claro.",
+  "landing.ctaStart": "Empezar ahora", "landing.ctaHaveAccount": "Ya tengo una cuenta",
+  "landing.ctaEnterArena": "Entrar en la arena",
+  "landing.manifestoKicker": "Tu campamento. Tus datos. Tu rumbo.",
+  "landing.manifestoTitle": "Un método completo, sin ruido.",
+  "landing.manifestoBody": "MMA Mastery conecta lo que entrenas, lo que dominas y lo que merece tu atención. El Coach convierte esos hechos en recomendaciones y demostraciones útiles.",
+  "landing.feature1.title": "Diario", "landing.feature1.desc": "Cada sesión, técnica y sensación sigue siendo útil.",
+  "landing.feature2.title": "Maestría", "landing.feature2.desc": "Un progreso medido a partir de tu práctica real.",
+  "landing.feature3.title": "Inteligencia", "landing.feature3.desc": "El próximo trabajo prioritario, explicado sin puntuaciones inventadas.",
+  "landing.feature4.title": "Estudio", "landing.feature4.desc": "Dificultades, recursos y repasos reunidos en el momento justo.",
+  "landing.finalTag": "Coach IA + demostraciones en vídeo",
+  "landing.finalTitle": "El combate se prepara antes de entrar en la jaula.",
+  "landing.finalCta": "Crear mi espacio",
+  "landing.footerTagline": "Construir. Comprender. Dominar.",
+
+  "notFound.title": "Página no encontrada", "notFound.body": "Esta página ya no existe.",
+  "notFound.cta": "Volver al inicio",
+};
+
+const de: Dictionary = {
+  "language.label": "Sprache",
+  "language.fr": "Französisch", "language.en": "Englisch", "language.es": "Spanisch",
+  "language.de": "Deutsch", "language.ru": "Russisch", "language.ja": "Japanisch",
+
+  "nav.dashboard": "Start", "nav.training": "Training", "nav.skills": "Fähigkeiten", "nav.coach": "Coach",
+  "nav.study": "Lernen", "nav.goals": "Ziele", "nav.competition": "Wettkampf", "nav.club": "Verein",
+  "nav.search": "Suche", "nav.profile": "Profil", "nav.calendar": "Kalender", "nav.youtube": "YouTube", "nav.menu": "Menü",
+  "nav.all": "Alle Bereiche", "nav.gallery": "Galerie", "nav.timer": "Timer",
+
+  "page.training.title": "Training", "page.skills.title": "Fähigkeiten", "page.coach.title": "Coach",
+  "page.study.title": "Lernen", "page.goals.title": "Ziele", "page.competition.title": "Wettkampf",
+  "page.club.title": "Verein", "page.search.title": "Suche", "page.profile.title": "Profil", "page.youtube.title": "YouTube",
+
+  "action.save": "Speichern", "action.cancel": "Abbrechen", "action.delete": "Löschen", "action.edit": "Bearbeiten",
+  "action.add": "Hinzufügen", "action.back": "Zurück", "action.continue": "Weiter", "action.newSession": "Neue Einheit",
+  "action.copyFriendCode": "Freundescode kopieren", "action.copied": "Kopiert",
+  "action.openYoutube": "Auf YouTube ansehen", "action.favorite": "Zu Favoriten hinzufügen",
+  "action.resumeTechnique": "Diese Technik fortsetzen", "action.addGoal": "Zu Zielen hinzufügen", "action.timer": "Timer",
+
+  "auth.login": "Anmelden", "auth.signup": "Konto erstellen", "auth.email": "E-Mail-Adresse",
+  "auth.password": "Passwort", "auth.forgot": "Passwort vergessen?", "auth.reset": "Passwort zurücksetzen",
+  "auth.login.title": "Zurück ins Camp", "auth.login.intro": "Finde deine Einheiten, Ziele und Fortschritte wieder.",
+  "auth.login.emailLabel": "E-Mail", "auth.login.passwordLabel": "Passwort",
+  "auth.login.submit": "Anmelden", "auth.login.submitPending": "Anmeldung…",
+  "auth.login.noAccount": "Noch kein Konto?", "auth.login.createAccount": "Konto erstellen",
+  "auth.signup.title": "Betritt die Arena", "auth.signup.intro": "Erstelle deinen Arbeitsbereich und verfolge jede Runde.",
+  "auth.signup.emailLabel": "E-Mail", "auth.signup.passwordLabel": "Passwort",
+  "auth.signup.passwordHint": "Mindestens 8 Zeichen.", "auth.signup.submit": "Konto erstellen",
+  "auth.signup.submitPending": "Wird erstellt…", "auth.signup.haveAccount": "Schon Mitglied?",
+  "auth.forgot.title": "Zugang wiederherstellen", "auth.forgot.intro": "Erhalte einen sicheren Link, um ein neues Passwort zu wählen.",
+  "auth.forgot.emailLabel": "Konto-E-Mail", "auth.forgot.submit": "Link senden",
+  "auth.forgot.submitPending": "Wird gesendet…", "auth.forgot.backToLogin": "Zurück zur Anmeldung",
+  "auth.reset.title": "Neues Passwort", "auth.reset.intro": "Wähle ein starkes Passwort, um deinen Fortschritt fortzusetzen.",
+  "auth.reset.passwordLabel": "Neues Passwort", "auth.reset.confirmLabel": "Passwort bestätigen",
+  "auth.reset.submit": "Aktualisieren", "auth.reset.submitPending": "Wird aktualisiert…",
+  "auth.shell.tagline": "Jede Runde zählt.",
+  "auth.shell.taglineBody": "Dokumentiere die Arbeit. Miss den Fortschritt. Komm stärker zurück.",
+
+  "coach.focus": "Empfohlener Fokus", "coach.ask": "Frage stellen",
+  "coach.workOn": "Woran soll ich arbeiten?", "coach.review": "Was soll ich wiederholen?",
+  "coach.problem": "Womit habe ich Probleme?", "coach.topPriorities": "Bis zu 3 Prioritäten",
+  "coach.realCoachQuestion": "Frage an deinen Coach", "coach.nextPlan": "Plan für die nächste Einheit",
+
+  "youtube.title": "Lernen. Beobachten. Wiederholen.", "youtube.forYou": "Heute für dich",
+  "youtube.suggested": "Vorgeschlagene Suchen", "youtube.history": "Verlauf", "youtube.favorites": "Favoriten",
+
+  "training.sessions": "Einheiten", "training.lastPractice": "Zuletzt vor {days} Tagen trainiert",
+  "training.weekCount": "{count} Einheiten diese Woche", "training.monthCount": "{count} Einheiten diesen Monat",
+
+  "review.title": "Einheiten-Review", "review.sixtySeconds": "60-Sekunden-Review",
+
+  "goals.title": "Ziele",
+
+  "skills.techniqueOfDay": "Technik des Tages", "skills.reviewThisWeek": "Diese Woche wiederholen",
+  "skills.lastResolved": "Zuletzt gelöste Schwierigkeit",
+
+  "empty.sessions": "Noch keine Einheiten.", "empty.goals": "Noch keine Ziele.",
+  "empty.videos": "Keine gespeicherten Videos.", "empty.partners": "Noch keine Partner hinzugefügt.",
+
+  "profile.firstName": "Vorname", "profile.lastName": "Nachname", "profile.age": "Alter",
+  "profile.height": "Größe", "profile.weight": "Gewicht", "profile.yearsPractice": "Trainingsjahre",
+  "profile.stance": "Bevorzugte Auslage", "profile.weightClass": "Gewichtsklasse", "profile.disciplines": "Disziplinen",
+  "profile.friendCode.label": "Dein Freundescode", "profile.friendCode.hint": "Dieser Code zeigt nach dem Hinzufügen nur deinen Anzeigenamen.",
+  "profile.partners.title": "Trainingspartner", "profile.partners.addByCode": "Per Code hinzufügen",
+  "profile.partners.add": "Hinzufügen", "profile.partners.adding": "Wird hinzugefügt…",
+  "profile.partners.added": "Partner hinzugefügt.", "profile.partners.empty": "Füge deinen ersten Partner mit seinem Freundescode hinzu.",
+  "profile.partners.remove": "{name} entfernen",
+  "profile.partners.count": "{count} Partner", "profile.partners.countPlural": "{count} Partner",
+
+  "timer.round": "Runde", "timer.work": "Arbeit", "timer.rest": "Pause",
+  "timer.start": "Starten", "timer.pause": "Pause", "timer.reset": "Zurücksetzen",
+
+  "search.history": "Letzte Suchen", "search.clearHistory": "Verlauf löschen",
+  "search.placeholder": "Technik, Einheit oder Ziel suchen…",
+  "search.description": "Durchsuche deine Fähigkeiten, Einheiten, Beobachtungen, Ziele und Ressourcen.",
+  "search.stageKicker": "Befrage deinen Werdegang", "search.stageQuestion": "Was möchtest du besser beherrschen?",
+  "search.submit": "Suchen", "search.suggestedLabel": "Vorgeschlagene Fragen",
+  "search.minChars": "Gib mindestens 2 Zeichen ein.", "search.noResults": "Keine Ergebnisse für \"{query}\".",
+  "search.type.skill": "Fähigkeit", "search.type.resource": "Ressource", "search.type.session": "Einheit",
+  "search.type.observation": "Beobachtung", "search.type.goal": "Ziel",
+
+  "landing.kicker": "Das Trainingssystem des Kämpfers",
+  "landing.title": "Verwandle jede Runde in Fortschritt.",
+  "landing.intro": "Strukturiere deine Einheiten, verstehe deine Schwierigkeiten und starte mit klarem Plan ins nächste Training.",
+  "landing.ctaStart": "Jetzt starten", "landing.ctaHaveAccount": "Ich habe schon ein Konto",
+  "landing.ctaEnterArena": "Betritt die Arena",
+  "landing.manifestoKicker": "Dein Camp. Deine Daten. Dein Kurs.",
+  "landing.manifestoTitle": "Eine vollständige Methode, ohne Lärm.",
+  "landing.manifestoBody": "MMA Mastery verbindet, was du trainierst, was du beherrschst und was deine Aufmerksamkeit verdient. Der Coach macht daraus nützliche Empfehlungen und Demonstrationen.",
+  "landing.feature1.title": "Journal", "landing.feature1.desc": "Jede Einheit, Technik und jedes Gefühl bleibt nutzbar.",
+  "landing.feature2.title": "Beherrschung", "landing.feature2.desc": "Fortschritt gemessen an deiner echten Praxis.",
+  "landing.feature3.title": "Intelligenz", "landing.feature3.desc": "Die nächste Priorität, erklärt ohne erfundenen Score.",
+  "landing.feature4.title": "Lernen", "landing.feature4.desc": "Schwierigkeiten, Ressourcen und Wiederholungen zur richtigen Zeit gebündelt.",
+  "landing.finalTag": "KI-Coach + Video-Demonstrationen",
+  "landing.finalTitle": "Der Kampf wird vor dem Käfig vorbereitet.",
+  "landing.finalCta": "Meinen Bereich erstellen",
+  "landing.footerTagline": "Aufbauen. Verstehen. Beherrschen.",
+
+  "notFound.title": "Seite nicht gefunden", "notFound.body": "Diese Seite gibt es nicht mehr.",
+  "notFound.cta": "Zurück zur Startseite",
+};
+
+const ru: Dictionary = {
+  "language.label": "Язык",
+  "language.fr": "Французский", "language.en": "Английский", "language.es": "Испанский",
+  "language.de": "Немецкий", "language.ru": "Русский", "language.ja": "Японский",
+
+  "nav.dashboard": "Главная", "nav.training": "Тренировки", "nav.skills": "Навыки", "nav.coach": "Тренер",
+  "nav.study": "Обучение", "nav.goals": "Цели", "nav.competition": "Соревнования", "nav.club": "Клуб",
+  "nav.search": "Поиск", "nav.profile": "Профиль", "nav.calendar": "Календарь", "nav.youtube": "YouTube", "nav.menu": "Меню",
+  "nav.all": "Все разделы", "nav.gallery": "Галерея", "nav.timer": "Таймер",
+
+  "page.training.title": "Тренировки", "page.skills.title": "Навыки", "page.coach.title": "Тренер",
+  "page.study.title": "Обучение", "page.goals.title": "Цели", "page.competition.title": "Соревнования",
+  "page.club.title": "Клуб", "page.search.title": "Поиск", "page.profile.title": "Профиль", "page.youtube.title": "YouTube",
+
+  "action.save": "Сохранить", "action.cancel": "Отмена", "action.delete": "Удалить", "action.edit": "Изменить",
+  "action.add": "Добавить", "action.back": "Назад", "action.continue": "Продолжить", "action.newSession": "Новая тренировка",
+  "action.copyFriendCode": "Скопировать код друга", "action.copied": "Скопировано",
+  "action.openYoutube": "Смотреть на YouTube", "action.favorite": "В избранное",
+  "action.resumeTechnique": "Вернуться к этой технике", "action.addGoal": "Добавить к целям", "action.timer": "Таймер",
+
+  "auth.login": "Войти", "auth.signup": "Создать аккаунт", "auth.email": "Электронная почта",
+  "auth.password": "Пароль", "auth.forgot": "Забыли пароль?", "auth.reset": "Сбросить пароль",
+  "auth.login.title": "Снова в лагерь", "auth.login.intro": "Вернитесь к своим тренировкам, целям и прогрессу.",
+  "auth.login.emailLabel": "Email", "auth.login.passwordLabel": "Пароль",
+  "auth.login.submit": "Войти", "auth.login.submitPending": "Вход…",
+  "auth.login.noAccount": "Ещё нет аккаунта?", "auth.login.createAccount": "Создать аккаунт",
+  "auth.signup.title": "Выйти на арену", "auth.signup.intro": "Создайте своё пространство и фиксируйте каждый раунд.",
+  "auth.signup.emailLabel": "Email", "auth.signup.passwordLabel": "Пароль",
+  "auth.signup.passwordHint": "Минимум 8 символов.", "auth.signup.submit": "Создать аккаунт",
+  "auth.signup.submitPending": "Создание…", "auth.signup.haveAccount": "Уже есть аккаунт?",
+  "auth.forgot.title": "Восстановление доступа", "auth.forgot.intro": "Получите безопасную ссылку для нового пароля.",
+  "auth.forgot.emailLabel": "Email аккаунта", "auth.forgot.submit": "Отправить ссылку",
+  "auth.forgot.submitPending": "Отправка…", "auth.forgot.backToLogin": "Назад ко входу",
+  "auth.reset.title": "Новый пароль", "auth.reset.intro": "Выберите надёжный пароль, чтобы продолжить прогресс.",
+  "auth.reset.passwordLabel": "Новый пароль", "auth.reset.confirmLabel": "Подтвердите пароль",
+  "auth.reset.submit": "Обновить", "auth.reset.submitPending": "Обновление…",
+  "auth.shell.tagline": "Каждый раунд важен.",
+  "auth.shell.taglineBody": "Фиксируйте работу. Измеряйте прогресс. Возвращайтесь сильнее.",
+
+  "coach.focus": "Рекомендуемый фокус", "coach.ask": "Задать вопрос",
+  "coach.workOn": "Над чем мне работать?", "coach.review": "Что мне повторить?",
+  "coach.problem": "С чем у меня проблемы?", "coach.topPriorities": "До 3 приоритетов",
+  "coach.realCoachQuestion": "Вопрос тренеру", "coach.nextPlan": "План следующей тренировки",
+
+  "youtube.title": "Учитесь. Наблюдайте. Пробуйте снова.", "youtube.forYou": "Для вас сегодня",
+  "youtube.suggested": "Рекомендуемые запросы", "youtube.history": "История", "youtube.favorites": "Избранное",
+
+  "training.sessions": "Тренировки", "training.lastPractice": "Последняя практика {days} дн. назад",
+  "training.weekCount": "{count} тренировок на этой неделе", "training.monthCount": "{count} тренировок в этом месяце",
+
+  "review.title": "Разбор тренировки", "review.sixtySeconds": "Разбор за 60 секунд",
+
+  "goals.title": "Цели",
+
+  "skills.techniqueOfDay": "Техника дня", "skills.reviewThisWeek": "Повторить на этой неделе",
+  "skills.lastResolved": "Последняя решённая трудность",
+
+  "empty.sessions": "Пока нет тренировок.", "empty.goals": "Пока нет целей.",
+  "empty.videos": "Нет сохранённых видео.", "empty.partners": "Партнёры ещё не добавлены.",
+
+  "profile.firstName": "Имя", "profile.lastName": "Фамилия", "profile.age": "Возраст",
+  "profile.height": "Рост", "profile.weight": "Вес", "profile.yearsPractice": "Стаж тренировок",
+  "profile.stance": "Основная стойка", "profile.weightClass": "Весовая категория", "profile.disciplines": "Дисциплины",
+  "profile.friendCode.label": "Ваш код друга", "profile.friendCode.hint": "Этот код открывает только ваше отображаемое имя после добавления.",
+  "profile.partners.title": "Партнёры по тренировкам", "profile.partners.addByCode": "Добавить по коду",
+  "profile.partners.add": "Добавить", "profile.partners.adding": "Добавление…",
+  "profile.partners.added": "Партнёр добавлен.", "profile.partners.empty": "Добавьте первого партнёра по его коду друга.",
+  "profile.partners.remove": "Удалить {name}",
+  "profile.partners.count": "{count} партнёр", "profile.partners.countPlural": "{count} партнёров",
+
+  "timer.round": "Раунд", "timer.work": "Работа", "timer.rest": "Отдых",
+  "timer.start": "Старт", "timer.pause": "Пауза", "timer.reset": "Сбросить",
+
+  "search.history": "Недавние запросы", "search.clearHistory": "Очистить историю",
+  "search.placeholder": "Поиск техники, тренировки, цели…",
+  "search.description": "Изучите свои навыки, тренировки, наблюдения, цели и ресурсы.",
+  "search.stageKicker": "Изучите свой путь", "search.stageQuestion": "Что вы хотите освоить лучше?",
+  "search.submit": "Искать", "search.suggestedLabel": "Предлагаемые вопросы",
+  "search.minChars": "Введите минимум 2 символа.", "search.noResults": "Нет результатов по запросу «{query}».",
+  "search.type.skill": "Навык", "search.type.resource": "Ресурс", "search.type.session": "Тренировка",
+  "search.type.observation": "Наблюдение", "search.type.goal": "Цель",
+
+  "landing.kicker": "Система подготовки бойца",
+  "landing.title": "Превратите каждый раунд в прогресс.",
+  "landing.intro": "Структурируйте тренировки, разбирайтесь в трудностях и приходите на следующую тренировку с чётким планом.",
+  "landing.ctaStart": "Начать сейчас", "landing.ctaHaveAccount": "У меня уже есть аккаунт",
+  "landing.ctaEnterArena": "Выйти на арену",
+  "landing.manifestoKicker": "Ваш лагерь. Ваши данные. Ваш курс.",
+  "landing.manifestoTitle": "Полноценный метод без лишнего шума.",
+  "landing.manifestoBody": "MMA Mastery связывает то, что вы тренируете, то, чем владеете, и то, что заслуживает внимания. Тренер превращает эти факты в полезные рекомендации и демонстрации.",
+  "landing.feature1.title": "Дневник", "landing.feature1.desc": "Каждая тренировка, техника и ощущение остаются полезными.",
+  "landing.feature2.title": "Мастерство", "landing.feature2.desc": "Прогресс, измеренный по вашей реальной практике.",
+  "landing.feature3.title": "Интеллект", "landing.feature3.desc": "Следующий приоритет, объяснённый без придуманных баллов.",
+  "landing.feature4.title": "Обучение", "landing.feature4.desc": "Трудности, ресурсы и повторения собраны в нужный момент.",
+  "landing.finalTag": "ИИ-тренер + видео-демонстрации",
+  "landing.finalTitle": "Бой готовится ещё до выхода в клетку.",
+  "landing.finalCta": "Создать своё пространство",
+  "landing.footerTagline": "Строить. Понимать. Владеть.",
+
+  "notFound.title": "Страница не найдена", "notFound.body": "Этой страницы больше не существует.",
+  "notFound.cta": "На главную",
+};
+
+const ja: Dictionary = {
+  "language.label": "言語",
+  "language.fr": "フランス語", "language.en": "英語", "language.es": "スペイン語",
+  "language.de": "ドイツ語", "language.ru": "ロシア語", "language.ja": "日本語",
+
+  "nav.dashboard": "ホーム", "nav.training": "トレーニング", "nav.skills": "スキル", "nav.coach": "コーチ",
+  "nav.study": "学習", "nav.goals": "目標", "nav.competition": "試合", "nav.club": "クラブ",
+  "nav.search": "検索", "nav.profile": "プロフィール", "nav.calendar": "カレンダー", "nav.youtube": "YouTube", "nav.menu": "メニュー",
+  "nav.all": "すべてのセクション", "nav.gallery": "ギャラリー", "nav.timer": "タイマー",
+
+  "page.training.title": "トレーニング", "page.skills.title": "スキル", "page.coach.title": "コーチ",
+  "page.study.title": "学習", "page.goals.title": "目標", "page.competition.title": "試合",
+  "page.club.title": "クラブ", "page.search.title": "検索", "page.profile.title": "プロフィール", "page.youtube.title": "YouTube",
+
+  "action.save": "保存", "action.cancel": "キャンセル", "action.delete": "削除", "action.edit": "編集",
+  "action.add": "追加", "action.back": "戻る", "action.continue": "続ける", "action.newSession": "新しいセッション",
+  "action.copyFriendCode": "フレンドコードをコピー", "action.copied": "コピーしました",
+  "action.openYoutube": "YouTubeで見る", "action.favorite": "お気に入りに追加",
+  "action.resumeTechnique": "この技を再開", "action.addGoal": "目標に追加", "action.timer": "タイマー",
+
+  "auth.login": "ログイン", "auth.signup": "アカウント作成", "auth.email": "メールアドレス",
+  "auth.password": "パスワード", "auth.forgot": "パスワードを忘れた場合", "auth.reset": "パスワードをリセット",
+  "auth.login.title": "キャンプに戻る", "auth.login.intro": "セッション、目標、進捗を確認しましょう。",
+  "auth.login.emailLabel": "メール", "auth.login.passwordLabel": "パスワード",
+  "auth.login.submit": "ログイン", "auth.login.submitPending": "ログイン中…",
+  "auth.login.noAccount": "アカウントをお持ちでない方", "auth.login.createAccount": "アカウント作成",
+  "auth.signup.title": "アリーナへ入場", "auth.signup.intro": "作業スペースを作成し、すべてのラウンドを記録しましょう。",
+  "auth.signup.emailLabel": "メール", "auth.signup.passwordLabel": "パスワード",
+  "auth.signup.passwordHint": "8文字以上。", "auth.signup.submit": "アカウントを作成",
+  "auth.signup.submitPending": "作成中…", "auth.signup.haveAccount": "すでに会員の方",
+  "auth.forgot.title": "アクセスを回復", "auth.forgot.intro": "新しいパスワードを設定するための安全なリンクを受け取ります。",
+  "auth.forgot.emailLabel": "アカウントのメール", "auth.forgot.submit": "リンクを送信",
+  "auth.forgot.submitPending": "送信中…", "auth.forgot.backToLogin": "ログインに戻る",
+  "auth.reset.title": "新しいパスワード", "auth.reset.intro": "進捗を再開するために強力なパスワードを選んでください。",
+  "auth.reset.passwordLabel": "新しいパスワード", "auth.reset.confirmLabel": "パスワードの確認",
+  "auth.reset.submit": "更新", "auth.reset.submitPending": "更新中…",
+  "auth.shell.tagline": "すべてのラウンドが重要。",
+  "auth.shell.taglineBody": "取り組みを記録し、進捗を測り、より強くなって戻ってくる。",
+
+  "coach.focus": "おすすめの重点", "coach.ask": "質問する",
+  "coach.workOn": "何を練習すべき？", "coach.review": "何を復習すべき？",
+  "coach.problem": "何に苦戦している？", "coach.topPriorities": "最大3つの優先事項",
+  "coach.realCoachQuestion": "コーチに聞く質問", "coach.nextPlan": "次回セッションプラン",
+
+  "youtube.title": "学ぶ。見る。もう一度試す。", "youtube.forYou": "今日のおすすめ",
+  "youtube.suggested": "おすすめ検索", "youtube.history": "履歴", "youtube.favorites": "お気に入り",
+
+  "training.sessions": "セッション", "training.lastPractice": "最終練習は{days}日前",
+  "training.weekCount": "今週{count}セッション", "training.monthCount": "今月{count}セッション",
+
+  "review.title": "セッションレビュー", "review.sixtySeconds": "60秒レビュー",
+
+  "goals.title": "目標",
+
+  "skills.techniqueOfDay": "今日の技", "skills.reviewThisWeek": "今週の復習",
+  "skills.lastResolved": "最後に解決した課題",
+
+  "empty.sessions": "まだセッションがありません。", "empty.goals": "まだ目標がありません。",
+  "empty.videos": "保存した動画はありません。", "empty.partners": "まだパートナーがいません。",
+
+  "profile.firstName": "名", "profile.lastName": "姓", "profile.age": "年齢",
+  "profile.height": "身長", "profile.weight": "体重", "profile.yearsPractice": "経験年数",
+  "profile.stance": "利き構え", "profile.weightClass": "階級", "profile.disciplines": "競技",
+  "profile.friendCode.label": "あなたのフレンドコード", "profile.friendCode.hint": "このコードは追加後に表示名のみを公開します。",
+  "profile.partners.title": "トレーニングパートナー", "profile.partners.addByCode": "コードで追加",
+  "profile.partners.add": "追加", "profile.partners.adding": "追加中…",
+  "profile.partners.added": "パートナーを追加しました。", "profile.partners.empty": "フレンドコードで最初のパートナーを追加しましょう。",
+  "profile.partners.remove": "{name}を削除",
+  "profile.partners.count": "{count}人のパートナー", "profile.partners.countPlural": "{count}人のパートナー",
+
+  "timer.round": "ラウンド", "timer.work": "ワーク", "timer.rest": "休憩",
+  "timer.start": "開始", "timer.pause": "一時停止", "timer.reset": "リセット",
+
+  "search.history": "最近の検索", "search.clearHistory": "履歴を消去",
+  "search.placeholder": "技、セッション、目標を検索…",
+  "search.description": "スキル、セッション、観察、目標、資料を検索できます。",
+  "search.stageKicker": "あなたの歩みを振り返る", "search.stageQuestion": "何をもっと極めたいですか？",
+  "search.submit": "検索", "search.suggestedLabel": "おすすめの質問",
+  "search.minChars": "2文字以上入力してください。", "search.noResults": "「{query}」に一致する結果はありません。",
+  "search.type.skill": "スキル", "search.type.resource": "資料", "search.type.session": "セッション",
+  "search.type.observation": "観察", "search.type.goal": "目標",
+
+  "landing.kicker": "格闘家のトレーニングシステム",
+  "landing.title": "すべてのラウンドを進歩に変える。",
+  "landing.intro": "セッションを整理し、課題を理解し、明確なプランで次のトレーニングに臨みましょう。",
+  "landing.ctaStart": "今すぐ始める", "landing.ctaHaveAccount": "すでにアカウントをお持ちの方",
+  "landing.ctaEnterArena": "アリーナへ入場",
+  "landing.manifestoKicker": "あなたのキャンプ。あなたのデータ。あなたの方向性。",
+  "landing.manifestoTitle": "無駄のない、完全なメソッド。",
+  "landing.manifestoBody": "MMA Masteryは、あなたが練習していること、習得していること、注意を払うべきことを結びつけます。コーチはそれらの事実を役立つ提案とデモンストレーションに変えます。",
+  "landing.feature1.title": "ジャーナル", "landing.feature1.desc": "すべてのセッション、技、感覚が活用できる状態を保ちます。",
+  "landing.feature2.title": "習熟", "landing.feature2.desc": "実際の練習に基づいて測定された進歩。",
+  "landing.feature3.title": "インテリジェンス", "landing.feature3.desc": "架空のスコアなしで説明される次の優先事項。",
+  "landing.feature4.title": "学習", "landing.feature4.desc": "課題、資料、復習を適切なタイミングでまとめます。",
+  "landing.finalTag": "AIコーチ + 動画デモンストレーション",
+  "landing.finalTitle": "戦いはケージに入る前に準備される。",
+  "landing.finalCta": "自分のスペースを作成",
+  "landing.footerTagline": "築く。理解する。極める。",
+
+  "notFound.title": "ページが見つかりません", "notFound.body": "このページはもう存在しません。",
+  "notFound.cta": "ホームに戻る",
+};
+
+export const DICTIONARIES: Record<Locale, Dictionary> = { fr, en, es, de, ru, ja };
 
 export function isLocale(value: string): value is Locale {
   return LOCALES.includes(value as Locale);
+}
+
+export function formatT(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key) => (key in vars ? String(vars[key]) : match));
 }

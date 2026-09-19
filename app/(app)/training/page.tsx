@@ -48,7 +48,7 @@ export default async function TrainingListPage() {
 
         <ChampionshipPhotoMosaic page="training" />
 
-        <section className="editorial-section">
+        <section id="timer" className="editorial-section scroll-mt-6">
           <h2>Timer de round</h2>
           <ChampionshipSectionPhoto src="/mma-mastery-photos/pexels-cao-vi-ton-449370203-17279410.jpg" alt="Deux boxeurs répètent leurs enchaînements sur le ring" label="Cadence de travail" icon={Timer} objectPosition="50% 48%" />
           <RoundTimer />
