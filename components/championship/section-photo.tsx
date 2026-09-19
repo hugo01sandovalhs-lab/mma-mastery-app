@@ -1,26 +1,34 @@
+"use client";
+
 import { cn } from "cn";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PHOTO_STORIES, type PhotoStoryPage } from "@/lib/design/photography";
+import { useI18n } from "@/components/i18n-provider";
 
 export function ChampionshipSectionPhoto({
   src,
   alt,
   label,
+  labelKey,
   icon: Icon,
   objectPosition = "center",
   className,
+  size = "default",
 }: {
   src: string;
   alt: string;
   label: string;
+  labelKey?: string;
   icon: LucideIcon;
   objectPosition?: string;
   className?: string;
+  size?: "default" | "large";
 }) {
+  const { t } = useI18n();
   return (
-    <div className={cn("relative isolate h-28 w-full overflow-hidden rounded-2xl sm:h-36", className)}>
+    <div className={cn("relative isolate h-28 w-full overflow-hidden rounded-2xl sm:h-36", size === "large" && "h-56 sm:h-80", className)}>
       <ProgressiveImage
         src={src}
         alt={alt}
@@ -39,7 +47,7 @@ export function ChampionshipSectionPhoto({
       <div className="relative flex h-full items-end gap-2 p-3 sm:p-4">
         <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
         <span className="font-heading text-sm font-extrabold uppercase tracking-wide text-white sm:text-base">
-          {label}
+          {labelKey ? t(labelKey, label) : label}
         </span>
       </div>
     </div>
@@ -47,13 +55,14 @@ export function ChampionshipSectionPhoto({
 }
 
 export function ChampionshipPhotoMosaic({ page, className }: { page: PhotoStoryPage; className?: string }) {
+  const { t } = useI18n();
   const photos = PHOTO_STORIES[page];
   return (
     <div className={cn("editorial-photo-mosaic", className)}>
       {photos.map((photo, index) => {
         const content = <>
           <ProgressiveImage src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 82vw, (max-width: 1100px) 42vw, 30vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
-          <span>{photo.label}</span>
+          <span>{t(photo.labelKey, photo.label)}</span>
         </>;
         return "href" in photo ? (
           <Link key={photo.src} href={photo.href} className="editorial-photo-tile" style={{ "--photo-order": index } as React.CSSProperties}>{content}</Link>

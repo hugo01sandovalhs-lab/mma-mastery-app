@@ -37,6 +37,7 @@ export default async function CoachPage() {
             src="/mma-mastery-photos/wade-austin-ellis-sf0qE4XehbI-unsplash.jpg"
             alt="Coach donnant des conseils entre deux rounds"
             label="Conseils entre les rounds"
+            labelKey="photoLabel.roundAdvice"
             icon={MessageCircleQuestion}
             objectPosition="42% 42%"
           />

@@ -250,7 +250,9 @@
 .landing-feature-grid svg { width:27px; height:27px; color:#9a742d; stroke-width:1.5; }
 .landing-feature-grid h2 { font-size:25px; font-weight:780; letter-spacing:-.045em; }
 .landing-feature-grid p { max-width:24ch; color:#686257; font-size:14px; line-height:1.55; }
-.landing-final { min-height:560px; display:grid; align-content:center; justify-items:start; gap:30px; padding:80px clamp(22px,7vw,106px); border-top:1px solid #ffffff18; background:radial-gradient(circle at 80% 20%,#7e5e2428,transparent 32%),#090a08; }
+.landing-final { position:relative; isolation:isolate; min-height:560px; display:grid; align-content:center; justify-items:start; gap:30px; padding:80px clamp(22px,7vw,106px); border-top:1px solid #ffffff18; background:#090a08; overflow:hidden; }
+.landing-final-image { position:absolute; inset:0; z-index:-2; object-fit:cover; }
+.landing-final-shade { position:absolute; inset:0; z-index:-1; background:radial-gradient(circle at 80% 20%,#7e5e2440,transparent 32%),linear-gradient(0deg,#090a08f7 0%,#090a08e0 45%,#090a08a8 100%); }
 .landing-final>div { display:flex; gap:9px; color:var(--landing-gold); font-size:13px; }
 .landing-final>div svg { width:17px; }
 .landing-final h2 { max-width:900px; font-size:clamp(44px,6.6vw,94px); line-height:.9; font-weight:850; letter-spacing:-.065em; }

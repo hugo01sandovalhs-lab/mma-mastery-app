@@ -95,8 +95,10 @@ export default async function StudyPage() {
           src="/mma-mastery-photos/anastase-maragos-Lmy0bxMVnBg-unsplash.jpg"
           alt="Athlète en pause de réflexion contre le sac"
           label="Prendre le temps de comprendre"
+          labelKey="photoLabel.takeTimeUnderstand"
           icon={BookmarkIcon}
-          objectPosition="45% 42%"
+          objectPosition="45% 38%"
+          size="large"
         />
 
         <section className="flex flex-col gap-3">

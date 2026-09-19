@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, BookOpen, Dumbbell, Network, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/components/i18n-provider";
+import { LANDING_FINAL_PHOTO } from "@/lib/design/photography";
 
 const FEATURES = [
   { icon: Dumbbell, key: "landing.feature1" },
@@ -69,6 +71,8 @@ export function LandingContent() {
         </section>
 
         <section className="landing-final">
+          <Image src={LANDING_FINAL_PHOTO.src} alt={LANDING_FINAL_PHOTO.alt} fill sizes="100vw" className="landing-final-image" style={{ objectPosition: LANDING_FINAL_PHOTO.position }} />
+          <div className="landing-final-shade" aria-hidden="true" />
           <div><Sparkles aria-hidden="true" /><span>{t("landing.finalTag", "Coach IA + démonstrations vidéo")}</span></div>
           <h2>{t("landing.finalTitle", "Le combat se prépare avant d'entrer dans la cage.")}</h2>
           <Button size="lg" render={<Link href="/signup" />}>{t("landing.finalCta", "Créer mon espace")} <ArrowRight /></Button>

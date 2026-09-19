@@ -135,6 +135,7 @@ export default async function YouTubePage({
           src="/mma-mastery-photos/ahmad-thomas-ulFi8aO6Xdk-unsplash.jpg"
           alt="Travail au pao en Muay Thai"
           label="Techniques et drills"
+          labelKey="photoLabel.drills"
           icon={Video}
           objectPosition="45% 50%"
         />
@@ -152,6 +153,7 @@ export default async function YouTubePage({
           src="/mma-mastery-photos/anastase-maragos-mDSGxpSugsE-unsplash.jpg"
           alt="Coin de coachs assistant un combattant"
           label="Coachs & partenaires"
+          labelKey="photoLabel.coachesPartners"
           icon={Sparkles}
           objectPosition="45% 38%"
         />
@@ -161,6 +163,7 @@ export default async function YouTubePage({
             src="/mma-mastery-photos/yousef-samuil-CH_NdLJIa7Y-unsplash.jpg"
             alt="Projection en grappling lors d'un combat"
             label="Grappling & lutte"
+            labelKey="photoLabel.grapplingWrestling"
             icon={Video}
             objectPosition="50% 62%"
           />

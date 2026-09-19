@@ -18,6 +18,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
+import { T } from "@/components/i18n-provider";
 import { ProgressRing } from "@/components/championship/progress-ring";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PAGE_PHOTOS } from "@/lib/design/photography";
@@ -251,7 +252,7 @@ function ProgressionCompactCard({
         {insufficientData ? <Target className="size-9 shrink-0 text-muted-foreground" aria-hidden="true" /> : <ProgressRing value={ring} size={72} strokeWidth={5} />}
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Progression globale
+            <T k="dashboard.globalProgress" fallback="Progression globale" />
           </span>
           {!insufficientData && <span className="text-[10px] text-muted-foreground">{ring}% régulières ou maîtrisées · {summary.totalTracked} suivies</span>}
           {insufficientData ? (
@@ -381,7 +382,7 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
       <CardHeader className="relative z-10 pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <TrendingUp className="size-3.5 text-primary" />
-          Progression détaillée
+          <T k="dashboard.progressDetailed" fallback="Progression détaillée" />
         </CardTitle>
       </CardHeader>
       <CardContent className="relative z-10">
@@ -438,7 +439,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
         <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Flame className="size-3.5 text-primary" />
-          Dernières activités
+          <T k="dashboard.recentActivity" fallback="Dernières activités" />
         </CardTitle>
         </CardHeader>
       </div>
