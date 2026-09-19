@@ -5,7 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { EVENT_TYPE_LABELS } from "@/lib/domain/club-event";
+import { EVENT_TYPE_LABEL_KEYS } from "@/lib/domain/club-event";
 import { getClubEventDetail } from "@/lib/usecases/club-event-actions";
 import { EventRegistrationButton } from "@/components/club/event-registration-button";
 import { T } from "@/components/i18n-provider";
@@ -41,7 +41,7 @@ export default async function ClubEventDetailPage({
         <div className="flex flex-col gap-3 border-b border-border pb-6">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{event.name}</h1>
-            <Badge variant="outline">{dict[`eventType.${event.event_type}` as keyof typeof dict] ?? EVENT_TYPE_LABELS[event.event_type]}</Badge>
+            <Badge variant="outline">{dict[EVENT_TYPE_LABEL_KEYS[event.event_type]]}</Badge>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <span>{new Date(event.starts_at).toLocaleString(intlLocale, { dateStyle: "full", timeStyle: "short" })}</span>

@@ -208,7 +208,13 @@ function StatRow({
         imageAlt="Un boxeur travaille sa garde à contre-jour"
         href={p ? `/skills/${p.focusSkillId}` : "/training/new"}
         title={p ? p.focusSkillName : "Définir mon focus"}
-        detail={p ? p.reasons[0] : "Enregistrez une séance pour identifier vos priorités."}
+        detail={
+          p ? (
+            <T k={p.reasons[0].key} fallback="" vars={p.reasons[0].vars} />
+          ) : (
+            "Enregistrez une séance pour identifier vos priorités."
+          )
+        }
       />
       <ImageMetricPanel
         label="Prochaine séance"
@@ -217,7 +223,13 @@ function StatRow({
         imageAlt="Travail au sol"
         href="/training/new"
         title={p ? <T k={ACTION_TYPE_LABEL_KEYS[p.actionType]} fallback={p.actionType} /> : "Planifier une séance"}
-        detail={copy?.drillHint ?? "Choisissez les techniques de votre prochain entraînement."}
+        detail={
+          copy ? (
+            <T k={copy.drillHintKey} fallback="" />
+          ) : (
+            "Choisissez les techniques de votre prochain entraînement."
+          )
+        }
       />
       <ProgressionCompactCard summary={progressSummary} ring={proficientPct} insufficientData={insufficientData} />
     </div>
@@ -369,14 +381,18 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
           </Badge>
         </div>
 
-        <p className="line-clamp-2 text-xs text-muted-foreground">{rec.reasons[0]}</p>
+        <p className="line-clamp-2 text-xs text-muted-foreground">
+          <T k={rec.reasons[0].key} fallback="" vars={rec.reasons[0].vars} />
+        </p>
         {rec.reasons.length > 1 ? (
           <p className="text-[11px] text-muted-foreground">+{rec.reasons.length - 1} autre(s) signal(aux)</p>
         ) : null}
 
         <p className="flex items-start gap-1.5 text-xs">
           <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
-          <span>{rec.action}</span>
+          <span>
+            <T k={rec.actionKey} fallback="" vars={rec.actionVars} />
+          </span>
         </p>
 
         <Link

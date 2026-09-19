@@ -62,7 +62,7 @@ describe("buildTrainingIntelligence", () => {
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
     expect(result.recommendations).toHaveLength(1);
-    expect(result.recommendations[0].reasons.some((r) => r.includes("Difficulté"))).toBe(true);
+    expect(result.recommendations[0].reasons.some((r) => r.key === "trainingIntel.difficulty.reason")).toBe(true);
   });
 
   it("flags a skill with a recent question", () => {
@@ -76,7 +76,7 @@ describe("buildTrainingIntelligence", () => {
     );
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
-    expect(result.recommendations[0].reasons.some((r) => r.includes("Question"))).toBe(true);
+    expect(result.recommendations[0].reasons.some((r) => r.key === "trainingIntel.question.reason")).toBe(true);
   });
 
   it("flags heavy drilling with no live application as a potential priority", () => {
@@ -86,7 +86,7 @@ describe("buildTrainingIntelligence", () => {
     );
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
-    expect(result.recommendations[0].reasons.some((r) => r.includes("application en situation live"))).toBe(
+    expect(result.recommendations[0].reasons.some((r) => r.key === "trainingIntel.liveTransfer.reason")).toBe(
       true,
     );
   });
@@ -98,7 +98,7 @@ describe("buildTrainingIntelligence", () => {
     );
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
-    expect(result.recommendations[0].reasons.some((r) => r.includes("Faible réussite"))).toBe(true);
+    expect(result.recommendations[0].reasons.some((r) => r.key === "trainingIntel.sparringLow.reason")).toBe(true);
   });
 
   it("does not draw a strong conclusion from a single 0/1 sparring attempt", () => {
@@ -156,7 +156,9 @@ describe("buildTrainingIntelligence", () => {
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
     expect(result.recommendations[0].prerequisiteContext).toEqual(["Level Change"]);
-    expect(result.recommendations[0].reasons.some((r) => r.includes("Level Change"))).toBe(false);
+    expect(result.recommendations[0].reasons.some((r) => Object.values(r.vars).includes("Level Change"))).toBe(
+      false,
+    );
   });
 
   it("never returns more than the maximum number of recommendations", () => {
@@ -192,7 +194,7 @@ describe("buildTrainingIntelligence", () => {
     const result = buildTrainingIntelligence([input], NOW);
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
-    expect(result.recommendations[0].reasons[0]).toContain("Genou qui lâche");
+    expect(result.recommendations[0].reasons[0].vars.content).toBe("Genou qui lâche");
   });
 });
 

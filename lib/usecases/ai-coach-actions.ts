@@ -50,22 +50,33 @@ export async function buildCoachContext(): Promise<CoachContext> {
   const facts: CoachFact[] = [];
 
   if (plan.status === "ok") {
+    const objectiveVars = { ...plan.plan.objectiveVars };
+    if (typeof objectiveVars.stage === "string") {
+      objectiveVars.stage = dict[MASTERY_STAGE_LABEL_KEYS[objectiveVars.stage as MasteryStage]];
+    }
+    const objective = formatT(dict[plan.plan.objectiveKey as keyof (typeof DICTIONARIES)["fr"]], objectiveVars);
     facts.push({
       kind: "INFERRED",
-      statement: formatT(dict["coach.fact.focus"], { skill: plan.plan.focusSkillName, objective: plan.plan.objective }),
+      statement: formatT(dict["coach.fact.focus"], { skill: plan.plan.focusSkillName, objective }),
       skillId: plan.plan.focusSkillId,
     });
     for (const evidence of plan.plan.evidence) {
-      facts.push({ kind: "OBSERVED", statement: evidence, skillId: plan.plan.focusSkillId });
+      const vars = { ...evidence.vars };
+      if (typeof vars.stage === "string") {
+        vars.stage = dict[MASTERY_STAGE_LABEL_KEYS[vars.stage as MasteryStage]];
+      }
+      const statement = formatT(dict[evidence.key as keyof (typeof DICTIONARIES)["fr"]], vars);
+      facts.push({ kind: "OBSERVED", statement, skillId: plan.plan.focusSkillId });
     }
   }
 
   if (intelligence.status === "ok") {
     for (const rec of intelligence.recommendations) {
       if (plan.status === "ok" && rec.skillId === plan.plan.focusSkillId) continue;
+      const action = formatT(dict[rec.actionKey as keyof (typeof DICTIONARIES)["fr"]], rec.actionVars);
       facts.push({
         kind: "INFERRED",
-        statement: formatT(dict["coach.fact.recommendation"], { skill: rec.skillName, action: rec.action }),
+        statement: formatT(dict["coach.fact.recommendation"], { skill: rec.skillName, action }),
         skillId: rec.skillId,
       });
     }

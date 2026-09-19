@@ -68,7 +68,9 @@ function FocusCallout({ plan }: { plan: TrainingPlanSuggestion }) {
         <Link href={`/skills/${plan.focusSkillId}`} className="font-medium hover:underline">
           {plan.focusSkillName}
         </Link>
-        <p className="text-sm text-muted-foreground">{plan.objective}</p>
+        <p className="text-sm text-muted-foreground">
+          <T k={plan.objectiveKey} fallback="" vars={plan.objectiveVars} />
+        </p>
       </CardContent>
     </Card>
   );

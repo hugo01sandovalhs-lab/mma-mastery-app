@@ -401,13 +401,18 @@ function NextActionSection({
               </Badge>
             </div>
             <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-              {recommendation.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
+              {recommendation.reasons.map((reason, i) => {
+                const vars = { ...reason.vars };
+                if (typeof vars.stage === "string") {
+                  vars.stage = dict[MASTERY_STAGE_LABEL_KEYS[vars.stage as MasteryStage]];
+                }
+                const text = formatT(dict[reason.key as keyof typeof dict], vars);
+                return <li key={i}>{text}</li>;
+              })}
             </ul>
             <p className="flex items-start gap-1.5 text-sm">
               <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
-              <span>{recommendation.action}</span>
+              <span>{formatT(dict[recommendation.actionKey as keyof typeof dict], recommendation.actionVars)}</span>
             </p>
             <Button size="sm" render={<Link href="/training/new" />} className="mt-1 w-fit">
               {dict["skillDetail.logSession"]} <ArrowRight />

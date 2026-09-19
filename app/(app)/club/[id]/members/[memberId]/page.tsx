@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { CLUB_ROLE_LABELS } from "@/lib/domain/club";
-import { ATTENDANCE_STATUS_LABELS } from "@/lib/domain/class";
+import { ATTENDANCE_STATUS_LABEL_KEYS } from "@/lib/domain/class";
 import { getMemberDetail } from "@/lib/usecases/club-admin-actions";
 import { T } from "@/components/i18n-provider";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -86,7 +86,7 @@ export default async function MemberDetailPage({
                       </span>
                     </div>
                     <Badge variant={a.status === "present" ? "default" : "outline"}>
-                      {dict[`attendanceStatus.${a.status}` as keyof typeof dict] ?? ATTENDANCE_STATUS_LABELS[a.status]}
+                      {dict[ATTENDANCE_STATUS_LABEL_KEYS[a.status]]}
                     </Badge>
                   </CardContent>
                 </Card>

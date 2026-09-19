@@ -11,9 +11,10 @@ export const ATTENDANCE_STATUSES = ["present", "absent"] as const;
 export const attendanceStatusSchema = z.enum(ATTENDANCE_STATUSES);
 export type AttendanceStatus = z.infer<typeof attendanceStatusSchema>;
 
-export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
-  present: "Présent",
-  absent: "Absent",
+/** i18n dictionary key for each attendance status — look up via `dict[ATTENDANCE_STATUS_LABEL_KEYS[status]]`. */
+export const ATTENDANCE_STATUS_LABEL_KEYS: Record<AttendanceStatus, "attendanceStatus.present" | "attendanceStatus.absent"> = {
+  present: "attendanceStatus.present",
+  absent: "attendanceStatus.absent",
 };
 
 export const WEEKDAY_LABELS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"] as const;

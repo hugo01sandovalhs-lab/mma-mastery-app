@@ -5,6 +5,19 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { tServer } from "@/lib/i18n-server";
 import { goalInputSchema, goalStatusSchema, type GoalHorizon, type GoalStatus } from "@/lib/domain/knowledge";
 
+type TranslationKey = Parameters<typeof tServer>[0];
+
+const GOAL_FIELD_ERRORS: Record<string, [TranslationKey, string]> = {
+  title: ["goal.errors.titleRequired", "Titre requis"],
+  due_date: ["goal.errors.dateInvalid", "Date invalide"],
+};
+
+async function firstFieldError(issues: { path: PropertyKey[] }[]): Promise<string> {
+  const field = issues[0]?.path[0];
+  const mapped = typeof field === "string" ? GOAL_FIELD_ERRORS[field] : undefined;
+  return mapped ? tServer(mapped[0], mapped[1]) : tServer("error.invalidForm", "Formulaire invalide");
+}
+
 export type GoalActionState = { error: string | null };
 
 async function requireUserId() {
@@ -71,7 +84,7 @@ export async function createGoal(
 ): Promise<GoalActionState> {
   const parsed = parseGoalForm(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? (await tServer("error.invalidForm", "Formulaire invalide")) };
+    return { error: await firstFieldError(parsed.error.issues) };
   }
   const { supabase, userId } = await requireUserId();
   const { error } = await supabase.from("goals").insert({ ...parsed.data, user_id: userId });

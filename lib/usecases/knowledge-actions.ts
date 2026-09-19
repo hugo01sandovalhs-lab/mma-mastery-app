@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { tServer } from "@/lib/i18n-server";
 import {
   resourceInputSchema,
   skillNoteInputSchema,
@@ -12,6 +13,26 @@ import {
   type SkillNoteInput,
   type StudyStatus,
 } from "@/lib/domain/knowledge";
+
+type TranslationKey = Parameters<typeof tServer>[0];
+
+const RESOURCE_FIELD_ERRORS: Record<string, [TranslationKey, string]> = {
+  title: ["resource.errors.titleRequired", "Titre requis"],
+  url: ["resource.errors.urlInvalid", "URL invalide"],
+};
+
+const SKILL_NOTE_FIELD_ERRORS: Record<string, [TranslationKey, string]> = {
+  content: ["skillNote.errors.contentRequired", "Contenu requis"],
+};
+
+async function firstFieldError(
+  issues: { path: PropertyKey[] }[],
+  fieldErrors: Record<string, [TranslationKey, string]>,
+): Promise<string> {
+  const field = issues[0]?.path[0];
+  const mapped = typeof field === "string" ? fieldErrors[field] : undefined;
+  return mapped ? tServer(mapped[0], mapped[1]) : tServer("error.invalidForm", "Formulaire invalide");
+}
 
 export type KnowledgeActionState = { error: string | null };
 
@@ -79,7 +100,7 @@ export async function createResource(
 ): Promise<KnowledgeActionState> {
   const parsed = parseResourceForm(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: await firstFieldError(parsed.error.issues, RESOURCE_FIELD_ERRORS) };
   }
   const { supabase, userId } = await requireUserId();
   const input: ResourceInput = parsed.data;
@@ -246,7 +267,7 @@ export async function createSkillNote(
     content: String(formData.get("content") ?? ""),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: await firstFieldError(parsed.error.issues, SKILL_NOTE_FIELD_ERRORS) };
   }
   const { supabase, userId } = await requireUserId();
   const input: SkillNoteInput = parsed.data;

@@ -1,4 +1,4 @@
-import { computeMasteryStage, MASTERY_STAGE_LABELS, type SkillProgressDimensions } from "./skill";
+import { computeMasteryStage, type SkillProgressDimensions } from "./skill";
 
 /**
  * Deterministic "what should I work on now?" engine. Pure domain logic: no
@@ -36,12 +36,15 @@ export type SkillIntelligenceInput = {
   prerequisiteNames: string[];
 };
 
+export type LocalizedText = { key: string; vars: Record<string, string | number> };
+
 export type SkillRecommendation = {
   skillId: string;
   skillName: string;
   priority: PriorityLevel;
-  reasons: string[];
-  action: string;
+  reasons: LocalizedText[];
+  actionKey: string;
+  actionVars: Record<string, string | number>;
   prerequisiteContext: string[];
 };
 
@@ -75,11 +78,14 @@ export type TrainingPlanActionType = (typeof TRAINING_PLAN_ACTION_TYPES)[number]
 
 type Trigger = {
   weight: number;
-  reason: string;
-  actionCandidate: string;
+  reasonKey: string;
+  reasonVars: Record<string, string | number>;
+  actionKey: string;
+  actionVars: Record<string, string | number>;
   actionType: TrainingPlanActionType;
   /** Short, factual data point behind the reason (counts/dates only, never an inference). */
-  evidence: string;
+  evidenceKey: string;
+  evidenceVars: Record<string, string | number>;
 };
 
 /**
@@ -100,10 +106,13 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
     );
     triggers.push({
       weight: 3,
-      reason: `Difficulté signalée récemment: "${truncate(mostRecent.content)}"`,
-      actionCandidate: "Retravailler ce point en drilling ciblé avant de le remettre en application.",
+      reasonKey: "trainingIntel.difficulty.reason",
+      reasonVars: { content: truncate(mostRecent.content) },
+      actionKey: "trainingIntel.difficulty.action",
+      actionVars: {},
       actionType: "REVIEW",
-      evidence: `Difficulté notée il y a ${daysBetween(mostRecent.occurredAt, now)} jour(s): "${truncate(mostRecent.content)}"`,
+      evidenceKey: "trainingIntel.difficulty.evidence",
+      evidenceVars: { days: daysBetween(mostRecent.occurredAt, now), content: truncate(mostRecent.content) },
     });
   }
 
@@ -116,10 +125,13 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
     );
     triggers.push({
       weight: 2,
-      reason: `Question récente non résolue: "${truncate(mostRecent.content)}"`,
-      actionCandidate: "Clarifier ce point (coach ou révision technique) avant la prochaine séance.",
+      reasonKey: "trainingIntel.question.reason",
+      reasonVars: { content: truncate(mostRecent.content) },
+      actionKey: "trainingIntel.question.action",
+      actionVars: {},
       actionType: "REVIEW",
-      evidence: `Question notée il y a ${daysBetween(mostRecent.occurredAt, now)} jour(s): "${truncate(mostRecent.content)}"`,
+      evidenceKey: "trainingIntel.question.evidence",
+      evidenceVars: { days: daysBetween(mostRecent.occurredAt, now), content: truncate(mostRecent.content) },
     });
   }
 
@@ -129,10 +141,13 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
   ) {
     triggers.push({
       weight: 2,
-      reason: `${input.progress.drilling_reps} répétitions en drilling mais aucune application en situation live`,
-      actionCandidate: "Passer du drilling à de l'application live ou du sparring léger.",
+      reasonKey: "trainingIntel.liveTransfer.reason",
+      reasonVars: { reps: input.progress.drilling_reps },
+      actionKey: "trainingIntel.liveTransfer.action",
+      actionVars: {},
       actionType: "LIVE_APPLICATION",
-      evidence: `${input.progress.drilling_reps} reps en drilling, 0 application live`,
+      evidenceKey: "trainingIntel.liveTransfer.evidence",
+      evidenceVars: { reps: input.progress.drilling_reps },
     });
   }
 
@@ -141,10 +156,13 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
     if (ratio < LOW_SPARRING_SUCCESS_RATIO) {
       triggers.push({
         weight: 3,
-        reason: `Faible réussite en sparring: ${input.progress.sparring_success_count}/${input.progress.sparring_attempt_count} tentatives`,
-        actionCandidate: "Isoler ce mouvement en sparring contrôlé pour identifier le blocage.",
+        reasonKey: "trainingIntel.sparringLow.reason",
+        reasonVars: { success: input.progress.sparring_success_count, attempts: input.progress.sparring_attempt_count },
+        actionKey: "trainingIntel.sparringLow.action",
+        actionVars: {},
         actionType: "SPARRING_FOCUS",
-        evidence: `${input.progress.sparring_success_count}/${input.progress.sparring_attempt_count} tentatives réussies en sparring`,
+        evidenceKey: "trainingIntel.sparringLow.evidence",
+        evidenceVars: { success: input.progress.sparring_success_count, attempts: input.progress.sparring_attempt_count },
       });
     }
   }
@@ -154,10 +172,13 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
     if (days >= STALE_PRACTICE_DAYS) {
       triggers.push({
         weight: 1,
-        reason: `Non pratiqué depuis ${days} jours`,
-        actionCandidate: "Reprogrammer ce skill dans une prochaine séance.",
+        reasonKey: "trainingIntel.stale.reason",
+        reasonVars: { days },
+        actionKey: "trainingIntel.stale.action",
+        actionVars: {},
         actionType: "REINFORCE",
-        evidence: `Dernière pratique il y a ${days} jours`,
+        evidenceKey: "trainingIntel.stale.evidence",
+        evidenceVars: { days },
       });
     }
   }
@@ -165,10 +186,13 @@ function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
   if (stage === "introduced" || stage === "drilling") {
     triggers.push({
       weight: 1,
-      reason: "Compétence encore en développement (pas encore appliquée en situation live)",
-      actionCandidate: "Continuer le drilling puis chercher une première application live.",
+      reasonKey: "trainingIntel.developing.reason",
+      reasonVars: {},
+      actionKey: "trainingIntel.developing.action",
+      actionVars: {},
       actionType: "DRILL",
-      evidence: `Stage actuel: ${MASTERY_STAGE_LABELS[stage]}`,
+      evidenceKey: "trainingIntel.developing.evidence",
+      evidenceVars: { stage },
     });
   }
 
@@ -199,8 +223,9 @@ export function buildTrainingIntelligence(
       skillId: input.skillId,
       skillName: input.skillName,
       priority,
-      reasons: triggers.map((t) => t.reason),
-      action: topTrigger.actionCandidate,
+      reasons: triggers.map((t) => ({ key: t.reasonKey, vars: t.reasonVars })),
+      actionKey: topTrigger.actionKey,
+      actionVars: topTrigger.actionVars,
       prerequisiteContext: input.prerequisiteNames,
     });
   }
@@ -229,9 +254,10 @@ export type TrainingPlanSuggestion = {
   focusSkillId: string;
   focusSkillName: string;
   actionType: TrainingPlanActionType;
-  objective: string;
-  reasons: string[];
-  evidence: string[];
+  objectiveKey: string;
+  objectiveVars: Record<string, string | number>;
+  reasons: LocalizedText[];
+  evidence: LocalizedText[];
   relatedSkills: string[];
 };
 
@@ -246,32 +272,32 @@ export type TrainingPlanResult =
  */
 export const TRAINING_PLAN_ACTION_COPY: Record<
   TrainingPlanActionType,
-  { drillHint: string; liveWatchFor: string; postObserve: string }
+  { drillHintKey: string; liveWatchForKey: string; postObserveKey: string }
 > = {
   REVIEW: {
-    drillHint: "Clarifie le point technique signalé avant de le refaire à vitesse.",
-    liveWatchFor: "Vérifie si le point signalé revient en situation live.",
-    postObserve: "Note si la difficulté ou la question a été résolue ou si elle persiste.",
+    drillHintKey: "trainingPlanCopy.REVIEW.drillHint",
+    liveWatchForKey: "trainingPlanCopy.REVIEW.liveWatchFor",
+    postObserveKey: "trainingPlanCopy.REVIEW.postObserve",
   },
   DRILL: {
-    drillHint: "Continue le drilling technique isolé, en te concentrant sur la mécanique.",
-    liveWatchFor: "Cherche une première occasion de l'utiliser en situation live contrôlée.",
-    postObserve: "Note si le mouvement sort naturellement ou reste hésitant.",
+    drillHintKey: "trainingPlanCopy.DRILL.drillHint",
+    liveWatchForKey: "trainingPlanCopy.DRILL.liveWatchFor",
+    postObserveKey: "trainingPlanCopy.DRILL.postObserve",
   },
   LIVE_APPLICATION: {
-    drillHint: "Quelques répétitions d'échauffement suffisent, l'accent est ailleurs.",
-    liveWatchFor: "Cherche activement à placer ce mouvement en application live ou en sparring léger.",
-    postObserve: "Note combien de fois tu as réussi à le placer, et dans quel contexte.",
+    drillHintKey: "trainingPlanCopy.LIVE_APPLICATION.drillHint",
+    liveWatchForKey: "trainingPlanCopy.LIVE_APPLICATION.liveWatchFor",
+    postObserveKey: "trainingPlanCopy.LIVE_APPLICATION.postObserve",
   },
   SPARRING_FOCUS: {
-    drillHint: "Isole le mouvement en drilling avant de le remettre sous pression.",
-    liveWatchFor: "En sparring, cherche uniquement ce mouvement pour comprendre ce qui bloque.",
-    postObserve: "Note le moment précis où ça échoue (timing, distance, réaction adverse...).",
+    drillHintKey: "trainingPlanCopy.SPARRING_FOCUS.drillHint",
+    liveWatchForKey: "trainingPlanCopy.SPARRING_FOCUS.liveWatchFor",
+    postObserveKey: "trainingPlanCopy.SPARRING_FOCUS.postObserve",
   },
   REINFORCE: {
-    drillHint: "Refais quelques séries pour retrouver la mémoire motrice.",
-    liveWatchFor: "Reteste-le en situation live pour vérifier qu'il reste fonctionnel.",
-    postObserve: "Note si le niveau a baissé depuis la dernière pratique.",
+    drillHintKey: "trainingPlanCopy.REINFORCE.drillHint",
+    liveWatchForKey: "trainingPlanCopy.REINFORCE.liveWatchFor",
+    postObserveKey: "trainingPlanCopy.REINFORCE.postObserve",
   },
 };
 
@@ -310,9 +336,10 @@ export function buildTrainingPlanSuggestion(
       focusSkillId: best.input.skillId,
       focusSkillName: best.input.skillName,
       actionType: topTrigger.actionType,
-      objective: topTrigger.actionCandidate,
-      reasons: best.triggers.map((t) => t.reason),
-      evidence: best.triggers.map((t) => t.evidence),
+      objectiveKey: topTrigger.actionKey,
+      objectiveVars: topTrigger.actionVars,
+      reasons: best.triggers.map((t) => ({ key: t.reasonKey, vars: t.reasonVars })),
+      evidence: best.triggers.map((t) => ({ key: t.evidenceKey, vars: t.evidenceVars })),
       relatedSkills: best.input.prerequisiteNames,
     },
   };

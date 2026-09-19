@@ -11,18 +11,6 @@ export const EVENT_TYPES = ["interclub", "competition", "seminar", "event"] as c
 export const eventTypeSchema = z.enum(EVENT_TYPES);
 export type EventType = z.infer<typeof eventTypeSchema>;
 
-/**
- * French-only labels — kept for the few call sites not yet converted to
- * `getServerLocale()`/`useI18n()`. Locale-aware call sites should use
- * `EVENT_TYPE_LABEL_KEYS` with the active dictionary instead.
- */
-export const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  interclub: "Interclub",
-  competition: "Compétition",
-  seminar: "Stage",
-  event: "Événement",
-};
-
 /** i18n dictionary key for each event type — look up via `dict[EVENT_TYPE_LABEL_KEYS[type]]`. */
 export const EVENT_TYPE_LABEL_KEYS: Record<
   EventType,
