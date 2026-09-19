@@ -14,8 +14,11 @@ import { T } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { REVIEW_ITEM_TYPE_LABELS, type ReviewItem, type ReviewItemType } from "@/lib/domain/review";
+import { REVIEW_ITEM_TYPE_LABEL_KEYS, type ReviewItem, type ReviewItemType } from "@/lib/domain/review";
+import { MASTERY_STAGE_LABEL_KEYS, type MasteryStage } from "@/lib/domain/skill";
 import { getReviewQueue } from "@/lib/usecases/review-actions";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
 
 const TYPE_ICONS: Record<ReviewItemType, typeof HelpCircle> = {
   question: HelpCircle,
@@ -32,6 +35,7 @@ export default async function ReviewPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const dict = DICTIONARIES[await getServerLocale()];
   const items = await getReviewQueue();
   const groups: { type: ReviewItemType; items: ReviewItem[] }[] = (
     ["question", "difficulty", "never_applied", "stale", "developing"] as const
@@ -79,11 +83,11 @@ export default async function ReviewPage() {
             {groups.map((g) => (
               <section key={g.type} className="flex flex-col gap-3">
                 <h2 className="text-sm font-medium text-muted-foreground">
-                  {REVIEW_ITEM_TYPE_LABELS[g.type]}
+                  {dict[REVIEW_ITEM_TYPE_LABEL_KEYS[g.type]]}
                 </h2>
                 <div className="flex flex-col gap-2">
                   {g.items.map((item, i) => (
-                    <ReviewRow key={`${item.skillId}-${i}`} item={item} />
+                    <ReviewRow key={`${item.skillId}-${i}`} item={item} dict={dict} />
                   ))}
                 </div>
               </section>
@@ -95,7 +99,15 @@ export default async function ReviewPage() {
   );
 }
 
-function ReviewRow({ item }: { item: ReviewItem }) {
+function reviewItemDetail(item: ReviewItem, dict: (typeof DICTIONARIES)["fr"]): string {
+  const vars = { ...item.detailVars };
+  if (item.type === "developing" && typeof vars.stage === "string") {
+    vars.stage = dict[MASTERY_STAGE_LABEL_KEYS[vars.stage as MasteryStage]];
+  }
+  return formatT(dict[item.detailKey as keyof typeof dict], vars);
+}
+
+function ReviewRow({ item, dict }: { item: ReviewItem; dict: (typeof DICTIONARIES)["fr"] }) {
   const Icon = TYPE_ICONS[item.type];
   return (
     <Link href={`/skills/${item.skillId}`}>
@@ -105,9 +117,9 @@ function ReviewRow({ item }: { item: ReviewItem }) {
           <div className="flex min-w-0 flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{item.skillName}</span>
-              <Badge variant="outline">{REVIEW_ITEM_TYPE_LABELS[item.type]}</Badge>
+              <Badge variant="outline">{dict[REVIEW_ITEM_TYPE_LABEL_KEYS[item.type]]}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{item.detail}</p>
+            <p className="text-sm text-muted-foreground">{reviewItemDetail(item, dict)}</p>
           </div>
         </CardContent>
       </Card>

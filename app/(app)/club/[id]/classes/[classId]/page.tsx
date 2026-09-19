@@ -7,12 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { hasClubRoleAtLeast } from "@/lib/domain/club";
-import { WEEKDAY_LABELS, checkinCodeIsValid } from "@/lib/domain/class";
+import { checkinCodeIsValid } from "@/lib/domain/class";
 import { getClub } from "@/lib/usecases/club-actions";
 import { getClassDetail } from "@/lib/usecases/class-actions";
 import { renderCheckinQrSvg } from "@/lib/infra/qr";
 import { ClassSessionForm } from "@/components/club/class-session-form";
 import { SessionCard } from "@/components/club/session-card";
+import { T } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
+
+const WEEKDAY_KEYS = ["weekday.0", "weekday.1", "weekday.2", "weekday.3", "weekday.4", "weekday.5", "weekday.6"] as const;
 
 export default async function ClassDetailPage({
   params,
@@ -29,8 +34,9 @@ export default async function ClassDetailPage({
   const club = await getClub(id);
   if (!club) notFound();
 
-  const classDetail = await getClassDetail(classId);
+  const [classDetail, locale] = await Promise.all([getClassDetail(classId), getServerLocale()]);
   if (!classDetail || classDetail.club_id !== id) notFound();
+  const dict = DICTIONARIES[locale];
 
   const canManage = hasClubRoleAtLeast(club.myRole, "COACH");
 
@@ -58,7 +64,7 @@ export default async function ClassDetailPage({
           href={`/club/${id}/classes`}
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-3.5" /> Cours
+          <ArrowLeft className="size-3.5" /> <T k="photoLabel.classes" fallback="Cours" />
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
@@ -68,10 +74,10 @@ export default async function ClassDetailPage({
           </div>
           {classDetail.day_of_week !== null ? (
             <p className="text-sm text-muted-foreground">
-              {WEEKDAY_LABELS[classDetail.day_of_week]}
+              {dict[WEEKDAY_KEYS[classDetail.day_of_week]]}
               {classDetail.start_time ? ` · ${classDetail.start_time.slice(0, 5)}` : ""}
               {classDetail.duration_minutes ? ` · ${classDetail.duration_minutes} min` : ""}
-              {classDetail.capacity ? ` · capacité ${classDetail.capacity}` : ""}
+              {classDetail.capacity ? ` · ${formatT(dict["club.capacity"], { n: classDetail.capacity })}` : ""}
             </p>
           ) : null}
         </div>
@@ -80,7 +86,7 @@ export default async function ClassDetailPage({
 
         {classDetail.sessions.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">Aucune séance pour l&apos;instant.</CardContent>
+            <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.noSessionsYet" fallback="Aucune séance pour l'instant." /></CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-3">

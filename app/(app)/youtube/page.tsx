@@ -20,6 +20,8 @@ import { getResources } from "@/lib/usecases/knowledge-actions";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { YouTubeVideoCard } from "@/components/youtube/youtube-video-card";
 import { YouTubeHistory } from "@/components/youtube/youtube-history";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
 
 const DISCIPLINES = ["MMA", "Wrestling", "BJJ", "Muay Thai", "Boxing"] as const;
 
@@ -33,6 +35,9 @@ export default async function YouTubePage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
 
   const { q, discipline } = await searchParams;
   const query = (q ?? "").trim();
@@ -69,19 +74,19 @@ export default async function YouTubePage({
         <PageHeader
           page="youtube"
           title="YouTube"
-          description="Apprenez. Observez. Réessayez. Des vidéos choisies pour votre discipline et votre niveau."
+          description={dict["youtube.pageDescription"]}
         />
 
         <section className="search-stage" aria-labelledby="youtube-question">
           <div>
-            <p>Trouvez la bonne démonstration</p>
-            <h2 id="youtube-question">Que voulez-vous observer ?</h2>
+            <p>{dict["youtube.findDemo"]}</p>
+            <h2 id="youtube-question">{dict["youtube.whatToWatch"]}</h2>
           </div>
           <form className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_180px_auto]">
-            <Input name="q" aria-label="Rechercher une vidéo" defaultValue={query} placeholder="Technique, erreur, position…" autoFocus />
+            <Input name="q" aria-label={dict["youtube.searchAria"]} defaultValue={query} placeholder={dict["youtube.searchPlaceholder"]} autoFocus />
             <Select name="discipline" defaultValue={effectiveDiscipline} items={DISCIPLINES.map((d) => ({ value: d, label: d }))}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Discipline" />
+                <SelectValue placeholder={dict["youtube.disciplinePlaceholder"]} />
               </SelectTrigger>
               <SelectContent>
                 {DISCIPLINES.map((d) => (
@@ -89,10 +94,10 @@ export default async function YouTubePage({
                 ))}
               </SelectContent>
             </Select>
-            <Button type="submit">Rechercher</Button>
+            <Button type="submit">{dict["search.submit"]}</Button>
           </form>
           {suggestions.length > 0 ? (
-            <div className="search-prompts" aria-label="Recherches suggérées">
+            <div className="search-prompts" aria-label={dict["youtube.suggested"]}>
               {suggestions.map((s) => (
                 <Link key={s} href={`/youtube?q=${encodeURIComponent(s)}&discipline=${encodeURIComponent(effectiveDiscipline)}`}>{s}</Link>
               ))}
@@ -103,9 +108,9 @@ export default async function YouTubePage({
 
         {query ? (
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">Résultats pour « {query} »</h2>
+            <h2 className="font-heading text-lg font-semibold tracking-tight">{formatT(dict["youtube.resultsFor"], { query })}</h2>
             {results.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucun résultat réel disponible pour cette recherche.</p>
+              <p className="text-sm text-muted-foreground">{dict["youtube.noResults"]}</p>
             ) : (
               <div className="youtube-video-grid">
                 {results.map((video) => (
@@ -120,9 +125,9 @@ export default async function YouTubePage({
           <section className="flex flex-col gap-3">
             <div className="flex items-center gap-1.5">
               <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-              <h2 className="font-heading text-lg font-semibold tracking-tight">Pour vous aujourd&apos;hui</h2>
+              <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["youtube.forYou"]}</h2>
             </div>
-            <p className="text-sm text-muted-foreground">D&apos;après votre focus actuel : {focusTechnique}</p>
+            <p className="text-sm text-muted-foreground">{formatT(dict["youtube.basedOnFocus"], { technique: focusTechnique ?? "" })}</p>
             <div className="youtube-video-grid">
               {todayResults.map((video) => (
                 <YouTubeVideoCard key={video.videoId} video={video} favoriteId={favoriteIdByUrl.get(video.url) ?? null} />
@@ -141,7 +146,7 @@ export default async function YouTubePage({
         />
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Par discipline</h2>
+          <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["youtube.byDiscipline"]}</h2>
           <div className="search-prompts">
             {DISCIPLINES.map((d) => (
               <Link key={d} href={`/youtube?q=${encodeURIComponent(d)}&discipline=${encodeURIComponent(d)}`}>{d}</Link>
@@ -170,9 +175,9 @@ export default async function YouTubePage({
         </Link>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Favoris</h2>
+          <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["youtube.favorites"]}</h2>
           {favorites.filter((r) => r.type === "video").length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune vidéo en favori pour le moment.</p>
+            <p className="text-sm text-muted-foreground">{dict["youtube.noFavorites"]}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {favorites.filter((r) => r.type === "video").map((r) => (

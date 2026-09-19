@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { T } from "@/components/i18n-provider";
 import { TrainingForm } from "@/components/training/training-form";
-import { ACTION_TYPE_ICONS, ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
+import { ACTION_TYPE_ICONS, ACTION_TYPE_LABEL_KEYS } from "@/components/training/action-type-ui";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -62,7 +62,7 @@ function FocusCallout({ plan }: { plan: TrainingPlanSuggestion }) {
           </span>
           <Badge variant="default" className="flex items-center gap-1.5">
             <Icon className="size-3.5" />
-            {ACTION_TYPE_LABELS[plan.actionType]}
+            <T k={ACTION_TYPE_LABEL_KEYS[plan.actionType]} fallback={plan.actionType} />
           </Badge>
         </div>
         <Link href={`/skills/${plan.focusSkillId}`} className="font-medium hover:underline">

@@ -12,6 +12,8 @@ import {
 } from "@/lib/usecases/competition-actions";
 import { MatchForm } from "@/components/competition/match-form";
 import { MatchRow } from "@/components/competition/match-row";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 export default async function CompetitionPage() {
   const supabase = await createClient();
@@ -19,6 +21,9 @@ export default async function CompetitionPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
 
   const [matches, disciplines, athletes, sessionOptions] = await Promise.all([
     getMatches(),
@@ -30,28 +35,28 @@ export default async function CompetitionPage() {
   return (
     <AppShell>
       <div className="editorial-page editorial-competition">
-        <PageHeader page="competition" title="Compétition" description="L'épreuve du combat. Retrouvez votre historique et les séquences vidéo liées à vos compétences." />
+        <PageHeader page="competition" title={dict["page.competition.title"]} description={dict["page.competition.description"]} />
 
         <ChampionshipPhotoMosaic page="competition" />
 
         <div className="editorial-competition-columns">
         <section className="editorial-section">
-        <h2>Enregistrer un combat</h2>
+        <h2>{dict["competition.recordMatch"]}</h2>
         <MatchForm disciplines={disciplines} athletes={athletes} sessionOptions={sessionOptions} />
         </section>
 
         <section className="editorial-section">
-        <h2>Historique des combats</h2>
+        <h2>{dict["competition.matchHistory"]}</h2>
         {matches.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-sm text-muted-foreground">
-              Aucune compétition pour l&apos;instant.
+              {dict["competition.noMatches"]}
             </CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {matches.map((m) => (
-              <MatchRow key={m.id} match={m} />
+              <MatchRow key={m.id} match={m} locale={locale} />
             ))}
           </div>
         )}

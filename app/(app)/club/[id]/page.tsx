@@ -12,6 +12,9 @@ import { InviteForm } from "@/components/club/invite-form";
 import { MemberRow } from "@/components/club/member-row";
 import { GroupForm } from "@/components/club/group-form";
 import { GroupCard } from "@/components/club/group-card";
+import { T } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 export default async function ClubDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,7 +27,8 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
   const club = await getClub(id);
   if (!club) notFound();
 
-  const unreadAnnouncements = await getUnreadAnnouncementCount(id);
+  const [unreadAnnouncements, locale] = await Promise.all([getUnreadAnnouncementCount(id), getServerLocale()]);
+  const dict = DICTIONARIES[locale];
 
   const canManageMembers = hasClubRoleAtLeast(club.myRole, "ADMIN");
   const canManageGroups = hasClubRoleAtLeast(club.myRole, "COACH");
@@ -34,32 +38,32 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
     <AppShell>
       <div className="flex flex-col gap-8">
         <Link href="/club" className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-3.5" /> Clubs
+          <ArrowLeft className="size-3.5" /> <T k="page.club.title" fallback="Clubs" />
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{club.name}</h1>
-            <Badge variant="outline">{CLUB_ROLE_LABELS[club.myRole]}</Badge>
+            <Badge variant="outline">{dict[`clubRole.${club.myRole}` as keyof typeof dict] ?? CLUB_ROLE_LABELS[club.myRole]}</Badge>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <Link
               href={`/club/${club.id}/classes`}
               className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <CalendarClock className="size-3.5" /> Cours et présence
+              <CalendarClock className="size-3.5" /> <T k="club.classesAttendance" fallback="Cours et présence" />
             </Link>
             <Link
               href={`/club/${club.id}/events`}
               className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <Trophy className="size-3.5" /> Événements
+              <Trophy className="size-3.5" /> <T k="club.events" fallback="Événements" />
             </Link>
             <Link
               href={`/club/${club.id}/announcements`}
               className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <Megaphone className="size-3.5" /> Annonces
+              <Megaphone className="size-3.5" /> <T k="club.announcements" fallback="Annonces" />
               {unreadAnnouncements > 0 ? <Badge variant="default">{unreadAnnouncements}</Badge> : null}
             </Link>
             {canSeeAdmin ? (
@@ -67,14 +71,14 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
                 href={`/club/${club.id}/admin`}
                 className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
               >
-                <LayoutDashboard className="size-3.5" /> Administration
+                <LayoutDashboard className="size-3.5" /> <T k="club.administration" fallback="Administration" />
               </Link>
             ) : null}
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Membres</h2>
+          <h2 className="font-heading text-lg font-semibold tracking-tight"><T k="club.members" fallback="Membres" /></h2>
           {canManageMembers ? <InviteForm clubId={club.id} /> : null}
           <div className="flex flex-col gap-2">
             {club.members.map((m) => (
@@ -90,11 +94,11 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         <div className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Groupes</h2>
+          <h2 className="font-heading text-lg font-semibold tracking-tight"><T k="club.groups" fallback="Groupes" /></h2>
           {canManageGroups ? <GroupForm clubId={club.id} /> : null}
           {club.groups.length === 0 ? (
             <Card>
-              <CardContent className="py-8 text-sm text-muted-foreground">Aucun groupe pour l&apos;instant.</CardContent>
+              <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.noGroupsYet" fallback="Aucun groupe pour l'instant." /></CardContent>
             </Card>
           ) : (
             <div className="flex flex-col gap-2">

@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
+import { SESSION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
 import { getTrainingSessions, type TrainingSessionListItem } from "@/lib/usecases/training-actions";
 import { computeSessionStats } from "@/lib/domain/training";
+import { DICTIONARIES } from "@/lib/i18n";
 import { RoundTimer } from "@/components/training/round-timer";
 import { WeeklySummaryCard } from "@/components/training/weekly-summary";
 import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
@@ -104,13 +105,13 @@ function SessionRow({ session: s, isLast }: { session: TrainingSessionListItem; 
           <CardContent className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-medium group-hover/item:underline">
-                {s.title || SESSION_TYPE_LABELS[s.session_type]}
+                {s.title || DICTIONARIES.fr[SESSION_TYPE_LABEL_KEYS[s.session_type]]}
               </span>
               <span className="text-xs text-muted-foreground">{formatDate(s.date)}</span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="secondary">{s.discipline.name}</Badge>
-              <Badge variant="outline">{SESSION_TYPE_LABELS[s.session_type]}</Badge>
+              <Badge variant="outline">{DICTIONARIES.fr[SESSION_TYPE_LABEL_KEYS[s.session_type]]}</Badge>
               {s.duration_minutes ? <Badge variant="outline">{s.duration_minutes} min</Badge> : null}
               {s.rpe ? <Badge variant="outline">RPE {s.rpe}</Badge> : null}
               {observationCount > 0 ? (

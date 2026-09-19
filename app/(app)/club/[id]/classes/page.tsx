@@ -9,6 +9,7 @@ import { getClub } from "@/lib/usecases/club-actions";
 import { getClasses } from "@/lib/usecases/class-actions";
 import { ClassForm } from "@/components/club/class-form";
 import { ClassRow } from "@/components/club/class-row";
+import { T } from "@/components/i18n-provider";
 
 export default async function ClubClassesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,8 +33,8 @@ export default async function ClubClassesPage({ params }: { params: Promise<{ id
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Cours</h1>
-          <p className="text-sm text-muted-foreground">Horaires, séances et présence.</p>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl"><T k="photoLabel.classes" fallback="Cours" /></h1>
+          <p className="text-sm text-muted-foreground"><T k="club.classesDesc2" fallback="Horaires, séances et présence." /></p>
         </div>
 
         {canManage ? (
@@ -42,7 +43,7 @@ export default async function ClubClassesPage({ params }: { params: Promise<{ id
 
         {classes.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">Aucun cours pour l&apos;instant.</CardContent>
+            <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.noClasses" fallback="Aucun cours pour l'instant." /></CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">

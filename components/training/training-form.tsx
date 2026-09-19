@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  OBSERVATION_TYPE_LABELS,
+  OBSERVATION_TYPE_LABEL_KEYS,
   OBSERVATION_TYPES,
-  SESSION_TECHNIQUE_OUTCOME_LABELS,
+  SESSION_TECHNIQUE_OUTCOME_LABEL_KEYS,
   SESSION_TECHNIQUE_OUTCOMES,
-  SESSION_TYPE_LABELS,
+  SESSION_TYPE_LABEL_KEYS,
   SESSION_TYPES,
   hasRequiredObservation,
   type Discipline,
@@ -146,7 +146,7 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
               name="session_type"
               value={sessionType}
               onValueChange={(value) => setSessionType(value as SessionType)}
-              items={SESSION_TYPES.map((type) => ({ value: type, label: SESSION_TYPE_LABELS[type] }))}
+              items={SESSION_TYPES.map((type) => ({ value: type, label: t(SESSION_TYPE_LABEL_KEYS[type], type) }))}
             >
               <SelectTrigger id="session_type" className="w-full">
                 <SelectValue placeholder={t("form.type", "Type")} />
@@ -154,7 +154,7 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
               <SelectContent>
                 {SESSION_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
-                    {SESSION_TYPE_LABELS[type]}
+                    {t(SESSION_TYPE_LABEL_KEYS[type], type)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -279,7 +279,7 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                       }
                       items={[
                         { value: "__none", label: t("form.outcomeNone", "Résultat non noté") },
-                        ...SESSION_TECHNIQUE_OUTCOMES.map((o) => ({ value: o, label: SESSION_TECHNIQUE_OUTCOME_LABELS[o] })),
+                        ...SESSION_TECHNIQUE_OUTCOMES.map((o) => ({ value: o, label: t(SESSION_TECHNIQUE_OUTCOME_LABEL_KEYS[o], o) })),
                       ]}
                     >
                       <SelectTrigger className="w-full">
@@ -289,7 +289,7 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                         <SelectItem value="__none">{t("form.outcomeNone", "Résultat non noté")}</SelectItem>
                         {SESSION_TECHNIQUE_OUTCOMES.map((o) => (
                           <SelectItem key={o} value={o}>
-                            {SESSION_TECHNIQUE_OUTCOME_LABELS[o]}
+                            {t(SESSION_TECHNIQUE_OUTCOME_LABEL_KEYS[o], o)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -371,7 +371,7 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                       prev.map((row, idx) => (idx === i ? { ...row, type: value as ObservationType } : row)),
                     )
                   }
-                  items={OBSERVATION_TYPES.map((type) => ({ value: type, label: OBSERVATION_TYPE_LABELS[type] }))}
+                  items={OBSERVATION_TYPES.map((type) => ({ value: type, label: t(OBSERVATION_TYPE_LABEL_KEYS[type], type) }))}
                 >
                   <SelectTrigger className="w-full sm:w-48">
                     <SelectValue />
@@ -379,7 +379,7 @@ export function TrainingForm({ disciplines, skills, action, initialData, submitL
                   <SelectContent>
                     {OBSERVATION_TYPES.map((type) => (
                       <SelectItem key={type} value={type}>
-                        {OBSERVATION_TYPE_LABELS[type]}
+                        {t(OBSERVATION_TYPE_LABEL_KEYS[type], type)}
                       </SelectItem>
                     ))}
                   </SelectContent>

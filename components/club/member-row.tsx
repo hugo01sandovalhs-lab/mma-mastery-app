@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CLUB_ROLES, CLUB_ROLE_LABELS, type ClubRole } from "@/lib/domain/club";
 import { removeMember, updateMemberRole, type ClubMemberItem } from "@/lib/usecases/club-actions";
+import { useI18n } from "@/components/i18n-provider";
 
 // Role change here is capped at ADMIN: promoting to OWNER isn't a role
 // change, it's an ownership transfer, out of scope for this lot.
@@ -24,11 +25,12 @@ export function MemberRow({
   detailHref?: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useI18n();
   const isOwner = member.role === "OWNER";
   const roleIndex = CLUB_ROLES.indexOf(member.role);
   const maxIndex = CLUB_ROLES.indexOf(MAX_ASSIGNABLE_ROLE);
 
-  const name = <span className="truncate font-medium">{member.display_name ?? "Membre"}</span>;
+  const name = <span className="truncate font-medium">{member.display_name ?? t("clubRole.MEMBER", "Membre")}</span>;
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
@@ -41,7 +43,7 @@ export function MemberRow({
           name
         )}
         <Badge variant="outline" className="w-fit">
-          {CLUB_ROLE_LABELS[member.role]}
+          {t(`clubRole.${member.role}`, CLUB_ROLE_LABELS[member.role])}
         </Badge>
       </div>
       {canManage && !isOwner ? (
@@ -50,7 +52,7 @@ export function MemberRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Promouvoir"
+            aria-label={t("club.promote", "Promouvoir")}
             disabled={isPending || roleIndex >= maxIndex}
             onClick={() =>
               startTransition(() => updateMemberRole(member.id, clubId, CLUB_ROLES[roleIndex + 1]))
@@ -62,7 +64,7 @@ export function MemberRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Rétrograder"
+            aria-label={t("club.demote", "Rétrograder")}
             disabled={isPending || roleIndex <= 0}
             onClick={() =>
               startTransition(() => updateMemberRole(member.id, clubId, CLUB_ROLES[roleIndex - 1]))
@@ -74,7 +76,7 @@ export function MemberRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Retirer du club"
+            aria-label={t("club.removeMember", "Retirer du club")}
             disabled={isPending}
             onClick={() => startTransition(() => removeMember(member.id, clubId))}
           >

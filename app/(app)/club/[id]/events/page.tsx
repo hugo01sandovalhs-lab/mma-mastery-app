@@ -8,6 +8,7 @@ import { hasClubRoleAtLeast, type ClubRole } from "@/lib/domain/club";
 import { getClubEvents } from "@/lib/usecases/club-event-actions";
 import { EventForm } from "@/components/club/event-form";
 import { EventRow } from "@/components/club/event-row";
+import { T } from "@/components/i18n-provider";
 
 export default async function ClubEventsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -40,15 +41,15 @@ export default async function ClubEventsPage({ params }: { params: Promise<{ id:
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Événements</h1>
-          <p className="text-sm text-muted-foreground">Interclubs, compétitions et stages du club.</p>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl"><T k="club.events" fallback="Événements" /></h1>
+          <p className="text-sm text-muted-foreground"><T k="club.eventsDesc" fallback="Interclubs, compétitions et stages du club." /></p>
         </div>
 
         {canManage ? <EventForm clubId={id} /> : null}
 
         {events.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">Aucun événement pour l&apos;instant.</CardContent>
+            <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.noEvents" fallback="Aucun événement pour l'instant." /></CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">

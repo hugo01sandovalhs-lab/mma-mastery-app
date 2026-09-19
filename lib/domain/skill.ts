@@ -11,13 +11,17 @@ export const SKILL_RELATION_TYPES = [
 export const skillRelationTypeSchema = z.enum(SKILL_RELATION_TYPES);
 export type SkillRelationType = z.infer<typeof skillRelationTypeSchema>;
 
-export const SKILL_RELATION_TYPE_LABELS: Record<SkillRelationType, string> = {
-  prerequisite: "Prérequis",
-  counter: "Contre",
-  variation: "Variation",
-  follow_up: "Enchaînement",
-  transition: "Transition",
-  related: "Lié",
+/** i18n dictionary key for each relation type — look up via `dict[SKILL_RELATION_TYPE_LABEL_KEYS[type]]`. */
+export const SKILL_RELATION_TYPE_LABEL_KEYS: Record<
+  SkillRelationType,
+  `skillRelationType.${SkillRelationType}`
+> = {
+  prerequisite: "skillRelationType.prerequisite",
+  counter: "skillRelationType.counter",
+  variation: "skillRelationType.variation",
+  follow_up: "skillRelationType.follow_up",
+  transition: "skillRelationType.transition",
+  related: "skillRelationType.related",
 };
 
 export const skillSchema = z.object({
@@ -114,6 +118,12 @@ export const MASTERY_STAGES = [
 export const masteryStageSchema = z.enum(MASTERY_STAGES);
 export type MasteryStage = z.infer<typeof masteryStageSchema>;
 
+/**
+ * French-only labels — kept for `training-intelligence.ts`'s own generated
+ * sentences (a larger, not-yet-i18n'd gap tracked separately). UI call sites
+ * that render a standalone stage badge should use `MASTERY_STAGE_LABEL_KEYS`
+ * with the active dictionary instead.
+ */
 export const MASTERY_STAGE_LABELS: Record<MasteryStage, string> = {
   unknown: "Inconnu",
   introduced: "Introduit",
@@ -121,6 +131,16 @@ export const MASTERY_STAGE_LABELS: Record<MasteryStage, string> = {
   applying: "Appliqué",
   consistent: "Consistant",
   mastered: "Maîtrisé",
+};
+
+/** i18n dictionary key for each mastery stage — look up via `dict[MASTERY_STAGE_LABEL_KEYS[stage]]`. */
+export const MASTERY_STAGE_LABEL_KEYS: Record<MasteryStage, `masteryStage.${MasteryStage}`> = {
+  unknown: "masteryStage.unknown",
+  introduced: "masteryStage.introduced",
+  drilling: "masteryStage.drilling",
+  applying: "masteryStage.applying",
+  consistent: "masteryStage.consistent",
+  mastered: "masteryStage.mastered",
 };
 
 /**

@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { OBSERVATION_TYPE_LABELS, SESSION_TYPE_LABELS } from "@/lib/domain/training";
+import { OBSERVATION_TYPE_LABEL_KEYS, SESSION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
 import { getTrainingSession } from "@/lib/usecases/training-actions";
+import { DICTIONARIES } from "@/lib/i18n";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", {
@@ -48,12 +49,12 @@ export default async function TrainingSessionDetailPage({
         <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-1.5">
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-              {session.title || SESSION_TYPE_LABELS[session.session_type]}
+              {session.title || DICTIONARIES.fr[SESSION_TYPE_LABEL_KEYS[session.session_type]]}
             </h1>
             <p className="text-sm text-muted-foreground capitalize">{formatDate(session.date)}</p>
             <div className="flex flex-wrap gap-2 pt-1">
               <Badge variant="secondary">{session.discipline.name}</Badge>
-              <Badge variant="outline">{SESSION_TYPE_LABELS[session.session_type]}</Badge>
+              <Badge variant="outline">{DICTIONARIES.fr[SESSION_TYPE_LABEL_KEYS[session.session_type]]}</Badge>
               {session.duration_minutes ? (
                 <Badge variant="outline">{session.duration_minutes} min</Badge>
               ) : null}
@@ -113,7 +114,7 @@ export default async function TrainingSessionDetailPage({
                   {session.observations.map((o) => (
                     <li key={o.id} className="rounded-lg border border-border p-3 text-sm">
                       <Badge variant="outline" className="mb-1.5">
-                        {OBSERVATION_TYPE_LABELS[o.type]}
+                        {DICTIONARIES.fr[OBSERVATION_TYPE_LABEL_KEYS[o.type]]}
                       </Badge>
                       <p className="whitespace-pre-wrap">{o.content}</p>
                       {o.related_skill_id ? (

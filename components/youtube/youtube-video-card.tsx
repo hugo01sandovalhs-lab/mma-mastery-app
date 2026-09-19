@@ -4,10 +4,12 @@ import { useState, useTransition } from "react";
 import { Heart, Video } from "lucide-react";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n-provider";
 import { addVideoFavorite, removeVideoFavorite } from "@/lib/usecases/youtube-favorites-actions";
 import type { VideoSearchResult } from "@/lib/domain/video-search";
 
 export function YouTubeVideoCard({ video, favoriteId }: { video: VideoSearchResult; favoriteId: string | null }) {
+  const { t } = useI18n();
   const [id, setId] = useState(favoriteId);
   const [isPending, startTransition] = useTransition();
 
@@ -31,7 +33,7 @@ export function YouTubeVideoCard({ video, favoriteId }: { video: VideoSearchResu
         <span className="text-xs text-muted-foreground">{video.channelTitle}</span>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" render={<a href={video.url} target="_blank" rel="noreferrer" />}>
-            <Video /> Voir sur YouTube
+            <Video /> {t("action.openYoutube", "Voir sur YouTube")}
           </Button>
           <Button
             type="button"
@@ -41,7 +43,7 @@ export function YouTubeVideoCard({ video, favoriteId }: { video: VideoSearchResu
             disabled={isPending}
             onClick={toggleFavorite}
           >
-            <Heart className={id ? "fill-current" : undefined} /> {id ? "Favori" : "Favoris"}
+            <Heart className={id ? "fill-current" : undefined} /> {id ? t("action.favorited", "Favori") : t("action.favorite", "Ajouter aux favoris")}
           </Button>
         </div>
       </div>

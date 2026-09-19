@@ -17,7 +17,7 @@ import {
   TrendingUp,
   UsersRound,
 } from "lucide-react";
-import { ACTION_TYPE_LABELS } from "@/components/training/action-type-ui";
+import { ACTION_TYPE_LABEL_KEYS } from "@/components/training/action-type-ui";
 import { T } from "@/components/i18n-provider";
 import { ProgressRing } from "@/components/championship/progress-ring";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
@@ -26,8 +26,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { SESSION_TYPE_LABELS } from "@/lib/domain/training";
-import { MASTERY_STAGES, MASTERY_STAGE_LABELS } from "@/lib/domain/skill";
+import { SESSION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
+import { MASTERY_STAGES, MASTERY_STAGE_LABEL_KEYS } from "@/lib/domain/skill";
 import {
   TRAINING_PLAN_ACTION_COPY,
   type PriorityLevel,
@@ -216,7 +216,7 @@ function StatRow({
         objectPosition={PHOTOS.session.position}
         imageAlt="Travail au sol"
         href="/training/new"
-        title={p ? ACTION_TYPE_LABELS[p.actionType] : "Planifier une séance"}
+        title={p ? <T k={ACTION_TYPE_LABEL_KEYS[p.actionType]} fallback={p.actionType} /> : "Planifier une séance"}
         detail={copy?.drillHint ?? "Choisissez les techniques de votre prochain entraînement."}
       />
       <ProgressionCompactCard summary={progressSummary} ring={proficientPct} insufficientData={insufficientData} />
@@ -284,7 +284,7 @@ function ProgressionCompactCard({
               return (
                 <div key={stage} className="flex items-center gap-1.5">
                   <span className="w-14 shrink-0 truncate text-[10px] text-muted-foreground">
-                    {MASTERY_STAGE_LABELS[stage]}
+                    <T k={MASTERY_STAGE_LABEL_KEYS[stage]} fallback={stage} />
                   </span>
                   <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
                     <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
@@ -484,7 +484,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
                   <Link href={`/training/${s.id}`} className="flex-1 min-w-0 group/item">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium group-hover/item:underline">
-                        {s.title || SESSION_TYPE_LABELS[s.session_type]}
+                        {s.title || <T k={SESSION_TYPE_LABEL_KEYS[s.session_type]} fallback={s.session_type} />}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {new Date(s.date).toLocaleDateString("fr-FR")}
@@ -492,7 +492,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
                       <Badge variant="secondary">{s.discipline.name}</Badge>
-                      <Badge variant="outline">{SESSION_TYPE_LABELS[s.session_type]}</Badge>
+                      <Badge variant="outline"><T k={SESSION_TYPE_LABEL_KEYS[s.session_type]} fallback={s.session_type} /></Badge>
                       {observationCount > 0 ? (
                         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                           <MessageCircleQuestion className="size-3" />

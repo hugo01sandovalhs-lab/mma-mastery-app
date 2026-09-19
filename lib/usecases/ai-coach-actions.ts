@@ -12,6 +12,8 @@ import { getReviewQueue } from "@/lib/usecases/review-actions";
 import { getUpcomingGoals } from "@/lib/usecases/goals-actions";
 import { getStudyQueue } from "@/lib/usecases/knowledge-actions";
 import { YouTubeVideoSearchProvider } from "@/lib/infra/video/youtube-video-search-provider";
+import { MASTERY_STAGE_LABEL_KEYS, type MasteryStage } from "@/lib/domain/skill";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
 
 const defaultProvider: AIProvider = new DeterministicCoachProvider();
 const videoProvider = new YouTubeVideoSearchProvider(process.env.YOUTUBE_API_KEY);
@@ -67,9 +69,14 @@ export async function buildCoachContext(): Promise<CoachContext> {
   }
 
   for (const item of reviewItems) {
+    const vars = { ...item.detailVars };
+    if (item.type === "developing" && typeof vars.stage === "string") {
+      vars.stage = DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[vars.stage as MasteryStage]];
+    }
+    const detail = formatT(DICTIONARIES.fr[item.detailKey as keyof (typeof DICTIONARIES)["fr"]], vars);
     facts.push({
       kind: "OBSERVED",
-      statement: `${item.skillName}: ${item.detail}`,
+      statement: `${item.skillName}: ${detail}`,
       skillId: item.skillId,
     });
   }

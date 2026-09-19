@@ -1,4 +1,4 @@
-import { computeMasteryStage, MASTERY_STAGE_LABELS } from "./skill";
+import { computeMasteryStage } from "./skill";
 import {
   MIN_DRILLING_REPS_FOR_TRANSFER_SIGNAL,
   RECENCY_WINDOW_DAYS,
@@ -18,19 +18,28 @@ import {
 export const REVIEW_ITEM_TYPES = ["question", "difficulty", "stale", "developing", "never_applied"] as const;
 export type ReviewItemType = (typeof REVIEW_ITEM_TYPES)[number];
 
-export const REVIEW_ITEM_TYPE_LABELS: Record<ReviewItemType, string> = {
-  question: "Question en attente",
-  difficulty: "Difficulté signalée",
-  stale: "Pratique arrêtée",
-  developing: "En développement",
-  never_applied: "Jamais appliqué",
+/** i18n dictionary key for each review item type — look up via `dict[REVIEW_ITEM_TYPE_LABEL_KEYS[type]]`. */
+export const REVIEW_ITEM_TYPE_LABEL_KEYS: Record<ReviewItemType, `reviewItemType.${ReviewItemType}`> = {
+  question: "reviewItemType.question",
+  difficulty: "reviewItemType.difficulty",
+  stale: "reviewItemType.stale",
+  developing: "reviewItemType.developing",
+  never_applied: "reviewItemType.never_applied",
 };
 
+/**
+ * `detailKey` is an i18n dictionary key (under `review.detail.*`) and
+ * `detailVars` its interpolation vars — translate at render time via
+ * `formatT(dict[item.detailKey], item.detailVars)`. `developingStage`'s
+ * `stage` var is a raw `MasteryStage` code, not a translated string: resolve
+ * it through `MASTERY_STAGE_LABEL_KEYS` first if it needs to appear inline.
+ */
 export type ReviewItem = {
   skillId: string;
   skillName: string;
   type: ReviewItemType;
-  detail: string;
+  detailKey: string;
+  detailVars: Record<string, string | number>;
   /** ISO date driving the sort order within a type; null when not date-based. */
   occurredAt: string | null;
 };
@@ -69,7 +78,8 @@ export function buildReviewQueue(
         skillId: input.skillId,
         skillName: input.skillName,
         type: obs.type,
-        detail: `"${truncate(obs.content)}"`,
+        detailKey: "review.detail.quoted",
+        detailVars: { content: truncate(obs.content) },
         occurredAt: obs.occurredAt,
       };
       if (obs.type === "question") questions.push(item);
@@ -83,7 +93,8 @@ export function buildReviewQueue(
         skillId: input.skillId,
         skillName: input.skillName,
         type: "stale",
-        detail: `Non pratiqué depuis ${daysBetween(input.lastPracticedAt, now)} jours`,
+        detailKey: "review.detail.stale",
+        detailVars: { days: daysBetween(input.lastPracticedAt, now) },
         occurredAt: input.lastPracticedAt,
       });
     } else if ((stage === "introduced" || stage === "drilling") && !input.lastPracticedAt) {
@@ -91,7 +102,8 @@ export function buildReviewQueue(
         skillId: input.skillId,
         skillName: input.skillName,
         type: "developing",
-        detail: `Stade actuel: ${MASTERY_STAGE_LABELS[stage]}, pas encore de séance liée`,
+        detailKey: "review.detail.developingStage",
+        detailVars: { stage },
         occurredAt: null,
       });
     }
@@ -105,7 +117,8 @@ export function buildReviewQueue(
         skillId: input.skillId,
         skillName: input.skillName,
         type: "never_applied",
-        detail: `${input.progress.drilling_reps} répétitions en drilling, jamais appliqué en live ou en sparring`,
+        detailKey: "review.detail.neverApplied",
+        detailVars: { reps: input.progress.drilling_reps },
         occurredAt: input.lastPracticedAt,
       });
     }

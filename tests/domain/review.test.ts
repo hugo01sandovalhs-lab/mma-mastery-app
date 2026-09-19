@@ -48,7 +48,7 @@ describe("buildReviewQueue", () => {
     );
     expect(result).toHaveLength(1);
     expect(result[0].type).toBe("question");
-    expect(result[0].detail).toContain("Timing?");
+    expect(result[0].detailVars.content).toContain("Timing?");
   });
 
   it("surfaces a recent difficulty", () => {

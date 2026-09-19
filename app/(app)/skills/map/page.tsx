@@ -14,12 +14,13 @@ import {
 import { createClient } from "@/lib/infra/db/supabase-server";
 import {
   MASTERY_STAGES,
-  MASTERY_STAGE_LABELS,
-  SKILL_RELATION_TYPE_LABELS,
+  MASTERY_STAGE_LABEL_KEYS,
+  SKILL_RELATION_TYPE_LABEL_KEYS,
   type MasteryStage,
 } from "@/lib/domain/skill";
 import { getDisciplines } from "@/lib/usecases/training-actions";
 import { getSkillMap, type SkillListItem, type SkillMapData } from "@/lib/usecases/skill-actions";
+import { DICTIONARIES } from "@/lib/i18n";
 
 const STAGE_BADGE_VARIANT: Record<MasteryStage, "default" | "secondary" | "outline"> = {
   unknown: "outline",
@@ -130,7 +131,7 @@ export default async function SkillMapPage({
                 <div key={c.stage} className="flex w-72 shrink-0 flex-col gap-3">
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-medium text-muted-foreground">
-                      {MASTERY_STAGE_LABELS[c.stage]}
+                      {DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[c.stage]]}
                     </h2>
                     <span className="text-xs text-muted-foreground/70">{c.items.length}</span>
                   </div>
@@ -173,7 +174,7 @@ function SkillNode({
             {skill.name}
           </Link>
           <Badge variant={STAGE_BADGE_VARIANT[skill.stage]} className="shrink-0">
-            {MASTERY_STAGE_LABELS[skill.stage]}
+            {DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[skill.stage]]}
           </Badge>
         </div>
 
@@ -191,7 +192,7 @@ function SkillNode({
               return (
                 <Link key={i} href={`/skills/${target.id}`}>
                   <Badge variant="outline" className="text-xs">
-                    {SKILL_RELATION_TYPE_LABELS[edge.relationType]}: {target.name}
+                    {DICTIONARIES.fr[SKILL_RELATION_TYPE_LABEL_KEYS[edge.relationType]]}: {target.name}
                   </Badge>
                 </Link>
               );

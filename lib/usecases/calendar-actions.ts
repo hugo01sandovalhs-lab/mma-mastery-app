@@ -9,8 +9,10 @@ import {
   type CalendarMonth,
 } from "@/lib/domain/calendar";
 import { EVENT_TYPE_LABELS, type EventType } from "@/lib/domain/club-event";
-import { SESSION_TYPE_LABELS, type SessionType } from "@/lib/domain/training";
+import { SESSION_TYPE_LABEL_KEYS, type SessionType } from "@/lib/domain/training";
 import { MATCH_RESULT_LABELS, type MatchResult } from "@/lib/domain/competition";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 async function requireUserId() {
   const supabase = await createClient();
@@ -25,6 +27,7 @@ export async function getCalendarEvents(
   monthArg: CalendarMonth,
 ): Promise<{ events: CalendarEvent[]; gridDays: string[] }> {
   const { supabase, userId } = await requireUserId();
+  const dict = DICTIONARIES[await getServerLocale()];
   const { start, end, days } = monthGridRange(monthArg.year, monthArg.month);
   const gridDays = days.map((d) => toDateKey(d));
   const startIso = start.toISOString();
@@ -118,7 +121,7 @@ export async function getCalendarEvents(
     events.push({
       id: `training:${t.id}`,
       type: "training",
-      title: (t.title as string | null) || SESSION_TYPE_LABELS[sessionType],
+      title: (t.title as string | null) || dict[SESSION_TYPE_LABEL_KEYS[sessionType]],
       date: t.date as string,
       time: null,
       href: `/training/${t.id}`,

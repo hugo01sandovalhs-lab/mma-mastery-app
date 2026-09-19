@@ -9,6 +9,7 @@ import { getClubAnnouncements } from "@/lib/usecases/club-announcement-actions";
 import { AnnouncementForm } from "@/components/club/announcement-form";
 import { AnnouncementRow } from "@/components/club/announcement-row";
 import { MarkAnnouncementsRead } from "@/components/club/mark-announcements-read";
+import { T } from "@/components/i18n-provider";
 
 export default async function ClubAnnouncementsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -46,15 +47,15 @@ export default async function ClubAnnouncementsPage({ params }: { params: Promis
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Annonces</h1>
-          <p className="text-sm text-muted-foreground">Communications du club et des groupes.</p>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl"><T k="club.announcements" fallback="Annonces" /></h1>
+          <p className="text-sm text-muted-foreground"><T k="club.announcementsDesc" fallback="Communications du club et des groupes." /></p>
         </div>
 
         {canManage ? <AnnouncementForm clubId={id} groups={groups} /> : null}
 
         {announcements.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">Aucune annonce pour l&apos;instant.</CardContent>
+            <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.noAnnouncements" fallback="Aucune annonce pour l'instant." /></CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">

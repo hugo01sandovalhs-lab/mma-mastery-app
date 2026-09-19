@@ -8,6 +8,11 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { EVENT_TYPE_LABELS } from "@/lib/domain/club-event";
 import { getClubEventDetail } from "@/lib/usecases/club-event-actions";
 import { EventRegistrationButton } from "@/components/club/event-registration-button";
+import { T } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
+
+const INTL_LOCALE: Record<Locale, string> = { fr: "fr-FR", en: "en-US", es: "es-ES", de: "de-DE", ru: "ru-RU", ja: "ja-JP" };
 
 export default async function ClubEventDetailPage({
   params,
@@ -21,8 +26,10 @@ export default async function ClubEventDetailPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const event = await getClubEventDetail(eventId);
+  const [event, locale] = await Promise.all([getClubEventDetail(eventId), getServerLocale()]);
   if (!event) notFound();
+  const dict = DICTIONARIES[locale];
+  const intlLocale = INTL_LOCALE[locale];
 
   return (
     <AppShell>
@@ -34,10 +41,10 @@ export default async function ClubEventDetailPage({
         <div className="flex flex-col gap-3 border-b border-border pb-6">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">{event.name}</h1>
-            <Badge variant="outline">{EVENT_TYPE_LABELS[event.event_type]}</Badge>
+            <Badge variant="outline">{dict[`eventType.${event.event_type}` as keyof typeof dict] ?? EVENT_TYPE_LABELS[event.event_type]}</Badge>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span>{new Date(event.starts_at).toLocaleString("fr-FR", { dateStyle: "full", timeStyle: "short" })}</span>
+            <span>{new Date(event.starts_at).toLocaleString(intlLocale, { dateStyle: "full", timeStyle: "short" })}</span>
             {event.location ? (
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3.5" /> {event.location}
@@ -52,17 +59,17 @@ export default async function ClubEventDetailPage({
 
         <div className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
-            <Users className="size-4 text-primary" /> Participants ({event.participants.length})
+            <Users className="size-4 text-primary" /> {formatT(dict["club.participantsCount"], { count: event.participants.length })}
           </h2>
           {event.participants.length === 0 ? (
             <Card>
-              <CardContent className="py-8 text-sm text-muted-foreground">Aucun inscrit pour l&apos;instant.</CardContent>
+              <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.noRegistrations" fallback="Aucun inscrit pour l'instant." /></CardContent>
             </Card>
           ) : (
             <div className="flex flex-wrap gap-2">
               {event.participants.map((p) => (
                 <Badge key={p.user_id} variant="outline">
-                  {p.display_name ?? "Membre"}
+                  {p.display_name ?? dict["clubRole.MEMBER"]}
                 </Badge>
               ))}
             </div>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteSequence, type SequenceListItem } from "@/lib/usecases/competition-actions";
+import { useI18n } from "@/components/i18n-provider";
 
 function formatRange(start: number | null, end: number | null): string | null {
   if (start == null && end == null) return null;
@@ -17,6 +18,7 @@ function formatRange(start: number | null, end: number | null): string | null {
 
 export function SequenceRow({ sequence, matchId }: { sequence: SequenceListItem; matchId: string }) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useI18n();
   const range = formatRange(sequence.timestamp_start, sequence.timestamp_end);
 
   return (
@@ -39,7 +41,7 @@ export function SequenceRow({ sequence, matchId }: { sequence: SequenceListItem;
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 hover:underline"
               >
-                <PlayIcon className="size-3" /> Voir la vidéo
+                <PlayIcon className="size-3" /> {t("competition.watchVideo", "Voir la vidéo")}
               </a>
             ) : null}
             {range ? <span>{range}</span> : null}
@@ -50,7 +52,7 @@ export function SequenceRow({ sequence, matchId }: { sequence: SequenceListItem;
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label="Supprimer"
+          aria-label={t("action.delete", "Supprimer")}
           disabled={isPending}
           onClick={() => startTransition(() => deleteSequence(sequence.id, matchId))}
         >

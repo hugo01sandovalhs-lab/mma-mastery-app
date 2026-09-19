@@ -8,6 +8,11 @@ import { ChampionshipMetricCard } from "@/components/championship/metric-card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { CLUB_ROLE_LABELS } from "@/lib/domain/club";
 import { getClubAdminOverview } from "@/lib/usecases/club-admin-actions";
+import { T } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
+
+const INTL_LOCALE: Record<Locale, string> = { fr: "fr-FR", en: "en-US", es: "es-ES", de: "de-DE", ru: "ru-RU", ja: "ja-JP" };
 
 export default async function ClubAdminPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,8 +22,10 @@ export default async function ClubAdminPage({ params }: { params: Promise<{ id: 
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const overview = await getClubAdminOverview(id);
+  const [overview, locale] = await Promise.all([getClubAdminOverview(id), getServerLocale()]);
   if (!overview) notFound();
+  const dict = DICTIONARIES[locale];
+  const intlLocale = INTL_LOCALE[locale];
 
   const hasAlerts = overview.membersWithoutGroup.length > 0 || overview.lowAttendanceSessions.length > 0;
 
@@ -30,30 +37,30 @@ export default async function ClubAdminPage({ params }: { params: Promise<{ id: 
         </Link>
 
         <div className="flex flex-col gap-1.5 border-b border-border pb-6">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Administration</h1>
-          <p className="text-sm text-muted-foreground">Vue d&apos;ensemble du club, membres et présence.</p>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl"><T k="club.administration" fallback="Administration" /></h1>
+          <p className="text-sm text-muted-foreground"><T k="club.adminOverview" fallback="Vue d'ensemble du club, membres et présence." /></p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <ChampionshipMetricCard eyebrow="Membres" icon={Users} value={overview.totalMembers} />
-          <ChampionshipMetricCard eyebrow="Groupes" icon={UsersRound} value={overview.groupCount} />
-          <ChampionshipMetricCard eyebrow="Cours" icon={CalendarClock} value={overview.classCount} />
+          <ChampionshipMetricCard eyebrow={dict["club.members"]} icon={Users} value={overview.totalMembers} />
+          <ChampionshipMetricCard eyebrow={dict["club.groups"]} icon={UsersRound} value={overview.groupCount} />
+          <ChampionshipMetricCard eyebrow={dict["photoLabel.classes"]} icon={CalendarClock} value={overview.classCount} />
           <ChampionshipMetricCard
-            eyebrow="Présence (30j)"
+            eyebrow={dict["club.attendance30d"]}
             icon={TrendingUp}
             value={`${overview.attendance.rate}%`}
-            subtitle={`${overview.attendance.present}/${overview.attendance.marked} présences`}
+            subtitle={formatT(dict["club.presentCount"], { present: overview.attendance.present, marked: overview.attendance.marked })}
           />
         </div>
 
         <div className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Répartition des rôles</h2>
+          <h2 className="font-heading text-lg font-semibold tracking-tight"><T k="club.roleBreakdown" fallback="Répartition des rôles" /></h2>
           <div className="flex flex-wrap gap-2">
             {Object.entries(overview.memberCountsByRole)
               .filter(([, count]) => count > 0)
               .map(([role, count]) => (
                 <Badge key={role} variant="outline">
-                  {CLUB_ROLE_LABELS[role as keyof typeof CLUB_ROLE_LABELS]}: {count}
+                  {dict[`clubRole.${role}` as keyof typeof dict] ?? CLUB_ROLE_LABELS[role as keyof typeof CLUB_ROLE_LABELS]}: {count}
                 </Badge>
               ))}
           </div>
@@ -61,11 +68,11 @@ export default async function ClubAdminPage({ params }: { params: Promise<{ id: 
 
         <div className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
-            <AlertTriangle className="size-4 text-primary" /> Alertes
+            <AlertTriangle className="size-4 text-primary" /> <T k="club.alerts" fallback="Alertes" />
           </h2>
           {!hasAlerts ? (
             <Card>
-              <CardContent className="py-8 text-sm text-muted-foreground">Rien à signaler.</CardContent>
+              <CardContent className="py-8 text-sm text-muted-foreground"><T k="club.nothingToReport" fallback="Rien à signaler." /></CardContent>
             </Card>
           ) : (
             <div className="flex flex-col gap-2">
@@ -73,13 +80,13 @@ export default async function ClubAdminPage({ params }: { params: Promise<{ id: 
                 <Card>
                   <CardContent className="flex flex-col gap-2 py-4">
                     <span className="text-sm font-medium">
-                      {overview.membersWithoutGroup.length} membre(s) sans groupe
+                      <T k="club.membersWithoutGroup" fallback="{count} membre(s) sans groupe" vars={{ count: overview.membersWithoutGroup.length }} />
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {overview.membersWithoutGroup.map((m) => (
                         <Link key={m.user_id} href={`/club/${id}/members/${m.user_id}`}>
                           <Badge variant="outline" className="hover:bg-accent">
-                            {m.display_name ?? "Membre"}
+                            {m.display_name ?? dict["clubRole.MEMBER"]}
                           </Badge>
                         </Link>
                       ))}
@@ -93,11 +100,11 @@ export default async function ClubAdminPage({ params }: { params: Promise<{ id: 
                     <div className="flex flex-col gap-0.5">
                       <span className="text-sm font-medium">{s.class_name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(s.starts_at).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}
+                        {new Date(s.starts_at).toLocaleString(intlLocale, { dateStyle: "medium", timeStyle: "short" })}
                       </span>
                     </div>
                     <Badge variant="outline">
-                      {s.present}/{s.marked} présents
+                      <T k="club.presentOf" fallback="{present}/{marked} présents" vars={{ present: s.present, marked: s.marked }} />
                     </Badge>
                   </CardContent>
                 </Card>

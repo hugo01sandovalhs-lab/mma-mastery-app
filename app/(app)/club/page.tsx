@@ -11,6 +11,9 @@ import { getMyClubs } from "@/lib/usecases/club-actions";
 import { ClubForm } from "@/components/club/club-form";
 import { ClubRow } from "@/components/club/club-row";
 import { Button } from "@/components/ui/button";
+import { T } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES } from "@/lib/i18n";
 
 export default async function ClubListPage() {
   const supabase = await createClient();
@@ -19,48 +22,49 @@ export default async function ClubListPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const clubs = await getMyClubs();
+  const [clubs, locale] = await Promise.all([getMyClubs(), getServerLocale()]);
+  const dict = DICTIONARIES[locale];
   const primaryClub = clubs[0];
   const [coursPhoto, collectifPhoto, partenairesPhoto] = PHOTO_STORIES.club;
 
   return (
     <AppShell>
       <div className="editorial-page editorial-club">
-        <PageHeader page="club" title="Clubs & partenaires" description="Progresser ensemble. Invitez vos amis d’entraînement et organisez vos groupes." />
+        <PageHeader page="club" title={dict["page.club.title"]} description={<T k="club.description" fallback="Progresser ensemble. Invitez vos amis d’entraînement et organisez vos groupes." />} />
 
         <div className="club-paths">
           <section id="cours">
             <ProgressiveImage src={coursPhoto.src} alt={coursPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectPosition: coursPhoto.position }} />
             <div className="club-path-shade" aria-hidden="true" />
-            <BookOpen aria-hidden="true" /><h2>Cours</h2><p>Retrouvez le planning et les séances de votre club.</p>
-            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}/classes` : "#creer-un-club"} />}>{primaryClub ? "Voir les cours" : "Créer un club"}</Button>
+            <BookOpen aria-hidden="true" /><h2><T k="photoLabel.classes" fallback="Cours" /></h2><p><T k="club.classesDesc" fallback="Retrouvez le planning et les séances de votre club." /></p>
+            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}/classes` : "#creer-un-club"} />}>{primaryClub ? dict["club.viewClasses"] : dict["club.createClub"]}</Button>
           </section>
           <section id="collectif">
             <ProgressiveImage src={collectifPhoto.src} alt={collectifPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectPosition: collectifPhoto.position }} />
             <div className="club-path-shade" aria-hidden="true" />
-            <UsersRound aria-hidden="true" /><h2>Collectif</h2><p>Suivez les membres, événements et annonces du groupe.</p>
-            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}` : "#creer-un-club"} />}>{primaryClub ? "Ouvrir le collectif" : "Créer un club"}</Button>
+            <UsersRound aria-hidden="true" /><h2><T k="photoLabel.collective" fallback="Collectif" /></h2><p><T k="club.collectiveDesc" fallback="Suivez les membres, événements et annonces du groupe." /></p>
+            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}` : "#creer-un-club"} />}>{primaryClub ? dict["club.openCollective"] : dict["club.createClub"]}</Button>
           </section>
           <section id="partenaires">
             <ProgressiveImage src={partenairesPhoto.src} alt={partenairesPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectPosition: partenairesPhoto.position }} />
             <div className="club-path-shade" aria-hidden="true" />
-            <UserRoundPlus aria-hidden="true" /><h2>Partenaires</h2><p>Invitez un partenaire avec votre code ami et progressez ensemble.</p>
-            <Button variant="outline" size="sm" render={<Link href="/profile#partenaires" />}>Gérer mes partenaires</Button>
+            <UserRoundPlus aria-hidden="true" /><h2><T k="photoLabel.partners" fallback="Partenaires" /></h2><p><T k="club.partnersDesc" fallback="Invitez un partenaire avec votre code ami et progressez ensemble." /></p>
+            <Button variant="outline" size="sm" render={<Link href="/profile#partenaires" />}><T k="club.managePartners" fallback="Gérer mes partenaires" /></Button>
           </section>
         </div>
 
         <div className="editorial-secondary-columns">
         <section id="creer-un-club" className="editorial-section">
-        <h2>Créer un club</h2>
+        <h2><T k="club.createTitle" fallback="Créer un club" /></h2>
         <ClubForm />
         </section>
 
         <section className="editorial-section">
-        <h2>Vos clubs</h2>
+        <h2><T k="club.myClubs" fallback="Vos clubs" /></h2>
         {clubs.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-sm text-muted-foreground">
-              Aucun club pour l&apos;instant.
+              <T k="club.noneYet" fallback="Aucun club pour l'instant." />
             </CardContent>
           </Card>
         ) : (

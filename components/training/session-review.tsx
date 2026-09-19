@@ -4,26 +4,29 @@ import { DownloadIcon } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SESSION_TYPE_LABELS, OBSERVATION_TYPE_LABELS } from "@/lib/domain/training";
+import { SESSION_TYPE_LABEL_KEYS, OBSERVATION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
 import type { TrainingSessionDetail } from "@/lib/usecases/training-actions";
 
-function buildExportText(session: TrainingSessionDetail): string {
+type Translate = (key: string, fallback?: string, vars?: Record<string, string | number>) => string;
+
+function buildExportText(session: TrainingSessionDetail, t: Translate): string {
   const lines: string[] = [];
-  lines.push(session.title || SESSION_TYPE_LABELS[session.session_type]);
+  const sessionTypeLabel = t(SESSION_TYPE_LABEL_KEYS[session.session_type], session.session_type);
+  lines.push(session.title || sessionTypeLabel);
   lines.push(session.date);
-  lines.push(`${session.discipline.name} · ${SESSION_TYPE_LABELS[session.session_type]}`);
+  lines.push(`${session.discipline.name} · ${sessionTypeLabel}`);
   if (session.duration_minutes) lines.push(`${session.duration_minutes} min`);
   if (session.rpe) lines.push(`RPE ${session.rpe}`);
   lines.push("");
 
   if (session.techniques.length > 0) {
     lines.push("Techniques:");
-    for (const t of session.techniques) {
-      const parts = [t.technique_name];
-      if (t.category) parts.push(`(${t.category})`);
-      if (t.outcome) parts.push(`- ${t.outcome}`);
+    for (const t2 of session.techniques) {
+      const parts = [t2.technique_name];
+      if (t2.category) parts.push(`(${t2.category})`);
+      if (t2.outcome) parts.push(`- ${t2.outcome}`);
       lines.push(`- ${parts.join(" ")}`);
-      if (t.notes) lines.push(`  ${t.notes}`);
+      if (t2.notes) lines.push(`  ${t2.notes}`);
     }
     lines.push("");
   }
@@ -31,7 +34,7 @@ function buildExportText(session: TrainingSessionDetail): string {
   if (session.observations.length > 0) {
     lines.push("Observations:");
     for (const o of session.observations) {
-      lines.push(`- [${OBSERVATION_TYPE_LABELS[o.type]}] ${o.content}`);
+      lines.push(`- [${t(OBSERVATION_TYPE_LABEL_KEYS[o.type], o.type)}] ${o.content}`);
     }
     lines.push("");
   }
@@ -73,7 +76,7 @@ export function SessionReviewCard({ session }: { session: TrainingSessionDetail 
           variant="outline"
           size="sm"
           onClick={() =>
-            downloadText(`seance-${session.date}.txt`, buildExportText(session))
+            downloadText(`seance-${session.date}.txt`, buildExportText(session, t))
           }
         >
           <DownloadIcon /> {t("action.exportText", "Exporter en texte")}

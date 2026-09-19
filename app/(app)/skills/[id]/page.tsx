@@ -16,14 +16,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import {
   MASTERY_STAGES,
-  MASTERY_STAGE_LABELS,
-  SKILL_RELATION_TYPE_LABELS,
+  MASTERY_STAGE_LABEL_KEYS,
+  SKILL_RELATION_TYPE_LABEL_KEYS,
   computeMasteryStage,
   metricLevel,
   type MasteryStage,
   type MetricLevel,
 } from "@/lib/domain/skill";
-import { OBSERVATION_TYPE_LABELS } from "@/lib/domain/training";
+import { OBSERVATION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
+import { DICTIONARIES } from "@/lib/i18n";
 import {
   MIN_DRILLING_REPS_FOR_TRANSFER_SIGNAL,
   MIN_SPARRING_ATTEMPTS_FOR_SUCCESS_SIGNAL,
@@ -164,7 +165,7 @@ function Hero({
           <p className="max-w-2xl text-sm whitespace-pre-wrap text-muted-foreground">{skill.description}</p>
         ) : null}
         <div className="mt-1 flex flex-wrap items-center gap-3">
-          <Badge variant={STAGE_BADGE_VARIANT[stage]}>{MASTERY_STAGE_LABELS[stage]}</Badge>
+          <Badge variant={STAGE_BADGE_VARIANT[stage]}>{DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[stage]]}</Badge>
           <div className="flex items-center gap-1" aria-label={`Étape ${Math.max(stageIndex, 0)} sur ${maxIndex}`}>
             {Array.from({ length: maxIndex }).map((_, i) => (
               <span
@@ -339,7 +340,7 @@ function RelationsSection({ skill }: { skill: SkillDetail }) {
                   <Card className="transition-colors hover:bg-muted/50">
                     <CardContent className="flex items-center justify-between gap-2 py-2">
                       <span className="text-sm">{r.skill.name}</span>
-                      <Badge variant="outline">{SKILL_RELATION_TYPE_LABELS[r.relation_type]}</Badge>
+                      <Badge variant="outline">{DICTIONARIES.fr[SKILL_RELATION_TYPE_LABEL_KEYS[r.relation_type]]}</Badge>
                     </CardContent>
                   </Card>
                 </Link>
@@ -485,7 +486,7 @@ function HistorySection({ history }: { history: SkillHistoryItem[] }) {
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                           <MessageCircleQuestion className="size-3" />
-                          {OBSERVATION_TYPE_LABELS[item.observationType]}
+                          {DICTIONARIES.fr[OBSERVATION_TYPE_LABEL_KEYS[item.observationType]]}
                         </span>
                       )}
                     </div>

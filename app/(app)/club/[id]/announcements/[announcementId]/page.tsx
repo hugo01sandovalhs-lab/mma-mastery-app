@@ -8,6 +8,11 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { hasClubRoleAtLeast, type ClubRole } from "@/lib/domain/club";
 import { getClubAnnouncement } from "@/lib/usecases/club-announcement-actions";
 import { AnnouncementForm } from "@/components/club/announcement-form";
+import { T } from "@/components/i18n-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { type Locale } from "@/lib/i18n";
+
+const INTL_LOCALE: Record<Locale, string> = { fr: "fr-FR", en: "en-US", es: "es-ES", de: "de-DE", ru: "ru-RU", ja: "ja-JP" };
 
 export default async function ClubAnnouncementDetailPage({
   params,
@@ -30,8 +35,9 @@ export default async function ClubAnnouncementDetailPage({
     .maybeSingle();
   if (!membership) notFound();
 
-  const announcement = await getClubAnnouncement(announcementId);
+  const [announcement, locale] = await Promise.all([getClubAnnouncement(announcementId), getServerLocale()]);
   if (!announcement || announcement.club_id !== id) notFound();
+  const intlLocale = INTL_LOCALE[locale];
 
   const canManage = hasClubRoleAtLeast(membership.role as ClubRole, "COACH");
   const { data: groups } = canManage
@@ -45,18 +51,18 @@ export default async function ClubAnnouncementDetailPage({
           href={`/club/${id}/announcements`}
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-3.5" /> Annonces
+          <ArrowLeft className="size-3.5" /> <T k="club.announcements" fallback="Annonces" />
         </Link>
 
         <Card>
           <CardContent className="flex flex-col gap-3 py-6">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-heading text-xl font-semibold tracking-tight">{announcement.title}</h1>
-              <Badge variant="outline">{announcement.group_name ?? "Tout le club"}</Badge>
+              <Badge variant="outline">{announcement.group_name ?? <T k="club.wholeClub" fallback="Tout le club" />}</Badge>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span>
-                {new Date(announcement.created_at).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}
+                {new Date(announcement.created_at).toLocaleString(intlLocale, { dateStyle: "medium", timeStyle: "short" })}
               </span>
               {announcement.author_name ? <span>{announcement.author_name}</span> : null}
             </div>
@@ -66,7 +72,7 @@ export default async function ClubAnnouncementDetailPage({
 
         {canManage ? (
           <div className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">Modifier</h2>
+            <h2 className="font-heading text-lg font-semibold tracking-tight"><T k="action.edit" fallback="Modifier" /></h2>
             <AnnouncementForm
               clubId={id}
               groups={(groups ?? []) as { id: string; name: string }[]}

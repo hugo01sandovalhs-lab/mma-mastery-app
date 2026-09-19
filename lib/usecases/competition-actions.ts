@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { tServer } from "@/lib/i18n-server";
 import {
   matchInputSchema,
   sequenceInputSchema,
@@ -9,6 +10,28 @@ import {
   type MatchResult,
   type SequenceInput,
 } from "@/lib/domain/competition";
+
+type TranslationKey = Parameters<typeof tServer>[0];
+
+const MATCH_FIELD_ERRORS: Record<string, [TranslationKey, string]> = {
+  discipline_id: ["competition.errors.disciplineRequired", "Discipline requise"],
+  date: ["competition.errors.dateInvalid", "Date invalide"],
+};
+
+const SEQUENCE_FIELD_ERRORS: Record<string, [TranslationKey, string]> = {
+  title: ["competition.errors.titleRequired", "Titre requis"],
+  source_url: ["competition.errors.urlInvalid", "URL invalide"],
+  timestamp_end: ["competition.errors.endBeforeStart", "La fin doit être après le début"],
+};
+
+async function firstFieldError(
+  issues: { path: PropertyKey[] }[],
+  fieldErrors: Record<string, [TranslationKey, string]>,
+): Promise<string> {
+  const field = issues[0]?.path[0];
+  const mapped = typeof field === "string" ? fieldErrors[field] : undefined;
+  return mapped ? tServer(mapped[0], mapped[1]) : tServer("error.invalidForm", "Formulaire invalide");
+}
 
 export type CompetitionActionState = { error: string | null };
 
@@ -135,7 +158,7 @@ export async function createMatch(
 ): Promise<CompetitionActionState> {
   const parsed = parseMatchForm(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: await firstFieldError(parsed.error.issues, MATCH_FIELD_ERRORS) };
   }
   const { supabase, userId } = await requireUserId();
   const input: MatchInput = parsed.data;
@@ -215,7 +238,7 @@ export async function createSequence(
   const matchId = String(formData.get("match_id") ?? "").trim();
   const parsed = parseSequenceForm(formData, matchId);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide" };
+    return { error: await firstFieldError(parsed.error.issues, SEQUENCE_FIELD_ERRORS) };
   }
   const { supabase, userId } = await requireUserId();
   const input: SequenceInput = parsed.data;

@@ -14,23 +14,30 @@ export const SESSION_TECHNIQUE_OUTCOMES = ["success", "failure"] as const;
 export const sessionTechniqueOutcomeSchema = z.enum(SESSION_TECHNIQUE_OUTCOMES);
 export type SessionTechniqueOutcome = z.infer<typeof sessionTechniqueOutcomeSchema>;
 
-export const SESSION_TECHNIQUE_OUTCOME_LABELS: Record<SessionTechniqueOutcome, string> = {
-  success: "Réussi",
-  failure: "Échoué",
+/** i18n dictionary key for each enum value — look up via `dict[SESSION_TECHNIQUE_OUTCOME_LABEL_KEYS[outcome]]`. */
+export const SESSION_TECHNIQUE_OUTCOME_LABEL_KEYS: Record<SessionTechniqueOutcome, "techniqueOutcome.success" | "techniqueOutcome.failure"> = {
+  success: "techniqueOutcome.success",
+  failure: "techniqueOutcome.failure",
 };
 
-export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
-  class: "Cours",
-  drilling: "Drilling",
-  sparring: "Sparring",
-  competition: "Compétition",
+export const SESSION_TYPE_LABEL_KEYS: Record<
+  SessionType,
+  "sessionType.class" | "sessionType.drilling" | "sessionType.sparring" | "sessionType.competition"
+> = {
+  class: "sessionType.class",
+  drilling: "sessionType.drilling",
+  sparring: "sessionType.sparring",
+  competition: "sessionType.competition",
 };
 
-export const OBSERVATION_TYPE_LABELS: Record<ObservationType, string> = {
-  difficulty: "Difficulté",
-  question: "Question",
-  insight: "Insight",
-  success: "Réussite",
+export const OBSERVATION_TYPE_LABEL_KEYS: Record<
+  ObservationType,
+  "observationType.difficulty" | "observationType.question" | "observationType.insight" | "observationType.success"
+> = {
+  difficulty: "observationType.difficulty",
+  question: "observationType.question",
+  insight: "observationType.insight",
+  success: "observationType.success",
 };
 
 export const disciplineSchema = z.object({

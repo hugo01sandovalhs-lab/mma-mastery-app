@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { search, type SearchResultType } from "@/lib/usecases/search-actions";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, SEARCH_QUICK_PROMPTS } from "@/lib/i18n";
 
 const TYPE_LABEL_KEYS: Record<SearchResultType, string> = {
   skill: "search.type.skill",
@@ -27,13 +29,6 @@ const TYPE_LABEL_FALLBACKS: Record<SearchResultType, string> = {
   goal: "Objectif",
 };
 
-const QUICK_PROMPTS = [
-  "Comment faire un armbar ?",
-  "Qu’est-ce que l’open guard ?",
-  "Comment maîtriser le double leg ?",
-  "Quelles sont les erreurs les plus courantes en jab ?",
-] as const;
-
 export default async function SearchPage({
   searchParams,
 }: {
@@ -48,6 +43,9 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = q ?? "";
   const results = query ? await search(query) : [];
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
+  const quickPrompts = SEARCH_QUICK_PROMPTS[locale];
 
   return (
     <AppShell>
@@ -62,11 +60,11 @@ export default async function SearchPage({
             <h2 id="search-question"><T k="search.stageQuestion" fallback="Que voulez-vous mieux maîtriser ?" /></h2>
           </div>
           <form className="search-form">
-            <Input name="q" aria-label="Rechercher dans MMA Mastery" defaultValue={query} placeholder="Comment maîtriser…" autoFocus />
+            <Input name="q" aria-label={dict["search.inputAria"]} defaultValue={query} placeholder={dict["search.placeholder"]} autoFocus />
             <Button type="submit"><T k="search.submit" fallback="Rechercher" /></Button>
           </form>
-          <div className="search-prompts" aria-label="Questions suggérées">
-            {QUICK_PROMPTS.map((prompt) => <Link key={prompt} href={`/search?q=${encodeURIComponent(prompt)}`}>{prompt}</Link>)}
+          <div className="search-prompts" aria-label={dict["search.suggestedLabel"]}>
+            {quickPrompts.map((prompt) => <Link key={prompt} href={`/search?q=${encodeURIComponent(prompt)}`}>{prompt}</Link>)}
           </div>
         </section>
 

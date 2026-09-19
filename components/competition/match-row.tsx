@@ -6,8 +6,9 @@ import { TrashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MATCH_RESULT_LABELS } from "@/lib/domain/competition";
 import { deleteMatch, type MatchListItem } from "@/lib/usecases/competition-actions";
+import { useI18n } from "@/components/i18n-provider";
+import type { Locale } from "@/lib/i18n";
 
 const RESULT_VARIANT: Record<string, "secondary" | "outline" | "destructive"> = {
   win: "secondary",
@@ -16,8 +17,9 @@ const RESULT_VARIANT: Record<string, "secondary" | "outline" | "destructive"> = 
   no_contest: "outline",
 };
 
-export function MatchRow({ match }: { match: MatchListItem }) {
+export function MatchRow({ match, locale }: { match: MatchListItem; locale: Locale }) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useI18n();
 
   return (
     <Card>
@@ -25,15 +27,17 @@ export function MatchRow({ match }: { match: MatchListItem }) {
         <Link href={`/competition/${match.id}`} className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium">
-              {match.athlete ? `vs ${match.athlete.name}` : match.event_name || "Compétition"}
+              {match.athlete
+                ? t("competition.vsOpponent", "vs {name}", { name: match.athlete.name })
+                : match.event_name || t("competition.fallback", "Compétition")}
             </span>
             {match.discipline ? <Badge variant="outline">{match.discipline.name}</Badge> : null}
             {match.result ? (
-              <Badge variant={RESULT_VARIANT[match.result]}>{MATCH_RESULT_LABELS[match.result]}</Badge>
+              <Badge variant={RESULT_VARIANT[match.result]}>{t(`matchResult.${match.result}`, match.result)}</Badge>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span>{new Date(match.date).toLocaleDateString("fr-FR")}</span>
+            <span>{new Date(match.date).toLocaleDateString(locale)}</span>
             {match.event_name && match.athlete ? <span>{match.event_name}</span> : null}
             {match.method ? <span>{match.method}</span> : null}
           </div>
@@ -42,7 +46,7 @@ export function MatchRow({ match }: { match: MatchListItem }) {
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label="Supprimer"
+          aria-label={t("action.delete", "Supprimer")}
           disabled={isPending}
           onClick={() => startTransition(() => deleteMatch(match.id))}
         >

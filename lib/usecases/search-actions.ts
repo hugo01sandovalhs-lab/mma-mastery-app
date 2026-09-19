@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/infra/db/supabase-server";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
 
 /**
  * Global search (docs/decisions/0008): structured `ILIKE` across the
@@ -20,17 +22,57 @@ export type SearchResult = {
 
 const RESULTS_PER_TYPE = 8;
 
-export function normalizeSearchQuery(query: string): string {
-  return query
-    .trim()
-    .replace(/[?!.]+$/, "")
-    .replace(/^(comment faire|qu['’]est-ce que|comment maîtriser|quelles sont les erreurs les plus courantes en)\s+/i, "")
-    .replace(/^(un|une|le|la|les|l['’])\s*/i, "")
-    .trim();
+type NormalizationRules = {
+  stripPrefixes: readonly RegExp[];
+  stripSuffixes?: readonly RegExp[];
+  stripArticles?: RegExp;
+};
+
+const NORMALIZATION_RULES: Record<Locale, NormalizationRules> = {
+  fr: {
+    stripPrefixes: [/^(comment faire|qu['’]est-ce que|comment maîtriser|quelles sont les erreurs les plus courantes en)\s+/i],
+    stripArticles: /^(une|un|les|le|la|l['’])\s*/i,
+  },
+  en: {
+    stripPrefixes: [/^(how do i do|how do i master|how do i|what are the most common mistakes in|what is)\s+/i],
+    stripArticles: /^(an|a|the)\s*/i,
+  },
+  es: {
+    stripPrefixes: [/^(cómo hacer|qué es|cómo dominar|cuáles son los errores más comunes en)\s+/i],
+    stripArticles: /^(una|un|los|las|el|la)\s*/i,
+  },
+  de: {
+    stripPrefixes: [/^(wie macht man|wie meistert man|was sind die häufigsten fehler beim|was sind die häufigsten fehler im|was ist)\s+/i],
+    stripArticles: /^(einen|eine|ein|der|die|das|den|dem)\s*/i,
+  },
+  ru: {
+    stripPrefixes: [/^(как делать|что такое|как освоить|какие самые частые ошибки в)\s+/i],
+  },
+  ja: {
+    stripPrefixes: [],
+    stripSuffixes: [/のやり方は$/, /を極めるには$/, /でよくあるミスは$/, /とは$/],
+  },
+};
+
+export function normalizeSearchQuery(query: string, locale: Locale = "fr"): string {
+  const rules = NORMALIZATION_RULES[locale] ?? NORMALIZATION_RULES.fr;
+  let q = query.trim().replace(/^[¿¡]+/, "").replace(/[?!.？！。]+$/, "").trim();
+  for (const suffix of rules.stripSuffixes ?? []) {
+    q = q.replace(suffix, "");
+  }
+  q = q.trim();
+  for (const prefix of rules.stripPrefixes) {
+    q = q.replace(prefix, "");
+  }
+  if (rules.stripArticles) {
+    q = q.replace(rules.stripArticles, "");
+  }
+  return q.trim();
 }
 
 export async function search(query: string): Promise<SearchResult[]> {
-  const q = normalizeSearchQuery(query);
+  const locale = await getServerLocale();
+  const q = normalizeSearchQuery(query, locale);
   if (q.length < 2) return [];
   const like = `%${q}%`;
 
@@ -107,7 +149,7 @@ export async function search(query: string): Promise<SearchResult[]> {
     results.push({
       type: "session",
       id: s.id,
-      title: s.title || `Séance du ${new Date(s.date).toLocaleDateString("fr-FR")}`,
+      title: s.title || formatT(DICTIONARIES[locale]["search.sessionOn"], { date: new Date(s.date).toLocaleDateString(locale) }),
       detail: s.notes ?? "",
       href: `/training/${s.id}`,
     });
