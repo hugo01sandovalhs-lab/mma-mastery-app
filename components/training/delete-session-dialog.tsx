@@ -35,7 +35,7 @@ export function DeleteSessionDialog({ sessionId }: { sessionId: string }) {
             {t("training.deleteBody", "Cette action est irréversible. Les techniques et observations associées seront également supprimées.")}
           </DialogDescription>
         </DialogHeader>
-        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
+        {state.error ? <p role="alert" className="text-sm text-destructive">{state.error}</p> : null}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{t("action.cancel", "Annuler")}</DialogClose>
           <form action={formAction}>

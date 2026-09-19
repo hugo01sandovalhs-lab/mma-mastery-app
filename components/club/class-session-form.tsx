@@ -26,7 +26,7 @@ export function ClassSessionForm({ clubId, classId }: { clubId: string; classId:
           <Input id="session_ends_at" name="ends_at" type="datetime-local" />
         </div>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           {t("club.addSessionBtn", "Ajouter une séance")}

@@ -19,7 +19,7 @@ export function SkillNotesSection({ skillId, notes }: { skillId: string; notes: 
       <form action={formAction} className="flex flex-col gap-2">
         <input type="hidden" name="skill_id" value={skillId} />
         <Textarea name="content" placeholder={t("skillNote.placeholder", "Ajouter une note personnelle sur cette compétence...")} rows={2} required />
-        {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+        {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={isPending}>
             {t("skillNote.submit", "Ajouter la note")}

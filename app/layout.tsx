@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeLabOverride } from "@/lib/design/theme-lab-override";
 import { PwaRegister } from "@/components/pwa-register";
 import { I18nProvider } from "@/components/i18n-provider";
+import { getSiteUrl } from "@/lib/site-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,14 +16,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const TITLE = "MMA Mastery";
+const DESCRIPTION = "Suivi d'entraînement et de progression MMA";
+
 export const metadata: Metadata = {
-  title: "MMA Mastery",
-  description: "Suivi d'entraînement et de progression MMA",
+  metadataBase: new URL(getSiteUrl()),
+  title: { default: TITLE, template: `%s | ${TITLE}` },
+  description: DESCRIPTION,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "MMA Mastery",
+    title: TITLE,
+  },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: TITLE,
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
   },
 };
 

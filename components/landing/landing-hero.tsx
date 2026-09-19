@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { LANDING_SLIDES } from "@/lib/design/photography";
+import { useI18n } from "@/components/i18n-provider";
 
 const SLIDE_DURATION = 6500;
 
 export function LandingHero() {
   const [active, setActive] = useState(0);
+  const { t } = useI18n();
 
   useEffect(() => {
     const interval = window.setInterval(
@@ -18,7 +20,7 @@ export function LandingHero() {
   }, []);
 
   return (
-    <div className="landing-visual" aria-label="Entraînements MMA">
+    <div className="landing-visual" aria-label={t("landing.heroAria", "Entraînements MMA")}>
       {LANDING_SLIDES.map((slide, index) => (
         <Image
           key={slide.src}

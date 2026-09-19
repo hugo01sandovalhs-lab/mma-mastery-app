@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { ACTION_TYPE_LABEL_KEYS } from "@/components/training/action-type-ui";
 import { T } from "@/components/i18n-provider";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
 import { ProgressRing } from "@/components/championship/progress-ring";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PAGE_PHOTOS } from "@/lib/design/photography";
@@ -30,7 +32,6 @@ import { SESSION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
 import { MASTERY_STAGES, MASTERY_STAGE_LABEL_KEYS } from "@/lib/domain/skill";
 import {
   TRAINING_PLAN_ACTION_COPY,
-  type PriorityLevel,
   type SkillRecommendation,
   type TrainingPlanResult,
 } from "@/lib/domain/training-intelligence";
@@ -39,11 +40,6 @@ import { computeSessionStats } from "@/lib/domain/training";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { getSkillsProgressSummary, type SkillProgressSummary } from "@/lib/usecases/skill-actions";
 import { getMemberClubSummary, type MemberClubSummary } from "@/lib/usecases/member-club-actions";
-
-const PRIORITY_LABELS: Record<PriorityLevel, string> = {
-  high: "Priorité haute",
-  medium: "Priorité moyenne",
-};
 
 const PHOTOS = {
   focus: { src: "/mma-mastery-photos/pexels-cottonbro-4761341.jpg", position: "56% 48%" },
@@ -54,14 +50,13 @@ const PHOTOS = {
   globalProgress: { src: "/mma-mastery-photos/redd-francisco-tJVCPGzuEoA-unsplash.jpg", position: "50% 30%" },
 } as const;
 
-function relativeDays(iso: string): string {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "hier";
-  return `il y a ${days} jours`;
+function daysSince(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export default async function DashboardPage() {
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
   const supabase = await createClient();
   const {
     data: { user },
@@ -98,6 +93,7 @@ export default async function DashboardPage() {
   return (
     <main className="championship-dashboard">
         <Hero
+          dict={dict}
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
           lastSessionDate={sessions[0]?.date ?? null}
@@ -109,25 +105,26 @@ export default async function DashboardPage() {
         />
 
         <div className="championship-grid">
-        <StatRow plan={plan} proficientPct={proficientPct} progressSummary={progressSummary} />
+        <StatRow dict={dict} plan={plan} proficientPct={proficientPct} progressSummary={progressSummary} />
 
         <div className="championship-details">
-          <ProgressionSection summary={progressSummary} />
-          <RecentActivity sessions={recent} />
+          <ProgressionSection dict={dict} summary={progressSummary} />
+          <RecentActivity dict={dict} locale={locale} sessions={recent} />
         </div>
 
         <div className="championship-support">
-          <FocusSection intelligence={intelligence} plan={plan} />
-          <ClubCard summary={clubSummary} />
+          <FocusSection dict={dict} intelligence={intelligence} plan={plan} />
+          <ClubCard dict={dict} locale={locale} summary={clubSummary} />
         </div>
 
-        <QuickActions />
+        <QuickActions dict={dict} />
         </div>
     </main>
   );
 }
 
 function Hero({
+  dict,
   displayName,
   sessionCount,
   lastSessionDate,
@@ -137,6 +134,7 @@ function Hero({
   imagePosition,
   sessionStats,
 }: {
+  dict: (typeof DICTIONARIES)[Locale];
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
@@ -148,29 +146,31 @@ function Hero({
 }) {
   const status =
     sessionCount === 0
-      ? "Commencez votre suivi d'entraînement."
+      ? dict["dashboard.status.start"]
       : highPriorityCount > 0
-        ? `${highPriorityCount} compétence${highPriorityCount > 1 ? "s" : ""} à prioriser cette semaine.`
+        ? formatT(dict["dashboard.status.priority"], { count: highPriorityCount })
         : lastSessionDate
-          ? `Dernière séance ${relativeDays(lastSessionDate)}.`
-          : "Continuez votre progression.";
+          ? daysSince(lastSessionDate) <= 0
+            ? dict["dashboard.status.lastSessionToday"]
+            : formatT(dict["dashboard.status.lastSessionDaysAgo"], { days: daysSince(lastSessionDate) })
+          : dict["dashboard.status.continue"];
 
   return (
-    <section className="championship-hero" aria-label="Votre entraînement">
+    <section className="championship-hero" aria-label={dict["dashboard.hero.ariaLabel"]}>
       <Image src={imageSrc} alt={imageAlt} fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" style={{ objectPosition: imagePosition }} />
       <div className="championship-hero-tools">
-        <Link href="/search" aria-label="Rechercher"><SearchIcon size={16} /></Link>
-        <Link href="/goals" aria-label="Mes objectifs"><Flag size={16} /></Link>
-        <Link href="/training" aria-label="Historique des séances"><CalendarClock size={16} /></Link>
+        <Link href="/search" aria-label={dict["dashboard.hero.searchAria"]}><SearchIcon size={16} /></Link>
+        <Link href="/goals" aria-label={dict["dashboard.hero.goalsAria"]}><Flag size={16} /></Link>
+        <Link href="/training" aria-label={dict["dashboard.hero.historyAria"]}><CalendarClock size={16} /></Link>
       </div>
       <div className="championship-hero-copy">
-        <p>{displayName ? `Bonjour, ${displayName}` : "Votre espace d’entraînement"}</p>
-        <h1>La discipline<br />forge les<br />champions.</h1>
+        <p>{displayName ? formatT(dict["dashboard.greeting"], { name: displayName }) : dict["dashboard.greetingDefault"]}</p>
+        <h1>{dict["dashboard.tagline1"]}<br />{dict["dashboard.tagline2"]}<br />{dict["dashboard.tagline3"]}</h1>
         <p className="championship-status">{status}</p>
       </div>
       <div className="championship-hero-footer">
         <span className="flex flex-col gap-0.5">
-          <span>{sessionCount > 0 ? `${sessionCount} séance${sessionCount > 1 ? "s" : ""} enregistrée${sessionCount > 1 ? "s" : ""}` : "Votre parcours commence ici"}</span>
+          <span>{sessionCount > 0 ? formatT(dict["dashboard.sessionCount"], { count: sessionCount }) : dict["dashboard.journeyStart"]}</span>
           {sessionCount > 0 ? (
             <span className="text-xs text-muted-foreground">
               <T k="training.weekCount" fallback="{count} séances cette semaine" vars={{ count: sessionStats.weekCount }} />
@@ -179,17 +179,19 @@ function Hero({
             </span>
           ) : null}
         </span>
-        <Button size="sm" render={<Link href="/training/new" />}><Dumbbell /> Nouvelle séance</Button>
+        <Button size="sm" render={<Link href="/training/new" />}><Dumbbell /> {dict["action.newSession"]}</Button>
       </div>
     </section>
   );
 }
 
 function StatRow({
+  dict,
   plan,
   proficientPct,
   progressSummary,
 }: {
+  dict: (typeof DICTIONARIES)[Locale];
   plan: TrainingPlanResult;
   proficientPct: number;
   progressSummary: SkillProgressSummary;
@@ -202,36 +204,36 @@ function StatRow({
   return (
     <div className="championship-stats">
       <ImageMetricPanel
-        label="Focus du jour"
+        label={dict["dashboard.focusToday"]}
         imageSrc={PHOTOS.focus.src}
         objectPosition={PHOTOS.focus.position}
         imageAlt="Un boxeur travaille sa garde à contre-jour"
         href={p ? `/skills/${p.focusSkillId}` : "/training/new"}
-        title={p ? p.focusSkillName : "Définir mon focus"}
+        title={p ? p.focusSkillName : dict["dashboard.defineFocus"]}
         detail={
           p ? (
             <T k={p.reasons[0].key} fallback="" vars={p.reasons[0].vars} />
           ) : (
-            "Enregistrez une séance pour identifier vos priorités."
+            dict["dashboard.focusEmptyDetail"]
           )
         }
       />
       <ImageMetricPanel
-        label="Prochaine séance"
+        label={dict["dashboard.nextSessionLabel"]}
         imageSrc={PHOTOS.session.src}
         objectPosition={PHOTOS.session.position}
         imageAlt="Travail au sol"
         href="/training/new"
-        title={p ? <T k={ACTION_TYPE_LABEL_KEYS[p.actionType]} fallback={p.actionType} /> : "Planifier une séance"}
+        title={p ? <T k={ACTION_TYPE_LABEL_KEYS[p.actionType]} fallback={p.actionType} /> : dict["dashboard.planSession"]}
         detail={
           copy ? (
             <T k={copy.drillHintKey} fallback="" />
           ) : (
-            "Choisissez les techniques de votre prochain entraînement."
+            dict["dashboard.nextSessionEmptyDetail"]
           )
         }
       />
-      <ProgressionCompactCard summary={progressSummary} ring={proficientPct} insufficientData={insufficientData} />
+      <ProgressionCompactCard dict={dict} summary={progressSummary} ring={proficientPct} insufficientData={insufficientData} />
     </div>
   );
 }
@@ -267,10 +269,12 @@ function ImageMetricPanel({
 }
 
 function ProgressionCompactCard({
+  dict,
   summary,
   ring,
   insufficientData,
 }: {
+  dict: (typeof DICTIONARIES)[Locale];
   summary: SkillProgressSummary;
   ring: number;
   insufficientData: boolean;
@@ -286,9 +290,9 @@ function ProgressionCompactCard({
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <T k="dashboard.globalProgress" fallback="Progression globale" />
           </span>
-          {!insufficientData && <span className="text-[10px] text-muted-foreground">{ring}% régulières ou maîtrisées · {summary.totalTracked} suivies</span>}
+          {!insufficientData && <span className="text-[10px] text-muted-foreground">{formatT(dict["dashboard.progressCompactDetail"], { ring, total: summary.totalTracked })}</span>}
           {insufficientData ? (
-            <span className="text-xs text-muted-foreground">Pas encore de données</span>
+            <span className="text-xs text-muted-foreground">{dict["dashboard.noDataYet"]}</span>
           ) : (
             stages.map((stage) => {
               const count = summary.stageCounts[stage] ?? 0;
@@ -322,9 +326,11 @@ function SectionHeading({ icon: Icon, label }: { icon: LucideIcon; label: string
 }
 
 function FocusSection({
+  dict,
   intelligence,
   plan,
 }: {
+  dict: (typeof DICTIONARIES)[Locale];
   intelligence: Awaited<ReturnType<typeof getTrainingIntelligenceBundle>>["intelligence"];
   plan: TrainingPlanResult;
 }) {
@@ -337,16 +343,16 @@ function FocusSection({
   if (intelligence.status === "insufficient_data") {
     return (
       <section className="flex flex-col gap-3">
-        <SectionHeading icon={Target} label="À travailler maintenant" />
+        <SectionHeading icon={Target} label={dict["dashboard.workNowHeading"]} />
         <Card className="rounded-2xl border-border bg-card">
           <CardContent className="flex flex-col items-start gap-2 py-6">
             <Target className="size-6 text-muted-foreground" />
-            <p className="font-medium">Votre prochain focus se construit ici</p>
+            <p className="font-medium">{dict["dashboard.focusBuilding"]}</p>
             <p className="max-w-md text-sm text-muted-foreground">
-              Enregistrez les techniques et difficultés de vos séances pour obtenir des recommandations adaptées.
+              {dict["dashboard.focusBuildingDetail"]}
             </p>
             <Button variant="outline" size="sm" render={<Link href="/training/new" />} className="mt-1">
-              Enregistrer une séance <ArrowRight />
+              {dict["dashboard.logSessionCta"]} <ArrowRight />
             </Button>
           </CardContent>
         </Card>
@@ -358,18 +364,18 @@ function FocusSection({
 
   return (
     <section className="flex flex-col gap-3">
-      <SectionHeading icon={Target} label="Autres priorités" />
+      <SectionHeading icon={Target} label={dict["dashboard.otherPriorities"]} />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {otherRecommendations.map((rec) => (
-          <FocusCard key={rec.skillId} rec={rec} />
+          <FocusCard key={rec.skillId} dict={dict} rec={rec} />
         ))}
       </div>
     </section>
   );
 }
 
-function FocusCard({ rec }: { rec: SkillRecommendation }) {
+function FocusCard({ dict, rec }: { dict: (typeof DICTIONARIES)[Locale]; rec: SkillRecommendation }) {
   const isHigh = rec.priority === "high";
   return (
     <Card className="rounded-2xl border-border bg-card">
@@ -377,7 +383,7 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
         <div className="flex items-start justify-between gap-2">
           <span className="text-sm font-medium leading-snug">{rec.skillName}</span>
           <Badge variant={isHigh ? "default" : "secondary"} className="shrink-0">
-            {PRIORITY_LABELS[rec.priority]}
+            {isHigh ? dict["dashboard.priorityHigh"] : dict["dashboard.priorityMedium"]}
           </Badge>
         </div>
 
@@ -385,7 +391,7 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
           <T k={rec.reasons[0].key} fallback="" vars={rec.reasons[0].vars} />
         </p>
         {rec.reasons.length > 1 ? (
-          <p className="text-[11px] text-muted-foreground">+{rec.reasons.length - 1} autre(s) signal(aux)</p>
+          <p className="text-[11px] text-muted-foreground">{formatT(dict["dashboard.otherSignals"], { count: rec.reasons.length - 1 })}</p>
         ) : null}
 
         <p className="flex items-start gap-1.5 text-xs">
@@ -399,14 +405,14 @@ function FocusCard({ rec }: { rec: SkillRecommendation }) {
           href={`/skills/${rec.skillId}`}
           className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
         >
-          Voir le skill <ArrowRight className="size-3.5" />
+          {dict["dashboard.viewSkill"]} <ArrowRight className="size-3.5" />
         </Link>
       </CardContent>
     </Card>
   );
 }
 
-function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
+function ProgressionSection({ dict, summary }: { dict: (typeof DICTIONARIES)[Locale]; summary: SkillProgressSummary }) {
   const proficientCount = (summary.stageCounts.consistent ?? 0) + (summary.stageCounts.mastered ?? 0);
   const proficientPct =
     summary.totalTracked > 0 ? Math.round((proficientCount / summary.totalTracked) * 100) : 0;
@@ -424,12 +430,12 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
       <CardContent className="relative z-10">
         {summary.totalTracked === 0 ? (
           <div className="championship-progress-empty">
-            <strong>Construisez votre carte de progression.</strong>
+            <strong>{dict["dashboard.buildProgressMap"]}</strong>
             <p>
-              Ajoutez les techniques travaillées à vos séances pour suivre chaque discipline.
+              {dict["dashboard.buildProgressMapDetail"]}
             </p>
             <Button size="sm" render={<Link href="/training/new" />}>
-              Ajouter une séance <ArrowRight />
+              {dict["action.newSession"]} <ArrowRight />
             </Button>
           </div>
         ) : (
@@ -437,7 +443,7 @@ function ProgressionSection({ summary }: { summary: SkillProgressSummary }) {
             <ProgressRing value={proficientPct} size={80} strokeWidth={7} />
             <div className="flex flex-1 flex-col gap-2">
               {summary.disciplines.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Aucune discipline suivie.</p>
+                <p className="text-xs text-muted-foreground">{dict["dashboard.noDisciplineTracked"]}</p>
               ) : (
                 summary.disciplines.slice(0, 5).map((d) => (
                   <DisciplineBar key={d.name} name={d.name} count={d.count} total={summary.totalTracked} />
@@ -467,7 +473,7 @@ function DisciplineBar({ name, count, total }: { name: string; count: number; to
   );
 }
 
-function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
+function RecentActivity({ dict, locale, sessions }: { dict: (typeof DICTIONARIES)[Locale]; locale: Locale; sessions: TrainingSessionListItem[] }) {
   return (
     <Card data-empty={sessions.length === 0 || undefined} className="championship-activity-panel rounded-2xl border-border bg-card">
       <div className="championship-activity-cover">
@@ -481,7 +487,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
       </div>
       <CardContent>
         {sessions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aucune séance pour le moment.</p>
+          <p className="text-sm text-muted-foreground">{dict["empty.sessions"]}</p>
         ) : (
           <ul className="flex flex-col">
             {sessions.map((s, i) => {
@@ -503,7 +509,7 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
                         {s.title || <T k={SESSION_TYPE_LABEL_KEYS[s.session_type]} fallback={s.session_type} />}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(s.date).toLocaleDateString("fr-FR")}
+                        {new Date(s.date).toLocaleDateString(locale)}
                       </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -532,18 +538,18 @@ function RecentActivity({ sessions }: { sessions: TrainingSessionListItem[] }) {
   );
 }
 
-function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
+function ClubCard({ dict, locale, summary }: { dict: (typeof DICTIONARIES)[Locale]; locale: Locale; summary: MemberClubSummary | null }) {
   if (!summary) return null;
 
   const attendanceMeta =
-    summary.attendance.marked > 0 ? `${summary.attendance.rate}% de présence · 30 j` : "Pas encore de données";
+    summary.attendance.marked > 0 ? formatT(dict["dashboard.attendanceRate"], { rate: summary.attendance.rate }) : dict["dashboard.noDataYet"];
 
   return (
     <Card className="rounded-2xl border-border bg-card">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <UsersRound className="size-3.5 text-primary" />
-          Mon club
+          {dict["dashboard.myClub"]}
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr_1fr]">
@@ -557,24 +563,24 @@ function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
             style={{ objectPosition: "80% center" }}
           />
           <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="truncate text-sm font-bold">{summary.groupNames[0] ?? "Voir mes clubs"}</span>
+            <span className="truncate text-sm font-bold">{summary.groupNames[0] ?? dict["dashboard.viewMyClubs"]}</span>
             <span className="text-xs text-muted-foreground">{attendanceMeta}</span>
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Prochains cours
+            {dict["dashboard.upcomingClasses"]}
           </span>
           {summary.upcomingClasses.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Aucun cours dans les 7 prochains jours.</p>
+            <p className="text-xs text-muted-foreground">{dict["dashboard.noUpcomingClasses"]}</p>
           ) : (
             <ul className="flex flex-col gap-1.5">
               {summary.upcomingClasses.slice(0, 3).map((c) => (
                 <li key={c.session_id} className="flex items-center justify-between gap-2">
                   <span className="truncate text-xs font-medium">{c.class_name}</span>
                   <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {new Date(c.starts_at).toLocaleString("fr-FR", { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(c.starts_at).toLocaleString(locale, { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </li>
               ))}
@@ -583,10 +589,10 @@ function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Groupes</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{dict["dashboard.groups"]}</span>
           <div className="flex flex-wrap gap-1.5">
             {summary.groupNames.length === 0 ? (
-              <span className="text-xs text-muted-foreground">Aucun groupe.</span>
+              <span className="text-xs text-muted-foreground">{dict["dashboard.noGroups"]}</span>
             ) : (
               summary.groupNames.map((name) => (
                 <Badge key={name} variant="secondary">
@@ -599,7 +605,7 @@ function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
             href="/club"
             className="mt-auto inline-flex w-fit items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
           >
-            Voir mes clubs <ArrowRight className="size-3.5" />
+            {dict["dashboard.viewMyClubs"]} <ArrowRight className="size-3.5" />
           </Link>
         </div>
       </CardContent>
@@ -607,15 +613,15 @@ function ClubCard({ summary }: { summary: MemberClubSummary | null }) {
   );
 }
 
-function QuickActions() {
+function QuickActions({ dict }: { dict: (typeof DICTIONARIES)[Locale] }) {
   const actions = [
-    { href: "/training/new", label: "Nouvelle séance", icon: Dumbbell },
-    { href: "/skills", label: "Mes compétences", icon: Target },
-    { href: "/training/review", label: "À revoir", icon: BookOpen },
-    { href: "/training", label: "Historique complet", icon: Flame },
-    { href: "/goals", label: "Objectifs", icon: Flag },
-    { href: "/study", label: "File d'étude", icon: LibraryIcon },
-    { href: "/search", label: "Recherche", icon: SearchIcon },
+    { href: "/training/new", label: dict["action.newSession"], icon: Dumbbell },
+    { href: "/skills", label: dict["nav.skills"], icon: Target },
+    { href: "/training/review", label: dict["trainingList.toReview"], icon: BookOpen },
+    { href: "/training", label: dict["dashboard.quickAction.fullHistory"], icon: Flame },
+    { href: "/goals", label: dict["nav.goals"], icon: Flag },
+    { href: "/study", label: dict["dashboard.quickAction.studyQueue"], icon: LibraryIcon },
+    { href: "/search", label: dict["nav.search"], icon: SearchIcon },
   ];
 
   return (

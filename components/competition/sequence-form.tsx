@@ -51,7 +51,7 @@ export function SequenceForm({ matchId, skills }: { matchId: string; skills: Ski
           <input type="hidden" name="skill_id" value={resolvedSkillId} />
         </div>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           {t("competition.addSequence", "Ajouter la séquence")}

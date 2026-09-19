@@ -59,7 +59,7 @@ export function AnnouncementForm({
           ))}
         </select>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           {announcement ? t("action.save", "Enregistrer") : t("club.publishAnnouncement", "Publier l'annonce")}

@@ -60,7 +60,7 @@ export function ClassForm({ clubId, groups }: { clubId: string; groups: { id: st
           <Input id="class_capacity" name="capacity" type="number" min={1} />
         </div>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           {t("club.createClassBtn", "Créer le cours")}

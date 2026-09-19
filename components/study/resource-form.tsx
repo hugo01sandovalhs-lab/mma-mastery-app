@@ -101,7 +101,7 @@ export function ResourceForm({ skills, fixedSkillId }: ResourceFormProps) {
           <Textarea id="resource_notes" name="notes" rows={2} />
         </div>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           <PlusIcon /> {t("resourceForm.submit", "Ajouter la ressource")}

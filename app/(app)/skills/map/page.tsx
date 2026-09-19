@@ -120,7 +120,7 @@ export default async function SkillMapPage({
           <Card>
             <CardContent className="flex flex-col items-start gap-2 py-8">
               <Network className="size-6 text-muted-foreground" />
-              <p className="font-medium">Aucune compétence pour cette discipline</p>
+              <p className="font-medium">{DICTIONARIES.fr["skillMap.noSkillsForDiscipline"]}</p>
             </CardContent>
           </Card>
         ) : (

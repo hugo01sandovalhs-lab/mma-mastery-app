@@ -18,7 +18,7 @@ export function ClubForm() {
         <Label htmlFor="club_name">{t("club.name", "Nom du club")}</Label>
         <Input id="club_name" name="name" maxLength={120} required />
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           {t("club.createClub", "Créer le club")}

@@ -59,7 +59,7 @@ export function LandingContent() {
           <p>{t("landing.manifestoBody", "MMA Mastery relie ce que vous entraînez, ce que vous maîtrisez et ce qui mérite votre attention. Le Coach transforme ces faits en recommandations et démonstrations utiles.")}</p>
         </section>
 
-        <section className="landing-feature-grid" aria-label="Fonctionnalités principales">
+        <section className="landing-feature-grid" aria-label={t("landing.featuresAria", "Fonctionnalités principales")}>
           {FEATURES.map(({ icon: Icon, key }, index) => (
             <article key={key}>
               <span className="landing-feature-index">0{index + 1}</span>
@@ -79,7 +79,13 @@ export function LandingContent() {
         </section>
       </main>
 
-      <footer className="landing-footer"><span>MMA Mastery</span><span>{t("landing.footerTagline", "Construire. Comprendre. Maîtriser.")}</span></footer>
+      <footer className="landing-footer">
+        <span>MMA Mastery</span><span>{t("landing.footerTagline", "Construire. Comprendre. Maîtriser.")}</span>
+        <span className="landing-footer-links">
+          <Link href="/privacy">{t("legal.privacyLink", "Confidentialité")}</Link>
+          <Link href="/terms">{t("legal.termsLink", "Conditions d'utilisation")}</Link>
+        </span>
+      </footer>
     </div>
   );
 }

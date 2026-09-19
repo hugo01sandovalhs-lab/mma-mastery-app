@@ -43,7 +43,7 @@ export function EventForm({ clubId }: { clubId: string }) {
           <Input id="event_location" name="location" maxLength={160} />
         </div>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           {t("club.createEventBtn", "Créer l'événement")}

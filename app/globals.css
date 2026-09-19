@@ -257,6 +257,9 @@
 .landing-final>div svg { width:17px; }
 .landing-final h2 { max-width:900px; font-size:clamp(44px,6.6vw,94px); line-height:.9; font-weight:850; letter-spacing:-.065em; }
 .landing-footer { display:flex; justify-content:space-between; gap:20px; padding:24px clamp(22px,7vw,106px); border-top:1px solid #ffffff18; color:#a8a092; font-size:11px; }
+.landing-footer-links { display:flex; gap:16px; }
+.landing-footer-links a { color:#a8a092; }
+.landing-footer-links a:hover { color:var(--landing-gold); text-decoration:underline; }
 @media (max-width:900px) {
   .landing-feature-grid { grid-template-columns:repeat(2,1fr); }
   .landing-feature-grid article:nth-child(2) { border-right:0; }

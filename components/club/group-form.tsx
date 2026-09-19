@@ -23,7 +23,7 @@ export function GroupForm({ clubId }: { clubId: string }) {
           <Input id="group_level" name="level" maxLength={80} placeholder="Débutant, Compétition..." />
         </div>
       </div>
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state.error ? <p role="alert" className="text-destructive text-sm">{state.error}</p> : null}
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending}>
           Créer le groupe
