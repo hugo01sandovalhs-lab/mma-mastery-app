@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Network, Search, Target } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { T } from "@/components/i18n-provider";
 import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,15 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { getDisciplines } from "@/lib/usecases/training-actions";
 import { getSkills, type SkillListItem } from "@/lib/usecases/skill-actions";
 import { MASTERY_STAGE_LABELS, type MasteryStage } from "@/lib/domain/skill";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
+
+function relativeDays(iso: string, dict: (typeof DICTIONARIES)["fr"]): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return dict["common.today"];
+  if (days === 1) return dict["common.yesterday"];
+  return formatT(dict["common.daysAgo"], { days });
+}
 
 const STAGE_BADGE_VARIANT: Record<MasteryStage, "default" | "secondary" | "outline"> = {
   unknown: "outline",
@@ -28,13 +38,6 @@ const STAGE_BADGE_VARIANT: Record<MasteryStage, "default" | "secondary" | "outli
   consistent: "default",
   mastered: "default",
 };
-
-function relativeDays(iso: string): string {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "il y a 1 jour";
-  return `il y a ${days} jours`;
-}
 
 export default async function SkillsPage({
   searchParams,
@@ -48,10 +51,12 @@ export default async function SkillsPage({
   if (!user) redirect("/login");
 
   const { q, discipline } = await searchParams;
-  const [disciplines, skills] = await Promise.all([
+  const [disciplines, skills, locale] = await Promise.all([
     getDisciplines(),
     getSkills({ disciplineId: discipline || undefined, search: q || undefined }),
+    getServerLocale(),
   ]);
+  const dict = DICTIONARIES[locale];
 
   const isFiltered = Boolean(q || discipline);
   const trackedCount = skills.filter((s) => s.stage !== "unknown").length;
@@ -68,16 +73,19 @@ export default async function SkillsPage({
     <AppShell>
       <div className="editorial-page editorial-skills">
         <PageHeader page="skills" title="Compétences" description={<>
-            <p>Comprendre le geste. Affiner la maîtrise.</p>
+            <p><T k="skills.catalogueTagline" fallback="Comprendre le geste. Affiner la maîtrise." /></p>
             <p className="editorial-caption">
-              {skills.length} compétence{skills.length > 1 ? "s" : ""} au catalogue
-              {trackedCount > 0
-                ? ` · ${trackedCount} suivie${trackedCount > 1 ? "s" : ""}`
-                : ""}
+              <T k="skills.catalogueCount" fallback="{count} compétence(s) au catalogue" vars={{ count: skills.length }} />
+              {trackedCount > 0 ? (
+                <>
+                  {" · "}
+                  <T k="skills.trackedCount" fallback="{count} suivie(s)" vars={{ count: trackedCount }} />
+                </>
+              ) : null}
             </p>
           </>} actions={
           <Button variant="outline" size="sm" render={<Link href="/skills/map" />} className="w-fit">
-            <Network /> Carte de maîtrise
+            <Network /> <T k="skills.masteryMap" fallback="Carte de maîtrise" />
           </Button>
         } />
 
@@ -88,8 +96,8 @@ export default async function SkillsPage({
             <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               name="q"
-              aria-label="Rechercher une compétence"
-              placeholder="Rechercher une compétence..."
+              aria-label={dict["skills.searchAria"]}
+              placeholder={dict["skills.searchPlaceholder"]}
               defaultValue={q ?? ""}
               className="pl-8"
             />
@@ -98,15 +106,15 @@ export default async function SkillsPage({
             name="discipline"
             defaultValue={discipline ?? ""}
             items={[
-              { value: "", label: "Toutes les disciplines" },
+              { value: "", label: dict["skills.allDisciplines"] },
               ...disciplines.map((d) => ({ value: d.id, label: d.name })),
             ]}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Discipline" />
+              <SelectValue placeholder={dict["form.discipline"]} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes les disciplines</SelectItem>
+              <SelectItem value="">{dict["skills.allDisciplines"]}</SelectItem>
               {disciplines.map((d) => (
                 <SelectItem key={d.id} value={d.id}>
                   {d.name}
@@ -115,7 +123,7 @@ export default async function SkillsPage({
             </SelectContent>
           </Select>
           <Button type="submit" variant="outline">
-            Filtrer
+            <T k="action.filter" fallback="Filtrer" />
           </Button>
         </form>
 
@@ -124,16 +132,18 @@ export default async function SkillsPage({
             <CardContent className="editorial-empty">
               <Target className="size-6 text-muted-foreground" />
               <p className="font-medium">
-                {isFiltered ? "Aucune compétence ne correspond" : "Aucune compétence au catalogue"}
+                {isFiltered ? <T k="skills.noneMatch" fallback="Aucune compétence ne correspond" /> : <T k="skills.noneInCatalogue" fallback="Aucune compétence au catalogue" />}
               </p>
               <p className="max-w-md text-sm text-muted-foreground">
-                {isFiltered
-                  ? "Essayez une autre recherche ou une autre discipline."
-                  : "Le catalogue de compétences se remplit au fil de vos séances et de son administration."}
+                {isFiltered ? (
+                  <T k="skills.tryOtherSearch" fallback="Essayez une autre recherche ou une autre discipline." />
+                ) : (
+                  <T k="skills.catalogueGrows" fallback="Le catalogue de compétences se remplit au fil de vos séances et de son administration." />
+                )}
               </p>
               {isFiltered ? (
                 <Button variant="outline" size="sm" render={<Link href="/skills" />} className="mt-1">
-                  Réinitialiser les filtres
+                  <T k="action.resetFilters" fallback="Réinitialiser les filtres" />
                 </Button>
               ) : null}
             </CardContent>
@@ -148,7 +158,7 @@ export default async function SkillsPage({
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {g.items.map((s) => (
-                    <SkillCard key={s.id} skill={s} />
+                    <SkillCard key={s.id} skill={s} dict={dict} />
                   ))}
                 </div>
               </section>
@@ -160,7 +170,7 @@ export default async function SkillsPage({
   );
 }
 
-function SkillCard({ skill }: { skill: SkillListItem }) {
+function SkillCard({ skill, dict }: { skill: SkillListItem; dict: (typeof DICTIONARIES)["fr"] }) {
   return (
     <Link href={`/skills/${skill.id}`}>
       <Card className="transition-colors hover:bg-muted/50">
@@ -175,7 +185,7 @@ function SkillCard({ skill }: { skill: SkillListItem }) {
             {skill.category ? <Badge variant="outline">{skill.category}</Badge> : null}
             {skill.lastPracticedAt ? (
               <span className="text-xs text-muted-foreground">
-                Pratiqué {relativeDays(skill.lastPracticedAt)}
+                {formatT(dict["skills.practicedAgo"], { when: relativeDays(skill.lastPracticedAt, dict) })}
               </span>
             ) : null}
           </div>
