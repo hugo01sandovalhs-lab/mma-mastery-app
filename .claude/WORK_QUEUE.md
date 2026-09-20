@@ -753,3 +753,144 @@ no change needed there.
    function region) to match wherever the Supabase project
    `pncrtzwtojlsovpbondp` actually runs, if they differ — could not
    determine either side's real region from this environment.
+
+## Session 14 — duplicate-fetch perf fix + Search/YouTube/Coach product pass
+
+Real-user report: navigation still felt "~same speed or slower" after session
+13's Suspense split. Investigated with dependency analysis (no seeded test
+user in this environment either, same blocker as every prior session — no
+live before/after timing was possible; the fix below is verified by reading
+every query each usecase issues, not by a profiler).
+
+### Performance root cause
+`loadSkillIntelligenceInputs()` (`lib/usecases/training-intelligence-actions.ts`)
+was **not** request-deduped — only its *callers'* bundled result
+(`getTrainingIntelligenceBundle`) was cached locally on the dashboard page.
+`/coach` calls it 4 separate times per render: once synchronously via
+`getCoachResponseText → buildCoachContext → getTrainingIntelligenceBundle` +
+`getReviewQueue` (2 of the 4 already in that one `Promise.all`), then again
+via the Suspense-streamed weekly digest's `getWeeklyReviewDigest` and
+`getLastResolvedDifficulty`. Each call re-ran the same 3-4 Supabase queries
+(`skill_progress`, `session_techniques`, `session_observations`,
+conditionally `skill_relations`) — up to ~16 queries serving one page. This
+is exactly the "streamed component re-queries data another part of the page
+already fetched" failure mode the brief warned about, introduced when the
+weekly digest was split into its own Suspense boundary in session 13.
+- Fix: wrapped `loadSkillIntelligenceInputs` itself in React's `cache()`
+  (same per-request dedup idiom as `getUser()` in `supabase-server.ts` and
+  the dashboard's local wrappers) so every caller — direct or through
+  `getTrainingIntelligence`/`getTrainingPlan`/`getReviewQueue`/
+  `getWeeklyReviewDigest`/`getLastResolvedDifficulty`/`getTechniqueOfTheDay`
+  — shares one real fetch per request, regardless of which Suspense
+  boundary it's called from. `/coach` goes from ~4x to 1x; the dashboard's
+  existing local `cache()` wrappers still work unchanged (now just a no-op
+  double-memoization, harmless).
+- `getTechniqueOfTheDay` (previously its own `getSkills()` call, a *second*
+  `skill_progress` query) was rewritten to reuse the same cached
+  `loadSkillIntelligenceInputs` + `getSkillsCatalog` instead — removes that
+  query path entirely rather than just caching around it.
+- All 8 target routes (dashboard, training, skills, coach, youtube, study,
+  goals, competition) were re-read for the same duplicate/secondary/external
+  data-shape audit the brief asked for; only `/coach` had a real duplicate.
+  The rest were already correct from session 13 (single primary query +
+  streamed secondary, no overlap) — no changes made there.
+- Region: still unverifiable from this environment (no Vercel/Supabase
+  dashboard access, no `vercel.json` region override present). Not touched.
+
+### Search — deterministic "app navigator" upgrade
+`lib/usecases/search-actions.ts` rewritten around a new pure domain module
+`lib/domain/search.ts` (no pgvector/RAG, no paid AI dependency, matches
+docs/decisions/0008's existing "plain matching is enough" position):
+- **Navigation intents**: curated per-locale phrase → destination map
+  (`matchNavigationIntents`) surfaces `/training`, `/goals`, `/coach`,
+  `/study`, `/youtube` directly for phrases like "mes séances", "my goals",
+  "quoi travailler aujourd'hui" — shown first, ahead of data results.
+- **Skill matching moved off the DB**: skills are now matched in-memory
+  against the already-cached `getSkillsCatalog()` (shared with `/skills`,
+  `unstable_cache`, 1h revalidate) instead of a live `ILIKE` query — one
+  fewer DB round trip per search, and it's what makes fuzzy/alias matching
+  affordable (`scoreSkillMatch`: exact > prefix > substring > alias-expanded
+  keyword > small Levenshtein typo tolerance).
+- **Alias expansion**: compact multilingual category/discipline keyword map
+  (`CATEGORY_ALIASES`) so e.g. French "garde" finds English-named "Guard"
+  skills — the catalog is seeded with English technical terms regardless of
+  UI locale (`supabase/migrations/00000000000003`, `...00000000000014`).
+  Extended `normalizeSearchQuery`'s prefix/article stripping (fr/en) so
+  "je veux travailler ma garde" / "i want to work on my guard" reduce to
+  "garde"/"guard" before matching.
+- **Video intent**: a "vidéo"/"video" keyword (per locale) is detected and
+  stripped (`extractVideoIntent`) — "sprawl vidéo" searches "Sprawl" and
+  also renders inline YouTube results via the existing provider.
+- Result ranking: navigation first, then skill matches by score, then
+  resources/sessions/observations/goals each internally ranked by a small
+  exact/prefix/substring `textScore` instead of raw insertion order.
+- Skill results now carry `skillId`/`skillName`/`disciplineName` so
+  `/search` can render "Watch videos" (deep link to `/youtube?q=…`) and
+  Study/Add-to-goal quick actions inline, via a new shared
+  `SkillQuickActions` component (`components/skills/skill-quick-actions.tsx`,
+  generalized from what was originally coach-only) — no pre-check queries
+  (idempotent upsert / local "done" state after click), consistent with the
+  "no unnecessary new queries" perf goal.
+- New tests: `tests/domain/search.test.ts` (navigation intents, video
+  intent, alias expansion, scoring, Levenshtein).
+
+### YouTube recommendations
+`/youtube`'s "For you" section (existing `ForYouSection`, built in session
+12) already covered the "contextual suggestions before manual search"
+requirement — no change needed there. Added a second, narrower
+recommendation surface: `/coach`'s Technique of the Day card now streams
+1-2 matching videos below it (`TechniqueOfDayVideos`, its own nested
+`Suspense`, same `searchTechniqueVideos`/in-memory-cached provider — no new
+provider, no new cache).
+
+### Coach — Technique of the Day evidence + discipline rotation
+`getTechniqueOfTheDay()` rewritten from a pure "day-of-year index into
+untouched skills" pick to reuse `evaluateSkill` (now exported from
+`lib/domain/training-intelligence.ts`) — the exact same weighted triggers
+Training Intelligence V1/V2 use, so a "why today" reason is never invented:
+a skill only gets an evidence-based reason if it would also have surfaced as
+a real recommendation. Adds:
+- **Discipline rotation**: deterministic day-of-year index into the sorted
+  list of catalog disciplines picks which discipline is eligible each day,
+  so one discipline can't dominate every visit; falls back to the full
+  catalog if the rotated discipline is empty.
+- **Mastered exclusion**: a skill at `mastered` stage is never re-surfaced.
+- **Exploratory fallback**: when no skill in the rotated discipline has
+  evidence, falls back to an untouched (`stage: "unknown"`) skill and marks
+  the pick `isExploratory: true` — the UI shows a "to discover" badge
+  instead of pretending personalization exists.
+- Card now shows the reason text, Study/Add-to-goal quick actions, and the
+  streamed video slot (see above).
+- New tests: `tests/usecases/technique-of-day.test.ts` (evidence pick,
+  exploratory fallback, mastered exclusion) — `loadSkillIntelligenceInputs`
+  mocked directly rather than the underlying Supabase queries.
+
+### Coach — suggestion chips
+Added 7 chips to the existing 3 (`components/coach/coach-question-form.tsx`):
+"what should I work on today", "review this week", "show me a wrestling
+technique", "show me a striking technique", "what am I struggling with",
+"find videos for today's technique", "build my next session" — localized
+×6. Also added `Wrestling`/`Boxing` to `inferVideoSearchQuery`'s discipline
+detection list (`lib/domain/video-search.ts`) — they're first-class
+disciplines in the catalog and already used in `/youtube`'s discipline
+picker, but were missing from this list before.
+
+### Validation
+`tsc --noEmit` clean, `eslint .` clean (0 warnings), `vitest run` 234/234
+(up from 217 — added `tests/domain/search.test.ts` and
+`tests/usecases/technique-of-day.test.ts`, 1 pre-existing i18n test needed a
+new `ALLOWED_LATIN` entry for `search.nav.youtube`), `next build` clean.
+
+### Manual retest (added to the running list)
+1. `/coach`: confirm the weekly digest still renders correctly and the page
+   feels faster — the query-count fix isn't independently visible without a
+   profiler/APM in a real deployment.
+2. `/search`: try "mes séances", "my goals", "quoi travailler aujourd'hui",
+   "arm drag", "garde" (fr), "sprwal" (typo), "sprawl vidéo" — confirm
+   navigation/skill/video results and the Study/Add-goal/Watch-videos
+   buttons all work end to end with a real signed-in user.
+3. `/coach`: confirm Technique of the Day's reason text, quick actions, and
+   video slot render for a user with real training history (evidence path)
+   and for a near-empty account (exploratory path).
+4. Same no-seeded-test-user blocker as every prior session — none of the
+   above was verified in a live browser this session.

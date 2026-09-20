@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarClock, CheckCircle2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PHOTO_STORIES } from "@/lib/design/photography";
 import type { TechniqueOfTheDay } from "@/lib/usecases/skill-actions";
 import type { ResolvedDifficulty, WeeklyReviewDigest } from "@/lib/domain/review";
+import { SkillQuickActions } from "@/components/skills/skill-quick-actions";
 import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
 
 type Dict = (typeof DICTIONARIES)["fr"];
@@ -20,11 +22,14 @@ function relativeDays(iso: string, dict: Dict): string {
 export function CoachWeeklyDigest({
   locale,
   techniqueOfTheDay,
+  videoSlot,
   weeklyDigest,
   lastResolved,
 }: {
   locale: Locale;
   techniqueOfTheDay: TechniqueOfTheDay | null;
+  /** 1-2 relevant YouTube videos for today's technique, streamed in separately so the external lookup never blocks the digest. */
+  videoSlot?: ReactNode;
   weeklyDigest: WeeklyReviewDigest;
   lastResolved: ResolvedDifficulty | null;
 }) {
@@ -42,9 +47,18 @@ export function CoachWeeklyDigest({
           <>
             <p className="text-sm font-semibold">{techniqueOfTheDay.name}</p>
             <p className="text-xs opacity-80">{techniqueOfTheDay.disciplineName}</p>
+            <p className="text-xs opacity-80">
+              {techniqueOfTheDay.isExploratory ? <Badge variant="outline" className="mr-1 text-[0.6rem]">{dict["skills.techniqueOfDay.exploratoryBadge"]}</Badge> : null}
+              {formatT(
+                dict[techniqueOfTheDay.reasonKey as keyof Dict] ?? dict["skills.techniqueOfDay.exploratoryReason"],
+                techniqueOfTheDay.reasonVars,
+              )}
+            </p>
             <Button variant="outline" size="sm" render={<Link href={`/skills/${techniqueOfTheDay.id}`} />} className="mt-1 w-fit">
               {dict["coach.techniqueOfDay.cta"]} <ArrowRight />
             </Button>
+            <SkillQuickActions skillId={techniqueOfTheDay.id} skillName={techniqueOfTheDay.name} path="/coach" />
+            {videoSlot}
           </>
         ) : (
           <p className="text-sm opacity-80">{dict["coach.techniqueOfDay.empty"]}</p>

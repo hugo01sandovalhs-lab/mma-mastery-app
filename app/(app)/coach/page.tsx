@@ -12,15 +12,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getCoachResponseText, getCoachVideos, type CoachAnswer } from "@/lib/usecases/ai-coach-actions";
 import type { VideoSearchQuery } from "@/lib/domain/video-search";
+import { searchTechniqueVideos } from "@/lib/usecases/video-search-actions";
 import { getLastResolvedDifficulty, getWeeklyReviewDigest } from "@/lib/usecases/review-actions";
-import { getTechniqueOfTheDay } from "@/lib/usecases/skill-actions";
+import { getTechniqueOfTheDay, type TechniqueOfTheDay } from "@/lib/usecases/skill-actions";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES, type Locale } from "@/lib/i18n";
+
+/** Small, separately-streamed 1-2 video slot for today's technique — the external YouTube lookup never blocks the rest of the digest. */
+async function TechniqueOfDayVideos({ technique, discipline }: { technique: string; discipline: string }) {
+  const videos = (await searchTechniqueVideos({ technique, discipline, difficulty: "" }).catch(() => [])).slice(0, 2);
+  if (videos.length === 0) return null;
+  return (
+    <div className="coach-module-videos mt-1 flex flex-col gap-1.5">
+      {videos.map((video) => (
+        <a key={video.videoId} href={video.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs hover:underline">
+          <ProgressiveImage src={video.thumbnail} alt="" width={64} height={36} className="aspect-video w-16 shrink-0 rounded object-cover" />
+          <span className="line-clamp-2">{video.title}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
 
 /** The 3-card weekly digest is supplementary context, not the page's core purpose (the coach answer below it) — streamed independently so it never blocks first paint. */
 async function CoachWeeklyDigestSection({ locale }: { locale: Locale }) {
   const [techniqueOfTheDay, weeklyDigest, lastResolved] = await Promise.all([
-    getTechniqueOfTheDay().catch(() => null),
+    getTechniqueOfTheDay().catch((): TechniqueOfTheDay | null => null),
     getWeeklyReviewDigest().catch(() => ({ skillsTouchedCount: 0, questionCount: 0, difficultyCount: 0 })),
     getLastResolvedDifficulty().catch(() => null),
   ]);
@@ -28,6 +45,13 @@ async function CoachWeeklyDigestSection({ locale }: { locale: Locale }) {
     <CoachWeeklyDigest
       locale={locale}
       techniqueOfTheDay={techniqueOfTheDay}
+      videoSlot={
+        techniqueOfTheDay ? (
+          <Suspense fallback={null}>
+            <TechniqueOfDayVideos technique={techniqueOfTheDay.name} discipline={techniqueOfTheDay.disciplineName} />
+          </Suspense>
+        ) : null
+      }
       weeklyDigest={weeklyDigest}
       lastResolved={lastResolved}
     />

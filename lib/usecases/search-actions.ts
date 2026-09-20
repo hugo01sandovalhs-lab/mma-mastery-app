@@ -2,15 +2,30 @@ import "server-only";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
+import { getSkillsCatalog } from "@/lib/usecases/skill-actions";
+import { searchTechniqueVideos } from "@/lib/usecases/video-search-actions";
+import {
+  expandQueryKeywords,
+  extractVideoIntent,
+  matchNavigationIntents,
+  scoreSkillMatch,
+} from "@/lib/domain/search";
 
 /**
- * Global search (docs/decisions/0008): structured `ILIKE` across the
- * catalog (skills) and the signed-in user's own data (resources, sessions,
- * observations/problems, goals). No pgvector/RAG — plain text matching is
+ * Global search (docs/decisions/0008, extended for "Search as app
+ * navigator"): three layers, tried together and merged —
+ *   1. deterministic navigation intents (curated phrases that mean "take me
+ *      to a page", e.g. "mes séances" → /training);
+ *   2. the skill catalog, matched in-memory against the already-cached
+ *      catalog (`getSkillsCatalog`, shared with /skills — no extra DB query)
+ *      with alias/category expansion and small fuzzy tolerance for typos;
+ *   3. structured `ILIKE` across the signed-in user's own data (resources,
+ *      sessions, observations/problems, goals).
+ * No pgvector/RAG, no paid AI dependency — plain deterministic matching is
  * enough at this data volume (docs/architecture.md keeps that deferred).
  */
 
-export type SearchResultType = "skill" | "resource" | "session" | "observation" | "goal";
+export type SearchResultType = "navigation" | "skill" | "resource" | "session" | "observation" | "goal" | "video";
 
 export type SearchResult = {
   type: SearchResultType;
@@ -18,9 +33,14 @@ export type SearchResult = {
   title: string;
   detail: string;
   href: string;
+  /** Only set for type "skill" — lets the UI offer Study/Add-to-goal quick actions and a "watch videos" link without a second lookup. */
+  skillId?: string;
+  skillName?: string;
+  disciplineName?: string;
 };
 
 const RESULTS_PER_TYPE = 8;
+const SKILL_RESULTS_LIMIT = 8;
 
 type NormalizationRules = {
   stripPrefixes: readonly RegExp[];
@@ -30,12 +50,18 @@ type NormalizationRules = {
 
 const NORMALIZATION_RULES: Record<Locale, NormalizationRules> = {
   fr: {
-    stripPrefixes: [/^(comment faire|qu['’]est-ce que|comment maîtriser|quelles sont les erreurs les plus courantes en)\s+/i],
-    stripArticles: /^(une|un|les|le|la|l['’])\s*/i,
+    stripPrefixes: [
+      /^(comment faire|qu['’]est-ce que|comment maîtriser|quelles sont les erreurs les plus courantes en)\s+/i,
+      /^(je veux (travailler|améliorer|maîtriser|bosser)|j['’]aimerais (travailler|améliorer)|je dois travailler|comment travailler)\s+/i,
+    ],
+    stripArticles: /^(une|un|les|le|la|l['’]|ma|mon|mes|ta|ton|tes|sa|son|ses|notre|nos)\s*/i,
   },
   en: {
-    stripPrefixes: [/^(how do i do|how do i master|how do i|what are the most common mistakes in|what is)\s+/i],
-    stripArticles: /^(an|a|the)\s*/i,
+    stripPrefixes: [
+      /^(how do i do|how do i master|how do i|what are the most common mistakes in|what is)\s+/i,
+      /^(i want to (work on|improve|master)|i['’]d like to (work on|improve)|i need to work on|how (do|can) i work on)\s+/i,
+    ],
+    stripArticles: /^(an|a|the|my|your|our|their)\s*/i,
   },
   es: {
     stripPrefixes: [/^(cómo hacer|qué es|cómo dominar|cuáles son los errores más comunes en)\s+/i],
@@ -70,24 +96,71 @@ export function normalizeSearchQuery(query: string, locale: Locale = "fr"): stri
   return q.trim();
 }
 
+/** Ranks a DB-matched row's title against the query so each type block reads most-relevant-first, same scale intent as scoreSkillMatch. */
+function textScore(title: string, q: string): number {
+  const t = title.toLocaleLowerCase();
+  const needle = q.toLocaleLowerCase();
+  if (t === needle) return 100;
+  if (t.startsWith(needle)) return 85;
+  return 70;
+}
+
 export async function search(query: string): Promise<SearchResult[]> {
   const locale = await getServerLocale();
-  const q = normalizeSearchQuery(query, locale);
-  if (q.length < 2) return [];
+  const raw = query.trim();
+  if (raw.length < 2) return [];
+
+  const navigationIntents = matchNavigationIntents(raw, locale);
+  const results: SearchResult[] = navigationIntents.map((intent) => ({
+    type: "navigation",
+    id: intent.destination,
+    title: DICTIONARIES[locale][intent.titleKey as keyof (typeof DICTIONARIES)["fr"]],
+    detail: DICTIONARIES[locale][intent.descKey as keyof (typeof DICTIONARIES)["fr"]],
+    href: intent.href,
+  }));
+
+  const { remainder, hasVideoIntent } = extractVideoIntent(raw, locale);
+  const q = normalizeSearchQuery(remainder, locale);
+  if (q.length < 2) return results;
   const like = `%${q}%`;
+
+  const expandedKeywords = expandQueryKeywords(q, locale);
+  const catalog = await getSkillsCatalog();
+  const skillMatches = catalog
+    .map((s) => ({ skill: s, score: scoreSkillMatch({ name: s.name, category: s.category }, q, expandedKeywords) }))
+    .filter((m) => m.score > 0)
+    .sort((a, b) => b.score - a.score || a.skill.name.localeCompare(b.skill.name))
+    .slice(0, SKILL_RESULTS_LIMIT);
+
+  for (const { skill } of skillMatches) {
+    results.push({
+      type: "skill",
+      id: skill.id,
+      title: skill.name,
+      detail: [skill.discipline.name, skill.category].filter(Boolean).join(" · "),
+      href: `/skills/${skill.id}`,
+      skillId: skill.id,
+      skillName: skill.name,
+      disciplineName: skill.discipline.name,
+    });
+  }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [];
 
-  const [skills, resources, sessions, observations, goals] = await Promise.all([
-    supabase
-      .from("skills")
-      .select("id, name, category, discipline:disciplines(name)")
-      .or(`name.ilike.${like},category.ilike.${like}`)
-      .limit(RESULTS_PER_TYPE),
+  if (hasVideoIntent) {
+    const topSkillName = skillMatches[0]?.skill.name ?? q;
+    const videos = await searchTechniqueVideos({ technique: topSkillName, discipline: "MMA", difficulty: "" }).catch(() => []);
+    for (const v of videos) {
+      results.push({ type: "video", id: v.videoId, title: v.title, detail: v.channelTitle, href: v.url });
+    }
+  }
+
+  if (!user) return results;
+
+  const [resources, sessions, observations, goals] = await Promise.all([
     supabase
       .from("resources")
       .select("id, title, author, type")
@@ -116,67 +189,66 @@ export async function search(query: string): Promise<SearchResult[]> {
       .limit(RESULTS_PER_TYPE),
   ]);
 
-  for (const r of [skills, resources, sessions, observations, goals]) {
+  for (const r of [resources, sessions, observations, goals]) {
     if (r.error) throw new Error(r.error.message);
   }
 
-  const results: SearchResult[] = [];
-
-  type SkillRow = { id: string; name: string; category: string | null; discipline: { name: string } | null };
-  for (const s of (skills.data ?? []) as unknown as SkillRow[]) {
-    results.push({
-      type: "skill",
-      id: s.id,
-      title: s.name,
-      detail: [s.discipline?.name, s.category].filter(Boolean).join(" · "),
-      href: `/skills/${s.id}`,
-    });
+  function pushRankedBlock<Row>(rows: Row[], toResult: (row: Row) => SearchResult, titleOf: (row: Row) => string) {
+    const ranked = [...rows].sort((a, b) => textScore(titleOf(b), q) - textScore(titleOf(a), q));
+    for (const row of ranked) results.push(toResult(row));
   }
 
   type ResourceRow = { id: string; title: string; author: string | null; type: string };
-  for (const r of (resources.data ?? []) as unknown as ResourceRow[]) {
-    results.push({
+  pushRankedBlock(
+    (resources.data ?? []) as unknown as ResourceRow[],
+    (r) => ({
       type: "resource",
       id: r.id,
       title: r.title,
       detail: [r.type, r.author].filter(Boolean).join(" · "),
       href: `/study`,
-    });
-  }
+    }),
+    (r) => r.title,
+  );
 
   type SessionRow = { id: string; date: string; title: string | null; notes: string | null };
-  for (const s of (sessions.data ?? []) as unknown as SessionRow[]) {
-    results.push({
+  pushRankedBlock(
+    (sessions.data ?? []) as unknown as SessionRow[],
+    (s) => ({
       type: "session",
       id: s.id,
       title: s.title || formatT(DICTIONARIES[locale]["search.sessionOn"], { date: new Date(s.date).toLocaleDateString(locale) }),
       detail: s.notes ?? "",
       href: `/training/${s.id}`,
-    });
-  }
+    }),
+    (s) => s.title ?? "",
+  );
 
   type ObservationRow = { id: string; type: string; content: string; session: { id: string } | null };
-  for (const o of (observations.data ?? []) as unknown as ObservationRow[]) {
-    if (!o.session) continue;
-    results.push({
+  pushRankedBlock(
+    ((observations.data ?? []) as unknown as ObservationRow[]).filter((o) => o.session),
+    (o) => ({
       type: "observation",
       id: o.id,
       title: o.content,
       detail: o.type,
-      href: `/training/${o.session.id}`,
-    });
-  }
+      href: `/training/${o.session!.id}`,
+    }),
+    (o) => o.content,
+  );
 
   type GoalRow = { id: string; title: string; description: string | null; status: string };
-  for (const g of (goals.data ?? []) as unknown as GoalRow[]) {
-    results.push({
+  pushRankedBlock(
+    (goals.data ?? []) as unknown as GoalRow[],
+    (g) => ({
       type: "goal",
       id: g.id,
       title: g.title,
       detail: [g.status, g.description].filter(Boolean).join(" · "),
       href: `/goals`,
-    });
-  }
+    }),
+    (g) => g.title,
+  );
 
   return results;
 }

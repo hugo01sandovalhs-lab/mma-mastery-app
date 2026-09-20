@@ -14,6 +14,8 @@ import {
   type SkillRelationInput,
   type SkillRelationType,
 } from "@/lib/domain/skill";
+import { evaluateSkill } from "@/lib/domain/training-intelligence";
+import { loadSkillIntelligenceInputs } from "@/lib/usecases/training-intelligence-actions";
 
 export type SkillListItem = {
   id: string;
@@ -25,7 +27,7 @@ export type SkillListItem = {
   lastPracticedAt: string | null;
 };
 
-type CatalogSkill = Omit<SkillListItem, "stage" | "lastPracticedAt"> & { discipline_id: string };
+export type CatalogSkill = Omit<SkillListItem, "stage" | "lastPracticedAt"> & { discipline_id: string };
 
 /**
  * The skill catalog (id/name/slug/category/discipline) is global read-only
@@ -34,7 +36,7 @@ type CatalogSkill = Omit<SkillListItem, "stage" | "lastPracticedAt"> & { discipl
  * Cache instead of re-querying on every dashboard/skills/goals/study/coach
  * navigation; invalidated on demand by those writers via revalidateTag.
  */
-const getSkillsCatalog = unstable_cache(
+export const getSkillsCatalog = unstable_cache(
   async (): Promise<CatalogSkill[]> => {
     const supabase = createServiceClient();
     const { data, error } = await supabase
@@ -110,27 +112,88 @@ export type TechniqueOfTheDay = {
   slug: string;
   disciplineName: string;
   category: string | null;
+  /** Localized "why today" — reuses the same evidence keys as Training Intelligence when evidence exists. */
+  reasonKey: string;
+  reasonVars: Record<string, string | number>;
+  /** True when the pick is discovery (no tracked evidence yet), not personalization — the UI must say so, never fake a signal. */
+  isExploratory: boolean;
 };
 
-/**
- * Deterministic daily catalog spotlight: same calendar day always yields the
- * same pick for a given catalog (no randomness, no extra query beyond
- * `getSkills()`). Prefers skills the user has not tracked yet (stage
- * "unknown") to bias toward discovery, falling back to the full catalog once
- * everything has been touched at least once.
- */
-export async function getTechniqueOfTheDay(): Promise<TechniqueOfTheDay | null> {
-  const skills = await getSkills();
-  if (skills.length === 0) return null;
-
-  const untouched = skills.filter((s) => s.stage === "unknown");
-  const pool = untouched.length > 0 ? untouched : skills;
-  const sorted = [...pool].sort((a, b) => a.id.localeCompare(b.id));
-
-  const now = new Date();
+function dayOfYear(now: Date): number {
   const startOfYear = Date.UTC(now.getUTCFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now.getTime() - startOfYear) / (1000 * 60 * 60 * 24));
-  const pick = sorted[dayOfYear % sorted.length];
+  return Math.floor((now.getTime() - startOfYear) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Evidence-based, discipline-rotating daily spotlight. Reuses the exact same
+ * deterministic triggers as Training Intelligence (`evaluateSkill`) so a
+ * pick's "why today" is never invented — a skill only gets an evidence-based
+ * reason if it would also have surfaced as a real recommendation. Rotates
+ * which discipline is eligible each day (deterministic, day-of-year based)
+ * so one discipline can't dominate every visit, then picks the
+ * strongest-evidence skill within that discipline; falls back to an
+ * untouched skill in that discipline (explicitly marked exploratory) when
+ * there is no evidence for it today, or to the old full-catalog fallback if
+ * the rotated discipline has no skills at all.
+ */
+export async function getTechniqueOfTheDay(now: Date = new Date()): Promise<TechniqueOfTheDay | null> {
+  const catalog = await getSkillsCatalog();
+  if (catalog.length === 0) return null;
+
+  const day = dayOfYear(now);
+
+  const disciplineNames = Array.from(new Set(catalog.map((s) => s.discipline.name))).sort();
+  if (disciplineNames.length === 0) return null;
+  const rotatedDiscipline = disciplineNames[day % disciplineNames.length];
+  const disciplineSkills = catalog.filter((s) => s.discipline.name === rotatedDiscipline);
+  const pool = disciplineSkills.length > 0 ? disciplineSkills : catalog;
+
+  const inputs = await loadSkillIntelligenceInputs();
+  const inputBySkillId = new Map(inputs.map((i) => [i.skillId, i]));
+
+  type Candidate = { skill: CatalogSkill; score: number; topReason: { key: string; vars: Record<string, string | number> } | null };
+  const evidenceCandidates: Candidate[] = [];
+  const untouched: CatalogSkill[] = [];
+
+  for (const skill of pool) {
+    const input = inputBySkillId.get(skill.id);
+    if (!input) {
+      untouched.push(skill);
+      continue;
+    }
+    const stage = computeMasteryStage(input.progress);
+    if (stage === "mastered") continue; // avoid re-surfacing what's already mastered
+    const triggers = evaluateSkill(input, now);
+    const score = triggers.reduce((sum, t) => sum + t.weight, 0);
+    if (score === 0) {
+      if (stage === "unknown") untouched.push(skill);
+      continue;
+    }
+    const top = triggers.reduce((a, b) => (b.weight > a.weight ? b : a));
+    evidenceCandidates.push({ skill, score, topReason: { key: top.reasonKey, vars: top.reasonVars } });
+  }
+
+  evidenceCandidates.sort((a, b) => b.score - a.score || a.skill.name.localeCompare(b.skill.name));
+
+  let pick: CatalogSkill;
+  let reasonKey: string;
+  let reasonVars: Record<string, string | number>;
+  let isExploratory: boolean;
+
+  if (evidenceCandidates.length > 0) {
+    const best = evidenceCandidates[0];
+    pick = best.skill;
+    reasonKey = best.topReason!.key;
+    reasonVars = best.topReason!.vars;
+    isExploratory = false;
+  } else {
+    const explorationPool = untouched.length > 0 ? untouched : pool;
+    const sorted = [...explorationPool].sort((a, b) => a.id.localeCompare(b.id));
+    pick = sorted[day % sorted.length];
+    reasonKey = "skills.techniqueOfDay.exploratoryReason";
+    reasonVars = { discipline: pick.discipline.name };
+    isExploratory = true;
+  }
 
   return {
     id: pick.id,
@@ -138,6 +201,9 @@ export async function getTechniqueOfTheDay(): Promise<TechniqueOfTheDay | null> 
     slug: pick.slug,
     disciplineName: pick.discipline.name,
     category: pick.category,
+    reasonKey,
+    reasonVars,
+    isExploratory,
   };
 }
 

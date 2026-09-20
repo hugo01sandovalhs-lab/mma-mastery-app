@@ -20,6 +20,13 @@ export function CoachQuestionForm() {
     t("coach.suggested1", "Comment améliorer mon open guard ?"),
     t("coach.suggested2", "Quelles erreurs dois-je corriger en priorité ?"),
     t("coach.suggested3", "Comment préparer ma prochaine séance ?"),
+    t("coach.suggested.today", "Sur quoi travailler aujourd'hui ?"),
+    t("coach.suggested.reviewWeek", "Qu'est-ce que je dois revoir cette semaine ?"),
+    t("coach.suggested.wrestling", "Montre-moi une technique de wrestling"),
+    t("coach.suggested.striking", "Montre-moi une technique de percussion"),
+    t("coach.suggested.struggling", "Sur quoi est-ce que je bloque en ce moment ?"),
+    t("coach.suggested.videosToday", "Trouve des vidéos pour la technique du jour"),
+    t("coach.suggested.nextSession", "Construis ma prochaine séance"),
   ];
 
   return (

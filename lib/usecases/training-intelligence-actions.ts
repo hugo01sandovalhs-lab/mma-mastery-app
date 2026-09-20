@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import type { SkillProgressDimensions } from "@/lib/domain/skill";
 import {
@@ -32,7 +33,7 @@ const defaultProgress: SkillProgressDimensions = {
  * uses). The session date is the most faithful signal for "when was this
  * skill actually trained".
  */
-export async function loadSkillIntelligenceInputs(): Promise<SkillIntelligenceInput[]> {
+async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceInput[]> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -143,6 +144,16 @@ export async function loadSkillIntelligenceInputs(): Promise<SkillIntelligenceIn
     prerequisiteNames: prerequisitesBySkill.get(skillId) ?? [],
   }));
 }
+
+/**
+ * Deduped per-request via React's `cache()` — coach/dashboard/review each
+ * call this (directly or through getTrainingIntelligence/getTrainingPlan/
+ * getReviewQueue/getWeeklyReviewDigest/getLastResolvedDifficulty/
+ * getTechniqueOfTheDay) and previously fired the same 3-4 Supabase queries
+ * once per call, up to 4x on a single /coach render. Same dedup idiom as
+ * `getUser()` in supabase-server.ts and the dashboard's local cache() wrappers.
+ */
+export const loadSkillIntelligenceInputs = cache(loadSkillIntelligenceInputsUncached);
 
 export async function getTrainingIntelligence(): Promise<TrainingIntelligenceResult> {
   const inputs = await loadSkillIntelligenceInputs();

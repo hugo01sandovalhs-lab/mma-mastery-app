@@ -1,32 +1,38 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Video } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { SearchHistory } from "@/components/search/search-history";
 import { T } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { SkillQuickActions } from "@/components/skills/skill-quick-actions";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { search, type SearchResultType } from "@/lib/usecases/search-actions";
+import { search, type SearchResult, type SearchResultType } from "@/lib/usecases/search-actions";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES, SEARCH_QUICK_PROMPTS } from "@/lib/i18n";
 
 const TYPE_LABEL_KEYS: Record<SearchResultType, string> = {
+  navigation: "search.type.navigation",
   skill: "search.type.skill",
   resource: "search.type.resource",
   session: "search.type.session",
   observation: "search.type.observation",
   goal: "search.type.goal",
+  video: "search.type.video",
 };
 const TYPE_LABEL_FALLBACKS: Record<SearchResultType, string> = {
+  navigation: "Aller à",
   skill: "Compétence",
   resource: "Ressource",
   session: "Séance",
   observation: "Observation",
   goal: "Objectif",
+  video: "Vidéo",
 };
 
 export default async function SearchPage({
@@ -85,23 +91,47 @@ export default async function SearchPage({
         {results.length > 0 ? (
           <div className="flex flex-col gap-2">
             {results.map((r) => (
-              <Link key={`${r.type}-${r.id}`} href={r.href}>
-                <Card className="transition-colors hover:bg-muted/50">
-                  <CardContent className="flex items-start gap-3 py-3">
-                    <Badge variant="outline" className="mt-0.5 shrink-0">
-                      <T k={TYPE_LABEL_KEYS[r.type]} fallback={TYPE_LABEL_FALLBACKS[r.type]} />
-                    </Badge>
-                    <div className="flex min-w-0 flex-col">
-                      <span className="font-medium">{r.title}</span>
-                      {r.detail ? <span className="truncate text-sm text-muted-foreground">{r.detail}</span> : null}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+              <SearchResultCard key={`${r.type}-${r.id}`} result={r} dict={dict} />
             ))}
           </div>
         ) : null}
       </div>
     </AppShell>
+  );
+}
+
+function SearchResultCard({ result: r, dict }: { result: SearchResult; dict: (typeof DICTIONARIES)[keyof typeof DICTIONARIES] }) {
+  const external = r.type === "video";
+  const body = (
+    <Card className="transition-colors hover:bg-muted/50">
+      <CardContent className="flex items-start gap-3 py-3">
+        {r.type === "video" ? <Video className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /> : null}
+        <Badge variant="outline" className="mt-0.5 shrink-0">
+          <T k={TYPE_LABEL_KEYS[r.type]} fallback={TYPE_LABEL_FALLBACKS[r.type]} />
+        </Badge>
+        <div className="flex min-w-0 flex-col">
+          <span className="font-medium">{r.title}</span>
+          {r.detail ? <span className="truncate text-sm text-muted-foreground">{r.detail}</span> : null}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {external ? (
+        <a href={r.href} target="_blank" rel="noreferrer">{body}</a>
+      ) : (
+        <Link href={r.href}>{body}</Link>
+      )}
+      {r.type === "skill" && r.skillId && r.skillName ? (
+        <div className="flex flex-wrap items-center gap-1.5 pl-1">
+          <SkillQuickActions skillId={r.skillId} skillName={r.skillName} path="/search" />
+          <Button variant="ghost" size="sm" render={<Link href={`/youtube?q=${encodeURIComponent(r.skillName)}&discipline=${encodeURIComponent(r.disciplineName ?? "MMA")}`} />}>
+            <Video /> {dict["search.action.watchVideos"]}
+          </Button>
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -31,7 +31,7 @@ export function inferVideoSearchQuery(question: string | undefined, fallbackTech
 
   const parts = question.split("/").map((part) => part.trim()).filter(Boolean);
   const lower = question.toLocaleLowerCase();
-  const discipline = ["Muay Thai", "BJJ", "Grappling", "Karate", "MMA"].find((name) =>
+  const discipline = ["Muay Thai", "BJJ", "Grappling", "Karate", "Wrestling", "Boxing", "MMA"].find((name) =>
     lower.includes(name.toLocaleLowerCase()),
   ) ?? "MMA";
 

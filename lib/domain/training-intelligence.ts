@@ -76,7 +76,7 @@ export const TRAINING_PLAN_ACTION_TYPES = [
 ] as const;
 export type TrainingPlanActionType = (typeof TRAINING_PLAN_ACTION_TYPES)[number];
 
-type Trigger = {
+export type Trigger = {
   weight: number;
   reasonKey: string;
   reasonVars: Record<string, string | number>;
@@ -93,7 +93,12 @@ type Trigger = {
  * on absence of data, and requires a minimum sample size before drawing any
  * conclusion from sparring success rate (a single 0/1 attempt proves nothing).
  */
-function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
+/**
+ * Exported so callers outside V1/V2 (e.g. Technique of the Day) can reuse the
+ * exact same evidence-based triggers instead of re-deriving their own scoring
+ * — one source of truth for "why does this skill deserve attention".
+ */
+export function evaluateSkill(input: SkillIntelligenceInput, now: Date): Trigger[] {
   const triggers: Trigger[] = [];
   const stage = computeMasteryStage(input.progress);
 
