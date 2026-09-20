@@ -122,10 +122,22 @@ export async function search(query: string): Promise<SearchResult[]> {
   const { remainder, hasVideoIntent } = extractVideoIntent(raw, locale);
   const q = normalizeSearchQuery(remainder, locale);
   if (q.length < 2) return results;
-  const like = `%${q}%`;
+  const likeRaw = `%${q}%`;
+  // PostgREST's .or() filter string treats comma/parentheses as syntax
+  // (condition separators / grouping), not just characters — an unquoted
+  // value containing them (e.g. "stand-up (boxing)") breaks the whole
+  // filter and PostgREST returns an error. Quoting the value per PostgREST's
+  // own escaping rules (backslash-escape backslash/double-quote, wrap in
+  // double quotes) keeps arbitrary user input safe inside an .or() string.
+  // Only .or() needs this — .ilike()/.eq() take the value as a real query
+  // param and encode it safely on their own, so they use likeRaw.
+  const like = `"%${q.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}%"`;
 
   const expandedKeywords = expandQueryKeywords(q, locale);
-  const catalog = await getSkillsCatalog();
+  // Skill matching is one layer among several (navigation/DB rows are the
+  // others) — a catalog failure here must degrade to "no skill matches", not
+  // crash the whole search route.
+  const catalog = await getSkillsCatalog().catch(() => []);
   const skillMatches = catalog
     .map((s) => ({ skill: s, score: scoreSkillMatch({ name: s.name, category: s.category }, q, expandedKeywords) }))
     .filter((m) => m.score > 0)
@@ -179,7 +191,7 @@ export async function search(query: string): Promise<SearchResult[]> {
     supabase
       .from("session_observations")
       .select("id, type, content, session:training_sessions(id)")
-      .ilike("content", like)
+      .ilike("content", likeRaw)
       .limit(RESULTS_PER_TYPE),
     supabase
       .from("goals")
@@ -189,8 +201,12 @@ export async function search(query: string): Promise<SearchResult[]> {
       .limit(RESULTS_PER_TYPE),
   ]);
 
+  // Each of these is an independent result block (resources/sessions/
+  // observations/goals) — one failing must degrade to "no results in that
+  // block", not take down the whole search response. `.data` is already
+  // null on error, and the pushRankedBlock calls below fall back to `[]`.
   for (const r of [resources, sessions, observations, goals]) {
-    if (r.error) throw new Error(r.error.message);
+    if (r.error) console.error(r.error);
   }
 
   function pushRankedBlock<Row>(rows: Row[], toResult: (row: Row) => SearchResult, titleOf: (row: Row) => string) {

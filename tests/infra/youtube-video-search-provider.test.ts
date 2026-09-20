@@ -88,4 +88,75 @@ describe("YouTubeVideoSearchProvider", () => {
 
     expect(results).toEqual([]);
   });
+
+  function itemsResponse(channelTitles: string[]) {
+    return new Response(
+      JSON.stringify({
+        items: channelTitles.map((channelTitle, i) => ({
+          id: { videoId: `v${i}` },
+          snippet: { title: `Video ${i}`, channelTitle, thumbnails: { medium: { url: `https://img/${i}.jpg` } } },
+        })),
+      }),
+    );
+  }
+
+  it("boosts a preferred BJJ channel into the #2 slot for a grappling discipline", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(itemsResponse(["Random Gym", "Some Other Channel", "Gordon Ryan"])),
+    );
+
+    const results = await new YouTubeVideoSearchProvider("secret").search({
+      technique: "Armbar",
+      difficulty: "",
+      discipline: "BJJ",
+    });
+
+    expect(results.map((r) => r.channelTitle)).toEqual(["Random Gym", "Gordon Ryan", "Some Other Channel"]);
+  });
+
+  it("boosts a preferred MMA channel for a striking discipline", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(itemsResponse(["Random Gym", "Some Other Channel", "MMA Shredded"])),
+    );
+
+    const results = await new YouTubeVideoSearchProvider("secret").search({
+      technique: "Jab",
+      difficulty: "",
+      discipline: "MMA",
+    });
+
+    expect(results.map((r) => r.channelTitle)).toEqual(["Random Gym", "MMA Shredded", "Some Other Channel"]);
+  });
+
+  it("never boosts a channel from the wrong discipline family", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(itemsResponse(["Random Gym", "Some Other Channel", "MMA Shredded"])),
+    );
+
+    const results = await new YouTubeVideoSearchProvider("secret").search({
+      technique: "Armbar",
+      difficulty: "",
+      discipline: "BJJ",
+    });
+
+    expect(results.map((r) => r.channelTitle)).toEqual(["Random Gym", "Some Other Channel", "MMA Shredded"]);
+  });
+
+  it("leaves the order untouched when the preferred channel is already #1", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(itemsResponse(["Gordon Ryan", "Random Gym", "Some Other Channel"])),
+    );
+
+    const results = await new YouTubeVideoSearchProvider("secret").search({
+      technique: "Armbar",
+      difficulty: "",
+      discipline: "BJJ",
+    });
+
+    expect(results.map((r) => r.channelTitle)).toEqual(["Gordon Ryan", "Random Gym", "Some Other Channel"]);
+  });
 });

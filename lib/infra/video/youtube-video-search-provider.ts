@@ -11,6 +11,45 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 100;
 const MAX_RESULTS = 3;
 
+/**
+ * Light, deterministic channel preference by discipline family — matched
+ * against the already-returned `channelTitle` (no extra API call, no
+ * fabricated quality score). Query relevance from the YouTube API's own
+ * `order: relevance` stays the primary signal: this only ever *reorders*
+ * results the API already judged relevant, never injects or drops one.
+ */
+const PREFERRED_CHANNELS: { disciplines: RegExp; channels: RegExp } = {
+  disciplines: /\b(bjj|grappling|jiu[- ]?jitsu|wrestling)\b/i,
+  channels: /jordan teaches jiu-jitsu|bernardo faria|bjj fanatics|john danaher|gordon ryan/i,
+};
+const PREFERRED_STRIKING_CHANNELS: { disciplines: RegExp; channels: RegExp } = {
+  disciplines: /\b(mma|muay thai|boxing|karate)\b/i,
+  channels: /mma shredded/i,
+};
+
+/**
+ * Moves at most one preferred-channel result up into the #2 slot when the
+ * discipline matches, so it has a chance to appear among the first 1-2
+ * recommendations callers show — without ever displacing the #1 (most
+ * relevant) result or dropping anything.
+ */
+function boostPreferredChannel(results: VideoSearchResult[], discipline: string): VideoSearchResult[] {
+  const group = PREFERRED_CHANNELS.disciplines.test(discipline)
+    ? PREFERRED_CHANNELS
+    : PREFERRED_STRIKING_CHANNELS.disciplines.test(discipline)
+      ? PREFERRED_STRIKING_CHANNELS
+      : null;
+  if (!group || results.length < 2) return results;
+
+  const preferredIndex = results.findIndex((r) => group.channels.test(r.channelTitle));
+  if (preferredIndex <= 1) return results; // already in the #1 or #2 slot, or none found
+
+  const reordered = [...results];
+  const [preferred] = reordered.splice(preferredIndex, 1);
+  reordered.splice(1, 0, preferred);
+  return reordered;
+}
+
 type CacheEntry = {
   expiresAt: number;
   results: Promise<VideoSearchResult[]>;
@@ -73,7 +112,7 @@ export class YouTubeVideoSearchProvider implements VideoSearchProvider {
       const body = (await response.json()) as { items?: YouTubeItem[] };
       if (!Array.isArray(body.items)) return [];
 
-      return body.items.flatMap((item) => {
+      const results = body.items.flatMap((item) => {
         const videoId = item.id?.videoId;
         const title = item.snippet?.title;
         const channelTitle = item.snippet?.channelTitle;
@@ -94,6 +133,8 @@ export class YouTubeVideoSearchProvider implements VideoSearchProvider {
           url: `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
         }];
       });
+
+      return boostPreferredChannel(results, query.discipline);
     } catch {
       return [];
     }

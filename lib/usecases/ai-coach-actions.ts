@@ -39,11 +39,20 @@ function resolveProvider(): AIProvider {
  * new query path, no fact invented for the occasion.
  */
 export async function buildCoachContext(): Promise<CoachContext> {
+  // Each source below is an independent fact stream — one failing (a
+  // transient DB/network error) must only drop that stream's facts, not
+  // crash the whole coach page, same as the catalog/progress split
+  // elsewhere in the reliability pass.
   const [{ intelligence, plan }, reviewItems, upcomingGoals, studyQueue, locale] = await Promise.all([
-    getTrainingIntelligenceBundle(),
-    getReviewQueue(),
-    getUpcomingGoals(),
-    getStudyQueue(),
+    getTrainingIntelligenceBundle().catch(
+      (): Awaited<ReturnType<typeof getTrainingIntelligenceBundle>> => ({
+        intelligence: { status: "insufficient_data" },
+        plan: { status: "insufficient_data" },
+      }),
+    ),
+    getReviewQueue().catch(() => []),
+    getUpcomingGoals().catch(() => []),
+    getStudyQueue().catch(() => []),
     getServerLocale(),
   ]);
   const dict = DICTIONARIES[locale];

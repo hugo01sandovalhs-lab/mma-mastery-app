@@ -894,3 +894,107 @@ new `ALLOWED_LATIN` entry for `search.nav.youtube`), `next build` clean.
    and for a near-empty account (exploratory path).
 4. Same no-seeded-test-user blocker as every prior session — none of the
    above was verified in a live browser this session.
+
+## Session 15 — P0 reliability + YouTube ranking + image-payload perf fix
+
+Root-caused and fixed every item in the user's P0 brief (coach catalogue
+loss, /search crash, YouTube channel preference, image lateness). No broad
+audit, no redesign — targeted fixes only.
+
+### A — Coach "catalogue vide" root cause
+`getTechniqueOfTheDay` (`lib/usecases/skill-actions.ts`) awaited
+`loadSkillIntelligenceInputs()` unguarded, *after* the real catalog check
+(`catalog.length === 0`) had already passed. A transient intelligence-query
+failure (not a catalog failure) threw past that point, was caught upstream
+in `coach/page.tsx` by `.catch(() => null)`, and rendered as "Catalogue
+vide." — lying about the catalog being empty when it had loaded fine.
+Fix: `loadSkillIntelligenceInputs().catch(() => [])` inside
+`getTechniqueOfTheDay`, degrading to the same exploratory pick already used
+when there's no evidence, instead of losing the pick entirely.
+Also found and fixed the same class of bug one level up: `buildCoachContext`
+(`lib/usecases/ai-coach-actions.ts`) awaited `getTrainingIntelligenceBundle`,
+`getReviewQueue`, `getUpcomingGoals`, `getStudyQueue` unguarded in one
+`Promise.all` — any one of them throwing (e.g. `getStudyQueue`'s
+`if (error) throw`) crashed the *entire* `/coach` route, not just a section.
+Each now degrades independently (`.catch()` to an empty/insufficient-data
+default) instead of taking the page down.
+
+### B — /search crash root cause
+Three independent bugs in `lib/usecases/search-actions.ts`, all now fixed:
+1. `getSkillsCatalog()` was awaited unguarded — a catalog failure crashed
+   the whole route instead of just dropping skill matches. Now
+   `.catch(() => [])`.
+2. The `.or()` filter string for resources/sessions/goals interpolated the
+   raw (normalized) query directly: `` `title.ilike.${like},...` ``.
+   PostgREST's `.or()` treats comma and parentheses as filter *syntax*
+   (condition separator / grouping), not literal characters — a query like
+   "stand-up (boxing)" broke the filter and PostgREST returned an error.
+   Fixed by quoting the value per PostgREST's own escaping rules
+   (backslash-escape `\`/`"`, wrap in `"..."`). The `.ilike()` builder call
+   (session_observations) doesn't need this — it takes the value as a real
+   param and encodes it itself — so it keeps the unquoted `likeRaw`.
+3. `if (r.error) throw new Error(...)` on the 4 parallel DB blocks
+   (resources/sessions/observations/goals) crashed the whole response on
+   any one failing. Now logs and degrades to a partial result set — each
+   block is independent by design (see the file's own top-of-file comment).
+Regression tests added in `tests/usecases/search-actions.test.ts` covering
+all 7 queries from the brief, the catalog-failure and DB-error-degrade
+paths, and the comma/parenthesis PostgREST-escaping case.
+
+### C — YouTube channel preference
+`lib/infra/video/youtube-video-search-provider.ts`: added a deterministic,
+light reorder (`boostPreferredChannel`) applied to the API's own
+relevance-ordered results — never fetches extra results, never injects or
+drops a video, only moves at most one already-relevant preferred-channel
+result up into the #2 slot when the query's discipline matches (BJJ/
+grappling/wrestling → Jordan Teaches Jiu-Jitsu/Bernardo Faria/BJJ Fanatics/
+John Danaher/Gordon Ryan; MMA/Muay Thai/boxing/karate → MMA Shredded).
+Matched against `channelTitle` only — no fabricated score. 4 new tests in
+`tests/infra/youtube-video-search-provider.test.ts`.
+
+### D/E — Performance / image lateness root cause
+Region mismatch: unchanged from session 13's finding — still not
+measurable from this environment (no Vercel/Supabase dashboard access, no
+`vercel.json` override). Not re-investigated; nothing new to add.
+Query/dedup structure: already fixed in session 14 (loadSkillIntelligenceInputs
+`cache()`-wrapped); re-verified still correct, no new duplication found.
+
+**New finding**: the actual, measurable, concrete cause of "photos still
+appear later than desired" — every photo referenced by
+`lib/design/photography.ts` and the hardcoded `ChampionshipSectionPhoto`/
+`ProgressiveImage` call sites is a raw, full camera-resolution Unsplash/
+Pexels original committed straight into `public/mma-mastery-photos/`,
+several 6000px-wide and 4-12MB each. Next's Image Optimization API has to
+fetch and decode the *full* origin file on every cache-miss variant it
+generates — a 12MB decode is real, measurable server-side latency, on top
+of just being a slow origin fetch. None of these are ever displayed above
+~800px CSS width per their own `sizes` attributes, so the multi-thousand-
+pixel originals were pure waste.
+Fix: resized all 56 referenced photos in place with `sharp` (which the
+project already depends on transitively) — capped to a 2400px long edge
+(covers 3x-retina at the largest container width actually used) and
+re-encoded at JPEG quality 85/mozjpeg. Total referenced-photo payload:
+**159.8MB → 22.7MB** (51 of 56 files touched; 5 were already small enough
+to skip). No code change needed — same file paths, same `next/image`
+pipeline, same `sizes`/`priority` usage already set correctly by prior
+sessions (`PageHeader`'s hero photo already had `priority`; verified, not
+touched). This is a real, verifiable byte-count fix, not a speculative one.
+
+### Validation
+`tsc --noEmit` clean, `eslint .` clean (0 warnings, after fixing one
+unused-arg lint issue in the new test), `vitest run` 257/257, `next build`
+clean (34/34 routes).
+
+### Manual retest (added to the running list)
+1. `/coach` with a real user during a Supabase blip (or just re-verify
+   normally): Technique of the Day should never show "Catalogue vide"
+   unless the catalog itself is genuinely empty.
+2. `/search`: try `"stand-up (boxing)"` or any query containing a comma or
+   parenthesis — should return results/no-results, never a route error.
+3. `/youtube` and `/coach`'s Technique-of-Day video slot for a BJJ/
+   grappling and an MMA/striking query — confirm at most one preferred-
+   channel video appears in the first 1-2 slots when relevant, and none
+   when not.
+4. Any page load — photos should visibly appear sooner; verify in a real
+   browser/Network tab (not verifiable from this environment).
+5. Same no-seeded-test-user blocker as every prior session.

@@ -64,6 +64,16 @@ describe("getTechniqueOfTheDay", () => {
     expect(pick?.reasonKey).toBe("skills.techniqueOfDay.exploratoryReason");
   });
 
+  it("degrades to an exploratory pick instead of losing the catalog when intelligence inputs fail to load", async () => {
+    loadSkillIntelligenceInputs.mockRejectedValue(new Error("network error"));
+
+    const { getTechniqueOfTheDay } = await import("@/lib/usecases/skill-actions");
+    const pick = await getTechniqueOfTheDay(NOW);
+
+    expect(pick).not.toBeNull();
+    expect(pick?.isExploratory).toBe(true);
+  });
+
   it("never re-surfaces a mastered skill", async () => {
     loadSkillIntelligenceInputs.mockResolvedValue([
       {

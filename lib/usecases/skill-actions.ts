@@ -148,7 +148,12 @@ export async function getTechniqueOfTheDay(now: Date = new Date()): Promise<Tech
   const disciplineSkills = catalog.filter((s) => s.discipline.name === rotatedDiscipline);
   const pool = disciplineSkills.length > 0 ? disciplineSkills : catalog;
 
-  const inputs = await loadSkillIntelligenceInputs();
+  // Evidence is secondary enrichment on top of the catalog: a transient
+  // failure here (network blip, RLS hiccup) must not take down the whole
+  // pick — it just degrades to the same exploratory path used when there's
+  // no evidence yet, instead of bubbling up and getting mistaken upstream
+  // for an empty catalog.
+  const inputs = await loadSkillIntelligenceInputs().catch(() => []);
   const inputBySkillId = new Map(inputs.map((i) => [i.skillId, i]));
 
   type Candidate = { skill: CatalogSkill; score: number; topReason: { key: string; vars: Record<string, string | number> } | null };
