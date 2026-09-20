@@ -8,6 +8,8 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import type { Profile } from "@/lib/domain/profile";
 import type { TrainingPartner } from "@/lib/domain/training-partner";
 import { TrainingPartners } from "@/components/profile/training-partners";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -19,6 +21,9 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
+  const locale = await getServerLocale();
+  const dict = DICTIONARIES[locale];
+
   const [{ data: profile }, { data: partners }] = await Promise.all([
     supabase.from("profiles").select("*").eq("user_id", user.id).single(),
     supabase.rpc("list_training_partners"),
@@ -27,14 +32,14 @@ export default async function ProfilePage() {
   return (
     <AppShell>
       <div className="editorial-page editorial-profile">
-      <PageHeader page="profile" title="Profil" description="Votre identité, votre parcours." />
+      <PageHeader page="profile" title={dict["page.profile.title"]} description={dict["page.profile.description"]} />
       <ChampionshipPhotoMosaic page="profile" />
       <Card>
         <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
+          <CardTitle>{dict["profile.personalInfo"]}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-5 text-sm text-muted-foreground">Compte : {user.email}</p>
+          <p className="mb-5 text-sm text-muted-foreground">{formatT(dict["profile.account"], { email: user.email ?? "" })}</p>
           <ProfileForm profile={profile as Profile | null} />
         </CardContent>
       </Card>

@@ -19,7 +19,7 @@ import {
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getDisciplines } from "@/lib/usecases/training-actions";
 import { getSkills, type SkillListItem } from "@/lib/usecases/skill-actions";
-import { MASTERY_STAGE_LABELS, type MasteryStage } from "@/lib/domain/skill";
+import { MASTERY_STAGE_LABEL_KEYS, type MasteryStage } from "@/lib/domain/skill";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES, formatT } from "@/lib/i18n";
 
@@ -77,7 +77,7 @@ export default async function SkillsPage({
   return (
     <AppShell>
       <div className="editorial-page editorial-skills">
-        <PageHeader page="skills" title="Compétences" description={<>
+        <PageHeader page="skills" title={dict["page.skills.title"]} description={<>
             <p><T k="skills.catalogueTagline" fallback="Comprendre le geste. Affiner la maîtrise." /></p>
             <p className="editorial-caption">
               <T k="skills.catalogueCount" fallback="{count} compétence(s) au catalogue" vars={{ count: skills.length }} />
@@ -198,7 +198,7 @@ function SkillCard({ skill, dict }: { skill: SkillListItem; dict: (typeof DICTIO
           <div className="flex items-start justify-between gap-2">
             <span className="text-sm font-medium leading-snug">{skill.name}</span>
             <Badge variant={STAGE_BADGE_VARIANT[skill.stage]} className="shrink-0">
-              {MASTERY_STAGE_LABELS[skill.stage]}
+              {dict[MASTERY_STAGE_LABEL_KEYS[skill.stage]]}
             </Badge>
           </div>
           <div className="flex flex-wrap items-center gap-2">

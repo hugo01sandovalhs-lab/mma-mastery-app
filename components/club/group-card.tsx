@@ -12,6 +12,7 @@ import {
   type ClubMemberItem,
   type GroupItem,
 } from "@/lib/usecases/club-actions";
+import { useI18n } from "@/components/i18n-provider";
 
 export function GroupCard({
   group,
@@ -24,6 +25,7 @@ export function GroupCard({
   clubMembers: ClubMemberItem[];
   canManage: boolean;
 }) {
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
   const [selectedUserId, setSelectedUserId] = useState("");
 
@@ -42,7 +44,7 @@ export function GroupCard({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Supprimer le groupe"
+            aria-label={t("club.deleteGroup", "Supprimer le groupe")}
             disabled={isPending}
             onClick={() => startTransition(() => deleteGroup(group.id, clubId))}
           >
@@ -52,7 +54,7 @@ export function GroupCard({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {group.members.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aucun membre dans ce groupe.</p>
+          <p className="text-sm text-muted-foreground">{t("club.noMembersInGroup", "Aucun membre dans ce groupe.")}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {group.members.map((m) => (
@@ -60,14 +62,14 @@ export function GroupCard({
                 key={m.user_id}
                 className="flex items-center gap-1.5 rounded-full border border-border py-1 pl-3 pr-1 text-sm"
               >
-                {m.display_name ?? "Membre"}
+                {m.display_name ?? t("clubRole.MEMBER", "Membre")}
                 {canManage ? (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
                     className="size-5"
-                    aria-label="Retirer du groupe"
+                    aria-label={t("club.removeFromGroup", "Retirer du groupe")}
                     disabled={isPending}
                     onClick={() => startTransition(() => removeMemberFromGroup(group.id, m.user_id, clubId))}
                   >
@@ -82,17 +84,17 @@ export function GroupCard({
         {canManage && assignable.length > 0 ? (
           <div className="flex items-center gap-2">
             <Select
-              items={assignable.map((m) => ({ value: m.user_id, label: m.display_name ?? "Membre" }))}
+              items={assignable.map((m) => ({ value: m.user_id, label: m.display_name ?? t("clubRole.MEMBER", "Membre") }))}
               value={selectedUserId}
               onValueChange={(v) => setSelectedUserId(v as string)}
             >
               <SelectTrigger className="w-full sm:w-56">
-                <SelectValue placeholder="Ajouter un membre" />
+                <SelectValue placeholder={t("club.addMemberPlaceholder", "Ajouter un membre")} />
               </SelectTrigger>
               <SelectContent>
                 {assignable.map((m) => (
                   <SelectItem key={m.user_id} value={m.user_id}>
-                    {m.display_name ?? "Membre"}
+                    {m.display_name ?? t("clubRole.MEMBER", "Membre")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -109,7 +111,7 @@ export function GroupCard({
                 })
               }
             >
-              <UserPlusIcon /> Ajouter
+              <UserPlusIcon /> {t("action.add", "Ajouter")}
             </Button>
           </div>
         ) : null}

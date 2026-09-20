@@ -20,7 +20,8 @@ import {
 } from "@/lib/domain/skill";
 import { getDisciplines } from "@/lib/usecases/training-actions";
 import { getSkillMap, type SkillListItem, type SkillMapData } from "@/lib/usecases/skill-actions";
-import { DICTIONARIES } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
+import { DICTIONARIES, formatT } from "@/lib/i18n";
 
 const STAGE_BADGE_VARIANT: Record<MasteryStage, "default" | "secondary" | "outline"> = {
   unknown: "outline",
@@ -43,7 +44,8 @@ export default async function SkillMapPage({
   if (!user) redirect("/login");
 
   const { discipline } = await searchParams;
-  const [disciplines, map] = await Promise.all([getDisciplines(), getSkillMap()]);
+  const [disciplines, map, locale] = await Promise.all([getDisciplines(), getSkillMap(), getServerLocale()]);
+  const dict = DICTIONARIES[locale];
 
   const skills = discipline ? map.skills.filter((s) => s.discipline.id === discipline) : map.skills;
   const skillIds = new Set(skills.map((s) => s.id));
@@ -75,7 +77,7 @@ export default async function SkillMapPage({
           href="/skills"
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-3.5" /> Compétences
+          <ArrowLeft className="size-3.5" /> {dict["page.skills.title"]}
         </Link>
 
         <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
@@ -83,12 +85,11 @@ export default async function SkillMapPage({
             <div className="flex items-center gap-2">
               <Network className="size-5 text-primary" />
               <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-                Carte de maîtrise
+                {dict["skills.masteryMap"]}
               </h1>
             </div>
             <p className="text-sm text-muted-foreground">
-              {skills.length} compétence{skills.length > 1 ? "s" : ""}, organisées par stade de
-              maîtrise. Les liens montrent prérequis, enchaînements et contres.
+              {formatT(dict["skillMap.description"], { count: skills.length })}
             </p>
           </div>
 
@@ -97,15 +98,15 @@ export default async function SkillMapPage({
               name="discipline"
               defaultValue={discipline ?? ""}
               items={[
-                { value: "", label: "Toutes les disciplines" },
+                { value: "", label: dict["skills.allDisciplines"] },
                 ...disciplines.map((d) => ({ value: d.id, label: d.name })),
               ]}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Discipline" />
+                <SelectValue placeholder={dict["form.discipline"]} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les disciplines</SelectItem>
+                <SelectItem value="">{dict["skills.allDisciplines"]}</SelectItem>
                 {disciplines.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.name}
@@ -120,7 +121,7 @@ export default async function SkillMapPage({
           <Card>
             <CardContent className="flex flex-col items-start gap-2 py-8">
               <Network className="size-6 text-muted-foreground" />
-              <p className="font-medium">{DICTIONARIES.fr["skillMap.noSkillsForDiscipline"]}</p>
+              <p className="font-medium">{dict["skillMap.noSkillsForDiscipline"]}</p>
             </CardContent>
           </Card>
         ) : (
@@ -131,7 +132,7 @@ export default async function SkillMapPage({
                 <div key={c.stage} className="flex w-72 shrink-0 flex-col gap-3">
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-medium text-muted-foreground">
-                      {DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[c.stage]]}
+                      {dict[MASTERY_STAGE_LABEL_KEYS[c.stage]]}
                     </h2>
                     <span className="text-xs text-muted-foreground/70">{c.items.length}</span>
                   </div>
@@ -143,6 +144,7 @@ export default async function SkillMapPage({
                         outgoing={outgoingByFrom.get(s.id) ?? []}
                         incomingPrereqCount={incomingPrereqByTo.get(s.id)?.length ?? 0}
                         skillById={skillById}
+                        dict={dict}
                       />
                     ))}
                   </div>
@@ -160,11 +162,13 @@ function SkillNode({
   outgoing,
   incomingPrereqCount,
   skillById,
+  dict,
 }: {
   skill: SkillListItem;
   outgoing: SkillMapData["edges"];
   incomingPrereqCount: number;
   skillById: Map<string, SkillListItem>;
+  dict: (typeof DICTIONARIES)["fr"];
 }) {
   return (
     <Card>
@@ -174,13 +178,13 @@ function SkillNode({
             {skill.name}
           </Link>
           <Badge variant={STAGE_BADGE_VARIANT[skill.stage]} className="shrink-0">
-            {DICTIONARIES.fr[MASTERY_STAGE_LABEL_KEYS[skill.stage]]}
+            {dict[MASTERY_STAGE_LABEL_KEYS[skill.stage]]}
           </Badge>
         </div>
 
         {incomingPrereqCount > 0 ? (
           <p className="text-xs text-muted-foreground">
-            Requis pour {incomingPrereqCount} compétence{incomingPrereqCount > 1 ? "s" : ""}
+            {formatT(dict["skillMap.requiredFor"], { count: incomingPrereqCount })}
           </p>
         ) : null}
 
@@ -192,7 +196,7 @@ function SkillNode({
               return (
                 <Link key={i} href={`/skills/${target.id}`}>
                   <Badge variant="outline" className="text-xs">
-                    {DICTIONARIES.fr[SKILL_RELATION_TYPE_LABEL_KEYS[edge.relationType]]}: {target.name}
+                    {dict[SKILL_RELATION_TYPE_LABEL_KEYS[edge.relationType]]}: {target.name}
                   </Badge>
                 </Link>
               );

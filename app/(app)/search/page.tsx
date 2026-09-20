@@ -67,7 +67,7 @@ export default async function SearchPage({
   return (
     <AppShell>
       <div className="editorial-page editorial-search">
-        <PageHeader page="search" title="Recherche" description={<T k="search.description" fallback="Explorez vos compétences, séances, observations, objectifs et ressources." />} />
+        <PageHeader page="search" title={dict["page.search.title"]} description={<T k="search.description" fallback="Explorez vos compétences, séances, observations, objectifs et ressources." />} />
 
         <ChampionshipPhotoMosaic page="search" />
 

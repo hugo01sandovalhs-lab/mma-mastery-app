@@ -118,7 +118,7 @@ export default async function CoachPage({
       <div className="editorial-page editorial-coach">
         <PageHeader page="coach" title={dict["page.coach.title"]} description={dict["page.coach.description"]} />
 
-        <Suspense fallback={<CoachWeeklyDigestSkeleton />}>
+        <Suspense key={locale} fallback={<CoachWeeklyDigestSkeleton />}>
           <CoachWeeklyDigestSection locale={locale} />
         </Suspense>
 

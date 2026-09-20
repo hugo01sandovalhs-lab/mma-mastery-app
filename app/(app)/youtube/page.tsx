@@ -173,12 +173,12 @@ export default async function YouTubePage({
         </section>
 
         {query ? (
-          <Suspense fallback={videoGridSkeleton()}>
+          <Suspense key={locale} fallback={videoGridSkeleton()}>
             <SearchResultsSection dict={dict} query={query} discipline={effectiveDiscipline} favoriteIdByUrl={favoriteIdByUrl} />
           </Suspense>
         ) : null}
 
-        <Suspense fallback={null}>
+        <Suspense key={locale} fallback={null}>
           <ForYouSection dict={dict} favoriteIdByUrl={favoriteIdByUrl} />
         </Suspense>
 

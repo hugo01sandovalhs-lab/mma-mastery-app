@@ -49,7 +49,7 @@ export default async function CompetitionPage() {
         <div className="editorial-competition-columns">
         <section className="editorial-section">
         <h2>{dict["competition.recordMatch"]}</h2>
-        <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+        <Suspense key={locale} fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
           <MatchFormSection />
         </Suspense>
         </section>

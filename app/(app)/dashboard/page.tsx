@@ -133,6 +133,7 @@ export default async function DashboardPage() {
     <main className="championship-dashboard">
         <Hero
           dict={dict}
+          locale={locale}
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
           lastSessionDate={sessions[0]?.date ?? null}
@@ -143,22 +144,22 @@ export default async function DashboardPage() {
         />
 
         <div className="championship-grid">
-        <Suspense fallback={<StatRowSkeleton />}>
+        <Suspense key={locale} fallback={<StatRowSkeleton />}>
           <DashboardStatRowSection dict={dict} />
         </Suspense>
 
         <div className="championship-details">
-          <Suspense fallback={<Skeleton className="h-56 w-full rounded-xl" />}>
+          <Suspense key={locale} fallback={<Skeleton className="h-56 w-full rounded-xl" />}>
             <DashboardProgressionSection dict={dict} />
           </Suspense>
           <RecentActivity dict={dict} locale={locale} sessions={recent} />
         </div>
 
         <div className="championship-support">
-          <Suspense fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+          <Suspense key={locale} fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
             <DashboardFocusSection dict={dict} />
           </Suspense>
-          <Suspense fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+          <Suspense key={locale} fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
             <DashboardClubSection dict={dict} locale={locale} />
           </Suspense>
         </div>
@@ -211,6 +212,7 @@ async function HeroStatus({
 
 function Hero({
   dict,
+  locale,
   displayName,
   sessionCount,
   lastSessionDate,
@@ -220,6 +222,7 @@ function Hero({
   sessionStats,
 }: {
   dict: (typeof DICTIONARIES)[Locale];
+  locale: Locale;
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
@@ -240,7 +243,7 @@ function Hero({
         <p>{displayName ? formatT(dict["dashboard.greeting"], { name: displayName }) : dict["dashboard.greetingDefault"]}</p>
         <h1>{dict["dashboard.tagline1"]}<br />{dict["dashboard.tagline2"]}<br />{dict["dashboard.tagline3"]}</h1>
         <p className="championship-status">
-          <Suspense fallback={heroStatusText(dict, sessionCount, lastSessionDate, 0)}>
+          <Suspense key={locale} fallback={heroStatusText(dict, sessionCount, lastSessionDate, 0)}>
             <HeroStatus dict={dict} sessionCount={sessionCount} lastSessionDate={lastSessionDate} />
           </Suspense>
         </p>
@@ -284,7 +287,7 @@ function StatRow({
         label={dict["dashboard.focusToday"]}
         imageSrc={PHOTOS.focus.src}
         objectPosition={PHOTOS.focus.position}
-        imageAlt="Un boxeur travaille sa garde à contre-jour"
+        imageAlt={dict["dashboard.alt.focusPanel"]}
         href={p ? `/skills/${p.focusSkillId}` : "/training/new"}
         title={p ? p.focusSkillName : dict["dashboard.defineFocus"]}
         detail={
@@ -299,7 +302,7 @@ function StatRow({
         label={dict["dashboard.nextSessionLabel"]}
         imageSrc={PHOTOS.session.src}
         objectPosition={PHOTOS.session.position}
-        imageAlt="Travail au sol"
+        imageAlt={dict["dashboard.alt.sessionPanel"]}
         href="/training/new"
         title={p ? <T k={ACTION_TYPE_LABEL_KEYS[p.actionType]} fallback={p.actionType} /> : dict["dashboard.planSession"]}
         detail={
@@ -359,7 +362,7 @@ function ProgressionCompactCard({
   const stages = MASTERY_STAGES.filter((s) => s !== "unknown" && s !== "introduced");
   return (
     <Card className="championship-progress-compact rounded-2xl border-border bg-card">
-      <ProgressiveImage src={PHOTOS.globalProgress.src} alt="Combattant célébrant une victoire" fill sizes="(max-width: 767px) 100vw, 30vw" style={{ objectPosition: PHOTOS.globalProgress.position }} />
+      <ProgressiveImage src={PHOTOS.globalProgress.src} alt={dict["dashboard.alt.globalProgress"]} fill sizes="(max-width: 767px) 100vw, 30vw" style={{ objectPosition: PHOTOS.globalProgress.position }} />
       <div className="championship-progress-compact-shade" aria-hidden="true" />
       <CardContent className="flex items-center gap-4 p-4">
         {insufficientData ? <Target className="size-9 shrink-0 text-muted-foreground" aria-hidden="true" /> : <ProgressRing value={ring} size={72} strokeWidth={5} />}
@@ -496,7 +499,7 @@ function ProgressionSection({ dict, summary }: { dict: (typeof DICTIONARIES)[Loc
 
   return (
     <Card className="championship-progress-panel rounded-2xl border-border bg-card">
-      <ProgressiveImage src={PHOTOS.progress.src} alt="Deux combattantes travaillent leurs déplacements" fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectPosition: PHOTOS.progress.position }} />
+      <ProgressiveImage src={PHOTOS.progress.src} alt={dict["dashboard.alt.progressPanel"]} fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectPosition: PHOTOS.progress.position }} />
       <div className="championship-progress-shade" aria-hidden="true" />
       <CardHeader className="relative z-10 pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -554,7 +557,7 @@ function RecentActivity({ dict, locale, sessions }: { dict: (typeof DICTIONARIES
   return (
     <Card data-empty={sessions.length === 0 || undefined} className="championship-activity-panel rounded-2xl border-border bg-card">
       <div className="championship-activity-cover">
-        <ProgressiveImage src={PHOTOS.activity.src} alt="Séance de grappling" fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectPosition: PHOTOS.activity.position }} />
+        <ProgressiveImage src={PHOTOS.activity.src} alt={dict["dashboard.alt.activityPanel"]} fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectPosition: PHOTOS.activity.position }} />
         <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Flame className="size-3.5 text-primary" />
@@ -633,7 +636,7 @@ function ClubCard({ dict, locale, summary }: { dict: (typeof DICTIONARIES)[Local
         <div className="flex items-center gap-3">
           <Image
             src={PHOTOS.club}
-            alt="Deux partenaires s'entraînent au gym"
+            alt={dict["dashboard.alt.clubAvatar"]}
             width={44}
             height={44}
             className="size-11 shrink-0 rounded-full object-cover ring-2 ring-primary/20"

@@ -127,7 +127,7 @@ export default async function StudyPage() {
             <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.favoritesHeading"]}</h2>
           </div>
           <p className="text-xs opacity-80">{dict["photoLabel.takeTimeUnderstand"]}</p>
-          <Suspense fallback={<Skeleton className="h-6 w-2/3 rounded-full" />}>
+          <Suspense key={locale} fallback={<Skeleton className="h-6 w-2/3 rounded-full" />}>
             <StudyFavoritesSection dict={dict} />
           </Suspense>
         </section>
@@ -135,6 +135,7 @@ export default async function StudyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.resourcesHeading"]}</h2>
           <Suspense
+            key={locale}
             fallback={
               <div className="flex flex-col gap-2">
                 <Skeleton className="h-14 w-full rounded-lg" />
