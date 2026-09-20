@@ -549,3 +549,75 @@ autonomous work.
 
 No git commit created this session — no files changed (verification-only
 pass). Tree is already clean and pushed at `8317bb6`.
+
+## Session 12 — reliability + perceived-performance pass
+
+Targeted `/competition`, `/study`, `/youtube`, `/coach`, `/skills`, `/goals`
+per a "final stability" brief. Verified: tsc, eslint (0 warnings), vitest
+216/216 (up from 212 — new regression test added), `next build`. Pushed as
+`f938f30`.
+
+- **Root cause found**: all 6 routes (plus `/skills/[id]`) awaited
+  secondary Supabase reads (filter dropdowns, favorites, `for you` video
+  suggestions, weekly digest) unguarded inside `Promise.all`, and several
+  usecases `throw new Error(...)` on any DB error — so a transient failure
+  on non-essential data crashed the *entire* route to the generic error
+  screen. Fixed by wrapping every secondary fetch with `.catch(() =>
+  <safe default>)` at the page call site, leaving primary data (the thing
+  the route is actually about) to surface through the existing
+  `app/(app)/error.tsx` boundary, which was already generic/localized.
+- **Two real raw-error leaks found and fixed**: `app/error.tsx` (root
+  boundary) rendered `{error.message}` directly — now uses the same
+  translated generic message as `app/(app)/error.tsx`. `createMatch`,
+  `createSequence` (`competition-actions.ts`), `createGoal`
+  (`goals-actions.ts`), `createResource`, `createSkillNote`
+  (`knowledge-actions.ts`) all returned the raw Postgres error string as
+  `state.error` on DB-insert failure (Zod validation errors were already
+  translated via `firstFieldError()`/`tServer()` — only the *post-validation
+  DB failure* path leaked). Added `error.saveFailed` dict key (6 locales)
+  and routed all 5 sites through it, with `console.error(error)` kept for
+  server-side observability. Regression test:
+  `tests/usecases/save-error-fallback.test.ts` (4 cases, one per file).
+  **Not touched**: the same `throw new Error(error.message)` /
+  `return { error: error.message }` pattern still exists in `club-actions`,
+  `training-actions`, `profile-actions`, etc. — same known gap session 10
+  flagged as a ~19-file cross-cutting pattern, still out of scope (those
+  routes weren't in this session's target list).
+- **Progressive images**: `components/ui/progressive-image.tsx` was a
+  no-op passthrough stub. Implemented a real fade-in (opacity transition
+  gated on the image's `onLoad`, muted placeholder background painted
+  immediately so the reserved box is never blank, respects the existing
+  global `prefers-reduced-motion` rule in `globals.css` — no separate media
+  query needed). Swapped the two remaining raw `next/image` hero usages
+  onto it: `components/championship/page-header.tsx` (the per-route hero
+  photo, `priority`) and the dashboard championship hero
+  (`app/(app)/dashboard/page.tsx`). Also converted `landing-content.tsx`'s
+  below-the-fold final-CTA photo. **Deliberately left as raw `next/image`**:
+  `landing-hero.tsx`'s slide carousel and `auth-shell.tsx`'s login/signup
+  cover carousel — both already implement their own opacity-based
+  crossfade keyed on an `active` slide index; wrapping them in
+  `ProgressiveImage` would fight that inline-style-driven opacity control
+  (CSS specificity: inline `style.opacity` beats the component's
+  `.progressive-image-loaded` class), so touching them risked a real
+  regression for no visible gain. `championship/sidebar.tsx`'s 176px nav
+  thumbnails and the dashboard's 44×44 club-avatar `<Image>` were left
+  alone too — too small for pop-in to register, not a "major visual
+  surface" per the brief's own list.
+- **Navigation perf**: audited and found already done by a prior session's
+  last 3 commits (`8cb0825`, `a229567`, `6c0a55b` — visible in this
+  session's starting `git log`) — per-request `getUser()`/client dedup via
+  `React.cache()` (`lib/infra/db/supabase-server.ts`), the skill/discipline
+  catalog cached across navigations via `unstable_cache` (tags
+  `disciplines`/`skills-catalog`, `revalidate: 3600`), and `/coach`'s
+  YouTube video grid already streamed behind `Suspense`. No further
+  navigation-latency work identified as high-confidence within this
+  session's scope — did not add per-route `loading.tsx` files (the shared
+  `app/(app)/loading.tsx` skeleton already renders immediately on
+  navigation) since the brief warned against measuring without evidence
+  and no profiling tooling was run this session to justify more.
+- **Not done — genuinely out of scope for this pass**: did not re-audit
+  image `sizes`/`fill` correctness across every photo card (spot-checked
+  the ones touched, all were already using `fill`+`sizes` or explicit
+  `width`/`height` correctly — no CLS-causing pattern found). No browser
+  QA (same no-seeded-test-user blocker as every prior session, see session
+  4 onward).
