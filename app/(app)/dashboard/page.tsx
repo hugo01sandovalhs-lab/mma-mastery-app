@@ -152,7 +152,7 @@ function Hero({
 
   return (
     <section className="championship-hero" aria-label={dict["dashboard.hero.ariaLabel"]}>
-      <Image src={imageSrc} alt={imageAlt} fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" style={{ objectPosition: imagePosition }} />
+      <ProgressiveImage src={imageSrc} alt={imageAlt} fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" style={{ objectPosition: imagePosition }} />
       <div className="championship-hero-tools">
         <Link href="/search" aria-label={dict["dashboard.hero.searchAria"]}><SearchIcon size={16} /></Link>
         <Link href="/goals" aria-label={dict["dashboard.hero.goalsAria"]}><Flag size={16} /></Link>

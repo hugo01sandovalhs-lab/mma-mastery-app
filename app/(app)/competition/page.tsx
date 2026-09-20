@@ -27,9 +27,9 @@ export default async function CompetitionPage() {
 
   const [matches, disciplines, athletes, sessionOptions] = await Promise.all([
     getMatches(),
-    getDisciplines(),
-    getAthletes(),
-    getCompetitionSessionOptions(),
+    getDisciplines().catch(() => []),
+    getAthletes().catch(() => []),
+    getCompetitionSessionOptions().catch(() => []),
   ]);
 
   return (

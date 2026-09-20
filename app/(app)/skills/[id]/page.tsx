@@ -93,12 +93,12 @@ export default async function SkillDetailPage({ params }: { params: Promise<{ id
 
   const [skill, intelligence, notes, resources, bookmarked, queued, goals] = await Promise.all([
     getSkill(id),
-    getTrainingIntelligence(),
-    getSkillNotes(id),
-    getResourcesForSkill(id),
-    isBookmarked("skill", id),
-    isInStudyQueue(id),
-    getGoals(),
+    getTrainingIntelligence().catch(() => ({ status: "insufficient_data" as const })),
+    getSkillNotes(id).catch(() => []),
+    getResourcesForSkill(id).catch(() => []),
+    isBookmarked("skill", id).catch(() => false),
+    isInStudyQueue(id).catch(() => false),
+    getGoals().catch(() => []),
   ]);
   if (!skill) notFound();
   const goaled = goals.some((g) => g.skill?.id === id && g.status === "active");

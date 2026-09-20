@@ -33,9 +33,9 @@ export default async function StudyPage() {
 
   const [queue, bookmarks, resources, skills] = await Promise.all([
     getStudyQueue(),
-    getBookmarkedSkills(),
-    getResources(),
-    getSkills(),
+    getBookmarkedSkills().catch(() => []),
+    getResources().catch(() => []),
+    getSkills().catch(() => []),
   ]);
 
   return (

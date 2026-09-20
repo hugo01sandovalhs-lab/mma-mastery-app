@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { PAGE_PHOTOS, type PhotoPage } from "@/lib/design/photography";
 import { useI18n } from "@/components/i18n-provider";
 
@@ -21,7 +21,7 @@ export function PageHeader({ page, title, description, actions }: {
         {actions && <div className="editorial-header-actions">{actions}</div>}
       </div>
       <div className="editorial-header-photo">
-        <Image src={photo.src} alt={photo.alt} fill priority sizes="(max-width: 767px) 100vw, 55vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
+        <ProgressiveImage src={photo.src} alt={photo.alt} fill priority sizes="(max-width: 767px) 100vw, 55vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
       </div>
     </header>
   );

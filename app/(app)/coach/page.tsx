@@ -18,7 +18,7 @@ import { DICTIONARIES } from "@/lib/i18n";
 
 /** Fetches the external YouTube results on its own so Suspense can stream them in after the rest of the coach answer has rendered. */
 async function CoachVideoGrid({ videoQuery }: { videoQuery: VideoSearchQuery }) {
-  const videos = await getCoachVideos(videoQuery);
+  const videos = await getCoachVideos(videoQuery).catch(() => []);
   if (videos.length === 0) return null;
   return (
     <div className="coach-video-grid">
@@ -47,9 +47,9 @@ export default async function CoachPage() {
 
   const [answerText, techniqueOfTheDay, weeklyDigest, lastResolved] = await Promise.all([
     getCoachResponseText(),
-    getTechniqueOfTheDay(),
-    getWeeklyReviewDigest(),
-    getLastResolvedDifficulty(),
+    getTechniqueOfTheDay().catch(() => null),
+    getWeeklyReviewDigest().catch(() => ({ skillsTouchedCount: 0, questionCount: 0, difficultyCount: 0 })),
+    getLastResolvedDifficulty().catch(() => null),
   ]);
   const answer: CoachAnswer = { ...answerText, videos: [] };
 

@@ -52,7 +52,7 @@ export default async function SkillsPage({
 
   const { q, discipline } = await searchParams;
   const [disciplines, skills, locale] = await Promise.all([
-    getDisciplines(),
+    getDisciplines().catch(() => []),
     getSkills({ disciplineId: discipline || undefined, search: q || undefined }),
     getServerLocale(),
   ]);

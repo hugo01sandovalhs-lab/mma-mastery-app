@@ -88,7 +88,10 @@ export async function createGoal(
   }
   const { supabase, userId } = await requireUserId();
   const { error } = await supabase.from("goals").insert({ ...parsed.data, user_id: userId });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error(error);
+    return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+  }
   revalidatePath("/goals");
   return { error: null };
 }

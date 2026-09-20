@@ -172,7 +172,10 @@ export async function createMatch(
   const { error } = await supabase
     .from("matches")
     .insert({ ...input, athlete_id: athleteId, user_id: userId });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error(error);
+    return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+  }
 
   revalidatePath("/competition");
   return { error: null };
@@ -249,13 +252,19 @@ export async function createSequence(
     .insert({ ...sequenceFields, user_id: userId })
     .select("id")
     .single();
-  if (error) return { error: error.message };
+  if (error) {
+    console.error(error);
+    return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+  }
 
   if (skill_id) {
     const { error: junctionError } = await supabase
       .from("sequence_skills")
       .insert({ sequence_id: created.id, skill_id });
-    if (junctionError) return { error: junctionError.message };
+    if (junctionError) {
+      console.error(junctionError);
+      return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+    }
   }
 
   revalidatePath(`/competition/${matchId}`);

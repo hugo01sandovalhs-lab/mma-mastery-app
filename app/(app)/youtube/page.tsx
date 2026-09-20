@@ -44,9 +44,14 @@ export default async function YouTubePage({
   const effectiveDiscipline = discipline || "MMA";
 
   const [results, favorites, { intelligence, plan }] = await Promise.all([
-    query ? searchTechniqueVideos({ technique: query, discipline: effectiveDiscipline, difficulty: "" }) : Promise.resolve([]),
+    query
+      ? searchTechniqueVideos({ technique: query, discipline: effectiveDiscipline, difficulty: "" }).catch(() => [])
+      : Promise.resolve([]),
     getResources().catch(() => []),
-    getTrainingIntelligenceBundle(),
+    getTrainingIntelligenceBundle().catch(() => ({
+      intelligence: { status: "insufficient_data" as const },
+      plan: { status: "insufficient_data" as const },
+    })),
   ]);
 
   const favoriteIdByUrl = new Map(
@@ -61,7 +66,7 @@ export default async function YouTubePage({
         : null;
 
   const todayResults = focusTechnique
-    ? await searchTechniqueVideos({ technique: focusTechnique, discipline: "MMA", difficulty: "" })
+    ? await searchTechniqueVideos({ technique: focusTechnique, discipline: "MMA", difficulty: "" }).catch(() => [])
     : [];
 
   const suggestions = query

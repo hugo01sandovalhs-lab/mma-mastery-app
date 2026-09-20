@@ -105,7 +105,10 @@ export async function createResource(
   const { supabase, userId } = await requireUserId();
   const input: ResourceInput = parsed.data;
   const { error } = await supabase.from("resources").insert({ ...input, user_id: userId });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error(error);
+    return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+  }
 
   if (input.skill_id) revalidatePath(`/skills/${input.skill_id}`);
   revalidatePath("/study");
@@ -272,7 +275,10 @@ export async function createSkillNote(
   const { supabase, userId } = await requireUserId();
   const input: SkillNoteInput = parsed.data;
   const { error } = await supabase.from("skill_notes").insert({ ...input, user_id: userId });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error(error);
+    return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+  }
   revalidatePath(`/skills/${input.skill_id}`);
   return { error: null };
 }

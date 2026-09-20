@@ -21,7 +21,7 @@ export default async function GoalsPage() {
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
 
-  const [goals, skills] = await Promise.all([getGoals(), getSkills()]);
+  const [goals, skills] = await Promise.all([getGoals(), getSkills().catch(() => [])]);
 
   return (
     <AppShell>

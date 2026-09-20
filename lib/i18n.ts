@@ -335,6 +335,7 @@ const fr = {
   "error.choosePhoto": "Choisissez une photo.", "error.photoFormat": "Format JPEG, PNG ou WebP, 8 Mo maximum.",
   "error.sessionExpired": "Session expirée.", "error.loginRequired": "Connexion requise.",
   "error.invalidForm": "Formulaire invalide", "error.genericTitle": "Une erreur est survenue", "error.routeMessage": "Cette page n'a pas pu s'afficher. Réessayez ou revenez au tableau de bord.",
+  "error.saveFailed": "Impossible d'enregistrer pour le moment. Réessayez dans un instant.",
   "legal.ownerInputNotice": "À compléter par l'éditeur avant publication", "legal.privacyLink": "Confidentialité", "legal.termsLink": "Conditions d'utilisation",
 
   "page.coach.description": "Prendre du recul. Préparer la suite. Des réponses fondées sur vos séances, votre progression et vos révisions.",
@@ -821,6 +822,7 @@ const en: Dictionary = {
   "error.choosePhoto": "Choose a photo.", "error.photoFormat": "JPEG, PNG or WebP format, 8 MB maximum.",
   "error.sessionExpired": "Session expired.", "error.loginRequired": "Sign in required.",
   "error.invalidForm": "Invalid form", "error.genericTitle": "Something went wrong", "error.routeMessage": "This page could not load. Try again or go back to the dashboard.",
+  "error.saveFailed": "Couldn't save right now. Try again in a moment.",
   "legal.ownerInputNotice": "To be completed by the publisher before publishing", "legal.privacyLink": "Privacy", "legal.termsLink": "Terms of Service",
 
   "page.coach.description": "Step back. Plan what's next. Answers grounded in your sessions, progress, and reviews.",
@@ -1304,6 +1306,7 @@ const es: Dictionary = {
   "error.choosePhoto": "Elija una foto.", "error.photoFormat": "Formato JPEG, PNG o WebP, 8 MB máximo.",
   "error.sessionExpired": "Sesión caducada.", "error.loginRequired": "Inicio de sesión requerido.",
   "error.invalidForm": "Formulario inválido", "error.genericTitle": "Se produjo un error", "error.routeMessage": "Esta página no se pudo cargar. Vuelve a intentarlo o regresa al panel.",
+  "error.saveFailed": "No se pudo guardar en este momento. Inténtalo de nuevo en un momento.",
   "legal.ownerInputNotice": "A completar por el editor antes de publicar", "legal.privacyLink": "Privacidad", "legal.termsLink": "Términos de uso",
 
   "page.coach.description": "Tomar distancia. Preparar lo que sigue. Respuestas basadas en tus sesiones, tu progreso y tus repasos.",
@@ -1787,6 +1790,7 @@ const de: Dictionary = {
   "error.choosePhoto": "Wählen Sie ein Foto.", "error.photoFormat": "Format JPEG, PNG oder WebP, maximal 8 MB.",
   "error.sessionExpired": "Sitzung abgelaufen.", "error.loginRequired": "Anmeldung erforderlich.",
   "error.invalidForm": "Ungültiges Formular", "error.genericTitle": "Ein Fehler ist aufgetreten", "error.routeMessage": "Diese Seite konnte nicht geladen werden. Versuchen Sie es erneut oder kehren Sie zum Dashboard zurück.",
+  "error.saveFailed": "Speichern momentan nicht möglich. Versuchen Sie es gleich noch einmal.",
   "legal.ownerInputNotice": "Vom Betreiber vor Veröffentlichung zu ergänzen", "legal.privacyLink": "Datenschutz", "legal.termsLink": "Nutzungsbedingungen",
 
   "page.coach.description": "Abstand gewinnen. Nächste Schritte planen. Antworten basierend auf deinen Einheiten, deinem Fortschritt und deinen Wiederholungen.",
@@ -2270,6 +2274,7 @@ const ru: Dictionary = {
   "error.choosePhoto": "Выберите фото.", "error.photoFormat": "Формат JPEG, PNG или WebP, максимум 8 МБ.",
   "error.sessionExpired": "Сессия истекла.", "error.loginRequired": "Требуется вход.",
   "error.invalidForm": "Неверная форма", "error.genericTitle": "Произошла ошибка", "error.routeMessage": "Не удалось загрузить страницу. Повторите попытку или вернитесь на панель управления.",
+  "error.saveFailed": "Не удалось сохранить. Повторите попытку через мгновение.",
   "legal.ownerInputNotice": "Заполняется владельцем перед публикацией", "legal.privacyLink": "Конфиденциальность", "legal.termsLink": "Условия использования",
 
   "page.coach.description": "Сделать шаг назад. Спланировать дальнейшее. Ответы на основе ваших тренировок, прогресса и повторений.",
@@ -2753,6 +2758,7 @@ const ja: Dictionary = {
   "error.choosePhoto": "写真を選択してください。", "error.photoFormat": "JPEG、PNG、WebP形式、最大8MB。",
   "error.sessionExpired": "セッションが期限切れです。", "error.loginRequired": "ログインが必要です。",
   "error.invalidForm": "フォームが無効です", "error.genericTitle": "エラーが発生しました", "error.routeMessage": "このページを読み込めませんでした。再試行するか、ダッシュボードに戻ってください。",
+  "error.saveFailed": "現在保存できません。しばらくしてから再度お試しください。",
   "legal.ownerInputNotice": "公開前に運営者が記入予定", "legal.privacyLink": "プライバシー", "legal.termsLink": "利用規約",
 
   "page.coach.description": "一歩下がって考える。次の準備をする。セッション、進捗、復習に基づいた回答。",
