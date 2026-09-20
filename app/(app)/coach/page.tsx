@@ -8,13 +8,41 @@ import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { CoachAnswerView } from "@/components/coach/coach-answer";
 import { CoachQuestionForm } from "@/components/coach/coach-question-form";
 import { CoachWeeklyDigest } from "@/components/coach/coach-weekly-digest";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getCoachResponseText, getCoachVideos, type CoachAnswer } from "@/lib/usecases/ai-coach-actions";
 import type { VideoSearchQuery } from "@/lib/domain/video-search";
 import { getLastResolvedDifficulty, getWeeklyReviewDigest } from "@/lib/usecases/review-actions";
 import { getTechniqueOfTheDay } from "@/lib/usecases/skill-actions";
 import { getServerLocale } from "@/lib/i18n-server";
-import { DICTIONARIES } from "@/lib/i18n";
+import { DICTIONARIES, type Locale } from "@/lib/i18n";
+
+/** The 3-card weekly digest is supplementary context, not the page's core purpose (the coach answer below it) — streamed independently so it never blocks first paint. */
+async function CoachWeeklyDigestSection({ locale }: { locale: Locale }) {
+  const [techniqueOfTheDay, weeklyDigest, lastResolved] = await Promise.all([
+    getTechniqueOfTheDay().catch(() => null),
+    getWeeklyReviewDigest().catch(() => ({ skillsTouchedCount: 0, questionCount: 0, difficultyCount: 0 })),
+    getLastResolvedDifficulty().catch(() => null),
+  ]);
+  return (
+    <CoachWeeklyDigest
+      locale={locale}
+      techniqueOfTheDay={techniqueOfTheDay}
+      weeklyDigest={weeklyDigest}
+      lastResolved={lastResolved}
+    />
+  );
+}
+
+function CoachWeeklyDigestSkeleton() {
+  return (
+    <div className="coach-modules">
+      <Skeleton className="h-[300px] w-full rounded-md" />
+      <Skeleton className="h-[300px] w-full rounded-md" />
+      <Skeleton className="h-[300px] w-full rounded-md" />
+    </div>
+  );
+}
 
 /** Fetches the external YouTube results on its own so Suspense can stream them in after the rest of the coach answer has rendered. */
 async function CoachVideoGrid({ videoQuery }: { videoQuery: VideoSearchQuery }) {
@@ -45,12 +73,7 @@ export default async function CoachPage() {
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
 
-  const [answerText, techniqueOfTheDay, weeklyDigest, lastResolved] = await Promise.all([
-    getCoachResponseText(),
-    getTechniqueOfTheDay().catch(() => null),
-    getWeeklyReviewDigest().catch(() => ({ skillsTouchedCount: 0, questionCount: 0, difficultyCount: 0 })),
-    getLastResolvedDifficulty().catch(() => null),
-  ]);
+  const answerText = await getCoachResponseText();
   const answer: CoachAnswer = { ...answerText, videos: [] };
 
   return (
@@ -58,12 +81,9 @@ export default async function CoachPage() {
       <div className="editorial-page editorial-coach">
         <PageHeader page="coach" title={dict["page.coach.title"]} description={dict["page.coach.description"]} />
 
-        <CoachWeeklyDigest
-          locale={locale}
-          techniqueOfTheDay={techniqueOfTheDay}
-          weeklyDigest={weeklyDigest}
-          lastResolved={lastResolved}
-        />
+        <Suspense fallback={<CoachWeeklyDigestSkeleton />}>
+          <CoachWeeklyDigestSection locale={locale} />
+        </Suspense>
 
         <div className="editorial-coach-columns">
         <section className="editorial-section">

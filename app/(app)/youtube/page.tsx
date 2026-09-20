@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Sparkles, Video } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -6,6 +7,7 @@ import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -16,14 +18,94 @@ import {
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { buildYouTubeSearchSuggestions } from "@/lib/domain/video-search";
 import { searchTechniqueVideos } from "@/lib/usecases/video-search-actions";
-import { getResources } from "@/lib/usecases/knowledge-actions";
+import { getResources, type ResourceListItem } from "@/lib/usecases/knowledge-actions";
 import { getTrainingIntelligenceBundle } from "@/lib/usecases/training-intelligence-actions";
 import { YouTubeVideoCard } from "@/components/youtube/youtube-video-card";
 import { YouTubeHistory } from "@/components/youtube/youtube-history";
 import { getServerLocale } from "@/lib/i18n-server";
-import { DICTIONARIES, formatT } from "@/lib/i18n";
+import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
 
 const DISCIPLINES = ["MMA", "Wrestling", "BJJ", "Muay Thai", "Boxing"] as const;
+
+function videoGridSkeleton() {
+  return (
+    <div className="youtube-video-grid">
+      <Skeleton className="aspect-video w-full rounded-xl" />
+      <Skeleton className="aspect-video w-full rounded-xl" />
+      <Skeleton className="aspect-video w-full rounded-xl" />
+    </div>
+  );
+}
+
+/** The external YouTube search call is the slowest thing on this page — streamed independently so the header/search form appear immediately. */
+async function SearchResultsSection({
+  dict,
+  query,
+  discipline,
+  favoriteIdByUrl,
+}: {
+  dict: (typeof DICTIONARIES)[Locale];
+  query: string;
+  discipline: string;
+  favoriteIdByUrl: Map<string, string>;
+}) {
+  const results = await searchTechniqueVideos({ technique: query, discipline, difficulty: "" }).catch(() => []);
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="font-heading text-lg font-semibold tracking-tight">{formatT(dict["youtube.resultsFor"], { query })}</h2>
+      {results.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{dict["youtube.noResults"]}</p>
+      ) : (
+        <div className="youtube-video-grid">
+          {results.map((video) => (
+            <YouTubeVideoCard key={video.videoId} video={video} favoriteId={favoriteIdByUrl.get(video.url) ?? null} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Depends on the training-intelligence bundle then a second external YouTube search — the slowest chain on the page, streamed on its own. */
+async function ForYouSection({
+  dict,
+  favoriteIdByUrl,
+}: {
+  dict: (typeof DICTIONARIES)[Locale];
+  favoriteIdByUrl: Map<string, string>;
+}) {
+  const { intelligence, plan } = await getTrainingIntelligenceBundle().catch(() => ({
+    intelligence: { status: "insufficient_data" as const },
+    plan: { status: "insufficient_data" as const },
+  }));
+
+  const focusTechnique =
+    plan.status === "ok"
+      ? plan.plan.focusSkillName
+      : intelligence.status === "ok"
+        ? (intelligence.recommendations[0]?.skillName ?? null)
+        : null;
+
+  if (!focusTechnique) return null;
+
+  const todayResults = await searchTechniqueVideos({ technique: focusTechnique, discipline: "MMA", difficulty: "" }).catch(() => []);
+  if (todayResults.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-1.5">
+        <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
+        <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["youtube.forYou"]}</h2>
+      </div>
+      <p className="text-sm text-muted-foreground">{formatT(dict["youtube.basedOnFocus"], { technique: focusTechnique })}</p>
+      <div className="youtube-video-grid">
+        {todayResults.map((video) => (
+          <YouTubeVideoCard key={video.videoId} video={video} favoriteId={favoriteIdByUrl.get(video.url) ?? null} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default async function YouTubePage({
   searchParams,
@@ -43,31 +125,10 @@ export default async function YouTubePage({
   const query = (q ?? "").trim();
   const effectiveDiscipline = discipline || "MMA";
 
-  const [results, favorites, { intelligence, plan }] = await Promise.all([
-    query
-      ? searchTechniqueVideos({ technique: query, discipline: effectiveDiscipline, difficulty: "" }).catch(() => [])
-      : Promise.resolve([]),
-    getResources().catch(() => []),
-    getTrainingIntelligenceBundle().catch(() => ({
-      intelligence: { status: "insufficient_data" as const },
-      plan: { status: "insufficient_data" as const },
-    })),
-  ]);
-
+  const favorites: ResourceListItem[] = await getResources().catch(() => []);
   const favoriteIdByUrl = new Map(
     favorites.filter((r) => r.type === "video").map((r) => [r.url, r.id]),
   );
-
-  const focusTechnique =
-    plan.status === "ok"
-      ? plan.plan.focusSkillName
-      : intelligence.status === "ok"
-        ? (intelligence.recommendations[0]?.skillName ?? null)
-        : null;
-
-  const todayResults = focusTechnique
-    ? await searchTechniqueVideos({ technique: focusTechnique, discipline: "MMA", difficulty: "" }).catch(() => [])
-    : [];
 
   const suggestions = query
     ? buildYouTubeSearchSuggestions({ technique: query, discipline: effectiveDiscipline, difficulty: "" })
@@ -112,34 +173,14 @@ export default async function YouTubePage({
         </section>
 
         {query ? (
-          <section className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">{formatT(dict["youtube.resultsFor"], { query })}</h2>
-            {results.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{dict["youtube.noResults"]}</p>
-            ) : (
-              <div className="youtube-video-grid">
-                {results.map((video) => (
-                  <YouTubeVideoCard key={video.videoId} video={video} favoriteId={favoriteIdByUrl.get(video.url) ?? null} />
-                ))}
-              </div>
-            )}
-          </section>
+          <Suspense fallback={videoGridSkeleton()}>
+            <SearchResultsSection dict={dict} query={query} discipline={effectiveDiscipline} favoriteIdByUrl={favoriteIdByUrl} />
+          </Suspense>
         ) : null}
 
-        {todayResults.length > 0 ? (
-          <section className="flex flex-col gap-3">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-              <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["youtube.forYou"]}</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">{formatT(dict["youtube.basedOnFocus"], { technique: focusTechnique ?? "" })}</p>
-            <div className="youtube-video-grid">
-              {todayResults.map((video) => (
-                <YouTubeVideoCard key={video.videoId} video={video} favoriteId={favoriteIdByUrl.get(video.url) ?? null} />
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <Suspense fallback={null}>
+          <ForYouSection dict={dict} favoriteIdByUrl={favoriteIdByUrl} />
+        </Suspense>
 
         <ChampionshipSectionPhoto
           src="/mma-mastery-photos/ahmad-thomas-ulFi8aO6Xdk-unsplash.jpg"

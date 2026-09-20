@@ -621,3 +621,135 @@ per a "final stability" brief. Verified: tsc, eslint (0 warnings), vitest
   `width`/`height` correctly — no CLS-causing pattern found). No browser
   QA (same no-seeded-test-user blocker as every prior session, see session
   4 onward).
+
+## Session 13 — /skills crash fix + navigation perceived-performance pass
+
+Real-user QA reported two P0s: `/skills` still crashing to the generic error
+screen, and every route navigation showing a big empty page-level skeleton
+for ~1-2s. Verified: tsc, eslint (0 warnings), vitest 217/217 (up from 216),
+`next build`. Same no-seeded-test-user blocker as every prior session —
+no live browser QA possible; all verification static (types/lint/tests/build)
+plus raw Supabase REST timing.
+
+### /skills crash — root cause and fix
+`lib/usecases/skill-actions.ts`'s `getSkills()` had `if (progressError) throw
+new Error(progressError.message)` on the **secondary**, per-user
+`skill_progress` enrichment query (skill-actions.ts:84, pre-fix). Every other
+caller of `getSkills()` (`/study`, `/goals`) already wraps the whole call in
+`.catch(() => [])`, silently masking that throw — but `/skills`'s own
+`page.tsx` awaited it unguarded (it's the page's primary content, so a blank
+`.catch(() => [])` would be wrong there too — it would silently hide a real
+outage behind "empty catalog"). Any transient failure on that one per-user
+query (not the catalog itself) took down the whole route.
+- Fix: `getSkills()` now degrades the per-user progress query to `stage:
+  "unknown"` for every skill on error (logs via `console.error`) instead of
+  throwing — matches the already-established "secondary data degrades
+  safely" pattern from session 12, and keeps `computeMasteryStage`'s
+  existing null-safe arithmetic (legacy rows with null progress columns
+  already resolved to `"unknown"` correctly, unaffected).
+  the catalog fetch (`getSkillsCatalog`, the actual primary data) still
+  throws on failure — `app/(app)/skills/page.tsx` now catches that specific
+  case and renders a distinct, localized "catalogue could not load / retry"
+  card (`skills.catalogueLoadError(Desc)`, reuses the existing
+  `offline.cta` key) instead of either crashing or silently showing a false
+  "no skills" empty state.
+- New dict keys (×6 locales): `skills.catalogueLoadError`,
+  `skills.catalogueLoadErrorDesc`.
+- Regression test: `tests/usecases/skill-actions.test.ts` — mocks a
+  `skill_progress` query failure and asserts the catalog still returns with
+  `stage: "unknown"` instead of throwing.
+
+### Navigation perceived-performance — root cause and fix
+Every target route (`dashboard`, `coach`, `study`, `competition`, `youtube`)
+awaited **all** its data — primary content and secondary/analytical
+widgets alike — in one top-level `Promise.all` before returning any JSX.
+Since none of these routes had their own `loading.tsx`, Next's shared
+`app/(app)/loading.tsx` (one generic full-page skeleton, structurally
+identical regardless of destination) stayed mounted for the full duration of
+the *slowest* query in that batch — this is exactly the "1-2s giant empty
+skeleton" reported. `/training` and `/calendar` were checked and found to
+already do a single primary query each with nothing secondary to split —
+no change needed there.
+- Split each route into fast/critical data (awaited directly, returns JSX
+  immediately) and secondary/analytical data (moved into small async
+  Server Components wrapped in `<Suspense>` with a skeleton shaped like the
+  real module, at the exact same DOM position — no layout shift):
+  - `dashboard`: Hero (profile + sessions) and `RecentActivity` render
+    immediately. `StatRow`/`ProgressionSection`/`FocusSection` (training
+    intelligence + skill progress summary) and `ClubCard` (member club
+    summary) now stream in independently. The hero's high-priority-count
+    status line (needs the same intelligence bundle) streams in-place via
+    its own tiny `Suspense`, starting with the same text a genuinely
+    zero-priority user would see (a real state, not a placeholder) and
+    upgrading once ready — so the hero never blocks on it.
+  - `coach`: the 3-card weekly digest (technique of the day / review this
+    week / last resolved difficulty) streams independently; the actual
+    coach answer + question form (the page's core purpose) still render
+    immediately.
+  - `study`: the queue (core purpose) renders immediately; favorited
+    skills and the resources list + form stream independently.
+  - `competition`: match history (core purpose) renders immediately; the
+    match-creation form's dropdown data (disciplines/athletes/session
+    options) streams independently.
+  - `youtube`: the search form/suggestions render immediately; the actual
+    search-results grid and the "for you" grid (each its own external
+    YouTube Data API call — previously **sequential**, `todayResults`
+    awaited only after `results` resolved) now stream independently via
+    separate `Suspense` boundaries, so they resolve in parallel instead of
+    back-to-back.
+  - Every newly-Suspended async section keeps the same `.catch(() =>
+    <safe default>)` fallback the pre-existing code already had for that
+    data (or adds one, matching the established pattern) — an error inside
+    a streamed section can no longer bubble up and crash the whole route
+    via `app/(app)/error.tsx`, which was the exact failure class just fixed
+    for `/skills`.
+- **Dedupe**: `dashboard`'s `StatRow`, `ProgressionSection`, and
+  `FocusSection` need overlapping subsets of the training-intelligence
+  bundle and skill-progress summary but live in 3 separate `Suspense`
+  boundaries. Wrapped both usecase calls in React's `cache()` at the top of
+  `dashboard/page.tsx` — same per-request dedup idiom the codebase already
+  uses for `createClient()`'s `getUser()` in `supabase-server.ts` — so all
+  3 boundaries share one real fetch each, not three.
+- **Prefetch**: checked `components/app-nav.tsx` — no `<Link>` sets
+  `prefetch={false}`, so Next's default (`true`) already applies; for these
+  `force-dynamic` authenticated routes that means the shared layout +
+  `loading.tsx` boundary prefetches on viewport/hover, which is already the
+  maximum Next.js supports here without Partial Prerendering (not enabled
+  in this project, and enabling it is an infra decision out of this pass's
+  scope). No code change made — already correct.
+- **Region**: no `vercel.json` exists (no `regions` override — Vercel
+  Functions default to `iad1`). Queried the linked Supabase project
+  (`pncrtzwtojlsovpbondp`) directly; response came back via a Cloudflare
+  `CDG` (Paris) edge with `x-envoy-upstream-service-time: 163ms`, but this
+  reflects *this sandbox's* network path to Supabase, not Vercel's actual
+  function-to-database path — genuinely not measurable without dashboard/
+  deployment access. Not changed blindly per the brief's own instruction;
+  flagged for manual check.
+- **Timings**: no seeded test user exists in this environment (same
+  blocker every session has hit), so authenticated end-to-end page timings
+  could not be measured before/after. What was measured: raw Supabase REST
+  round-trips for the `/skills` catalog and disciplines queries from this
+  sandbox, ~140-210ms each (see reasoning above re: not representative of
+  Vercel's real path). The concrete, verifiable change is structural: before,
+  `/youtube` awaited two *sequential* external YouTube Data API calls
+  (`results` then `todayResults`, each independently reported elsewhere in
+  this codebase as the slowest call type in the app) before any JSX
+  returned; after, both run in parallel behind independent `Suspense`
+  boundaries and no longer block the search form from appearing. The same
+  before/after shape (single blocking `Promise.all` of primary+secondary →
+  primary-only await + streamed secondary) applies to all 5 restructured
+  routes.
+
+### Manual retest checklist (added to the running list)
+1. Load `/skills` in each locale with a real user — confirm the catalog
+   renders normally (this session's fix is unverified in a live browser,
+   same blocker as every prior session).
+2. Click through `dashboard → coach → study → competition → youtube` and
+   confirm the destination header/hero/primary content appears immediately
+   on navigation, with only the secondary cards/grids showing a brief
+   shaped skeleton before filling in (the actual "does this feel fast"
+   check — not verifiable from this environment).
+3. Set `vercel.json`'s `regions` (or confirm the project dashboard's
+   function region) to match wherever the Supabase project
+   `pncrtzwtojlsovpbondp` actually runs, if they differ — could not
+   determine either side's real region from this environment.

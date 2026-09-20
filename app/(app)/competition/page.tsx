@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getDisciplines } from "@/lib/usecases/training-actions";
 import {
@@ -15,6 +17,16 @@ import { MatchRow } from "@/components/competition/match-row";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES } from "@/lib/i18n";
 
+/** The match-creation form's dropdown options are supplementary to the match history (this page's core content) — streamed independently. */
+async function MatchFormSection() {
+  const [disciplines, athletes, sessionOptions] = await Promise.all([
+    getDisciplines().catch(() => []),
+    getAthletes().catch(() => []),
+    getCompetitionSessionOptions().catch(() => []),
+  ]);
+  return <MatchForm disciplines={disciplines} athletes={athletes} sessionOptions={sessionOptions} />;
+}
+
 export default async function CompetitionPage() {
   const supabase = await createClient();
   const {
@@ -25,12 +37,7 @@ export default async function CompetitionPage() {
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
 
-  const [matches, disciplines, athletes, sessionOptions] = await Promise.all([
-    getMatches(),
-    getDisciplines().catch(() => []),
-    getAthletes().catch(() => []),
-    getCompetitionSessionOptions().catch(() => []),
-  ]);
+  const matches = await getMatches();
 
   return (
     <AppShell>
@@ -42,7 +49,9 @@ export default async function CompetitionPage() {
         <div className="editorial-competition-columns">
         <section className="editorial-section">
         <h2>{dict["competition.recordMatch"]}</h2>
-        <MatchForm disciplines={disciplines} athletes={athletes} sessionOptions={sessionOptions} />
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+          <MatchFormSection />
+        </Suspense>
         </section>
 
         <section className="editorial-section">

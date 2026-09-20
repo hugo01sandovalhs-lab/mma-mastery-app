@@ -75,13 +75,19 @@ export async function getSkills(filters?: {
     return skills.map((s) => ({ ...s, stage: "unknown" as const, lastPracticedAt: null }));
   }
 
+  // Per-user progress is secondary enrichment on top of the catalog: a
+  // transient failure here must not crash the catalog itself (every skill
+  // just falls back to stage "unknown", same as a signed-out/new user).
   const { data: progressRows, error: progressError } = await supabase
     .from("skill_progress")
     .select(
       "skill_id, knowledge_level, drilling_reps, live_application_count, sparring_attempt_count, sparring_success_count, consistency_score, pressure_performance_level, confidence_level, evidence_count, last_practiced_at",
     )
     .eq("user_id", user.id);
-  if (progressError) throw new Error(progressError.message);
+  if (progressError) {
+    console.error(progressError);
+    return skills.map((s) => ({ ...s, stage: "unknown" as const, lastPracticedAt: null }));
+  }
 
   type ProgressRow = SkillProgressDimensions & { skill_id: string };
   const progressBySkill = new Map(

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense, cache } from "react";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -27,6 +28,7 @@ import { PAGE_PHOTOS } from "@/lib/design/photography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { SESSION_TYPE_LABEL_KEYS } from "@/lib/domain/training";
 import { MASTERY_STAGES, MASTERY_STAGE_LABEL_KEYS } from "@/lib/domain/skill";
@@ -54,6 +56,62 @@ function daysSince(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
 }
 
+/**
+ * Training intelligence and progress-summary are secondary/analytical data,
+ * not needed for the hero to paint — streamed in behind Suspense instead of
+ * blocking the whole dashboard. `StatRow`, `ProgressionSection`, and
+ * `FocusSection` each render in a different part of the grid but need
+ * overlapping subsets of this data; wrapping the usecase calls in React's
+ * `cache()` (same per-request dedup idiom as `createClient()`'s `getUser()`
+ * in supabase-server.ts) means each Suspense boundary can call these
+ * independently without firing duplicate queries.
+ */
+const getIntelligenceBundleCached = cache(() =>
+  getTrainingIntelligenceBundle().catch(() => ({
+    intelligence: { status: "insufficient_data" as const },
+    plan: { status: "insufficient_data" as const },
+  })),
+);
+const getProgressSummaryCached = cache(() =>
+  getSkillsProgressSummary().catch(() => ({ totalTracked: 0, stageCounts: {}, disciplines: [] }) as SkillProgressSummary),
+);
+
+async function DashboardStatRowSection({ dict }: { dict: (typeof DICTIONARIES)[Locale] }) {
+  const [{ plan }, progressSummary] = await Promise.all([
+    getIntelligenceBundleCached(),
+    getProgressSummaryCached(),
+  ]);
+  const proficientCount = (progressSummary.stageCounts.consistent ?? 0) + (progressSummary.stageCounts.mastered ?? 0);
+  const proficientPct =
+    progressSummary.totalTracked > 0 ? Math.round((proficientCount / progressSummary.totalTracked) * 100) : 0;
+  return <StatRow dict={dict} plan={plan} proficientPct={proficientPct} progressSummary={progressSummary} />;
+}
+
+async function DashboardProgressionSection({ dict }: { dict: (typeof DICTIONARIES)[Locale] }) {
+  const progressSummary = await getProgressSummaryCached();
+  return <ProgressionSection dict={dict} summary={progressSummary} />;
+}
+
+async function DashboardFocusSection({ dict }: { dict: (typeof DICTIONARIES)[Locale] }) {
+  const { intelligence, plan } = await getIntelligenceBundleCached();
+  return <FocusSection dict={dict} intelligence={intelligence} plan={plan} />;
+}
+
+async function DashboardClubSection({ dict, locale }: { dict: (typeof DICTIONARIES)[Locale]; locale: Locale }) {
+  const summary = await getMemberClubSummary().catch(() => null);
+  return <ClubCard dict={dict} locale={locale} summary={summary} />;
+}
+
+function StatRowSkeleton() {
+  return (
+    <div className="championship-stats">
+      <Skeleton className="h-40 w-full rounded-xl" />
+      <Skeleton className="h-40 w-full rounded-xl" />
+      <Skeleton className="h-40 w-full rounded-xl" />
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
@@ -63,27 +121,13 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, sessions, { intelligence, plan }, progressSummary, clubSummary] = await Promise.all([
+  const [{ data: profile }, sessions] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle(),
     getTrainingSessions(),
-    getTrainingIntelligenceBundle(),
-    getSkillsProgressSummary(),
-    getMemberClubSummary(),
   ]);
 
   const recent = sessions.slice(0, 5);
   const sessionStats = computeSessionStats(sessions);
-  const highPriorityCount =
-    intelligence.status === "ok"
-      ? intelligence.recommendations.filter((r) => r.priority === "high").length
-      : 0;
-
-  const proficientCount =
-    (progressSummary.stageCounts.consistent ?? 0) + (progressSummary.stageCounts.mastered ?? 0);
-  const proficientPct =
-    progressSummary.totalTracked > 0
-      ? Math.round((proficientCount / progressSummary.totalTracked) * 100)
-      : 0;
 
   return (
     <main className="championship-dashboard">
@@ -92,7 +136,6 @@ export default async function DashboardPage() {
           displayName={profile?.display_name ?? null}
           sessionCount={sessions.length}
           lastSessionDate={sessions[0]?.date ?? null}
-          highPriorityCount={highPriorityCount}
           imageSrc={PAGE_PHOTOS.dashboard.src}
           imageAlt={PAGE_PHOTOS.dashboard.alt}
           imagePosition={PAGE_PHOTOS.dashboard.position}
@@ -100,16 +143,24 @@ export default async function DashboardPage() {
         />
 
         <div className="championship-grid">
-        <StatRow dict={dict} plan={plan} proficientPct={proficientPct} progressSummary={progressSummary} />
+        <Suspense fallback={<StatRowSkeleton />}>
+          <DashboardStatRowSection dict={dict} />
+        </Suspense>
 
         <div className="championship-details">
-          <ProgressionSection dict={dict} summary={progressSummary} />
+          <Suspense fallback={<Skeleton className="h-56 w-full rounded-xl" />}>
+            <DashboardProgressionSection dict={dict} />
+          </Suspense>
           <RecentActivity dict={dict} locale={locale} sessions={recent} />
         </div>
 
         <div className="championship-support">
-          <FocusSection dict={dict} intelligence={intelligence} plan={plan} />
-          <ClubCard dict={dict} locale={locale} summary={clubSummary} />
+          <Suspense fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+            <DashboardFocusSection dict={dict} />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+            <DashboardClubSection dict={dict} locale={locale} />
+          </Suspense>
         </div>
 
         <QuickActions dict={dict} />
@@ -118,12 +169,51 @@ export default async function DashboardPage() {
   );
 }
 
+function heroStatusText(
+  dict: (typeof DICTIONARIES)[Locale],
+  sessionCount: number,
+  lastSessionDate: string | null,
+  highPriorityCount: number,
+): string {
+  return sessionCount === 0
+    ? dict["dashboard.status.start"]
+    : highPriorityCount > 0
+      ? formatT(dict["dashboard.status.priority"], { count: highPriorityCount })
+      : lastSessionDate
+        ? daysSince(lastSessionDate) <= 0
+          ? dict["dashboard.status.lastSessionToday"]
+          : formatT(dict["dashboard.status.lastSessionDaysAgo"], { days: daysSince(lastSessionDate) })
+        : dict["dashboard.status.continue"];
+}
+
+/**
+ * The high-priority count needs the training-intelligence bundle (the
+ * slowest query on this page), so the status line streams in separately from
+ * the rest of the hero: it starts showing the same text a zero-priority user
+ * would see (a legitimate state, not a placeholder) and upgrades in place
+ * once the bundle resolves, via the same request-deduped cache as StatRow/
+ * FocusSection below.
+ */
+async function HeroStatus({
+  dict,
+  sessionCount,
+  lastSessionDate,
+}: {
+  dict: (typeof DICTIONARIES)[Locale];
+  sessionCount: number;
+  lastSessionDate: string | null;
+}) {
+  const { intelligence } = await getIntelligenceBundleCached();
+  const highPriorityCount =
+    intelligence.status === "ok" ? intelligence.recommendations.filter((r) => r.priority === "high").length : 0;
+  return <>{heroStatusText(dict, sessionCount, lastSessionDate, highPriorityCount)}</>;
+}
+
 function Hero({
   dict,
   displayName,
   sessionCount,
   lastSessionDate,
-  highPriorityCount,
   imageSrc,
   imageAlt,
   imagePosition,
@@ -133,23 +223,11 @@ function Hero({
   displayName: string | null;
   sessionCount: number;
   lastSessionDate: string | null;
-  highPriorityCount: number;
   imageSrc: string;
   imageAlt: string;
   imagePosition: string;
   sessionStats: ReturnType<typeof computeSessionStats>;
 }) {
-  const status =
-    sessionCount === 0
-      ? dict["dashboard.status.start"]
-      : highPriorityCount > 0
-        ? formatT(dict["dashboard.status.priority"], { count: highPriorityCount })
-        : lastSessionDate
-          ? daysSince(lastSessionDate) <= 0
-            ? dict["dashboard.status.lastSessionToday"]
-            : formatT(dict["dashboard.status.lastSessionDaysAgo"], { days: daysSince(lastSessionDate) })
-          : dict["dashboard.status.continue"];
-
   return (
     <section className="championship-hero" aria-label={dict["dashboard.hero.ariaLabel"]}>
       <ProgressiveImage src={imageSrc} alt={imageAlt} fill priority sizes="(max-width: 767px) 100vw, 700px" className="championship-fighter" style={{ objectPosition: imagePosition }} />
@@ -161,7 +239,11 @@ function Hero({
       <div className="championship-hero-copy">
         <p>{displayName ? formatT(dict["dashboard.greeting"], { name: displayName }) : dict["dashboard.greetingDefault"]}</p>
         <h1>{dict["dashboard.tagline1"]}<br />{dict["dashboard.tagline2"]}<br />{dict["dashboard.tagline3"]}</h1>
-        <p className="championship-status">{status}</p>
+        <p className="championship-status">
+          <Suspense fallback={heroStatusText(dict, sessionCount, lastSessionDate, 0)}>
+            <HeroStatus dict={dict} sessionCount={sessionCount} lastSessionDate={lastSessionDate} />
+          </Suspense>
+        </p>
       </div>
       <div className="championship-hero-footer">
         <span className="flex flex-col gap-0.5">

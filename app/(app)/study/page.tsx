@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { BookmarkIcon, ListChecksIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -7,6 +8,7 @@ import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { STUDY_STATUSES, STUDY_STATUS_LABEL_KEYS } from "@/lib/domain/knowledge";
 import { getSkills } from "@/lib/usecases/skill-actions";
@@ -19,7 +21,45 @@ import { StudyQueueItemRow } from "@/components/study/study-queue-item-row";
 import { ResourceForm } from "@/components/study/resource-form";
 import { ResourceRow } from "@/components/study/resource-row";
 import { getServerLocale } from "@/lib/i18n-server";
-import { DICTIONARIES } from "@/lib/i18n";
+import { DICTIONARIES, type Locale } from "@/lib/i18n";
+
+/** Favorited skills are supplementary to the queue (this page's core purpose) — streamed independently. */
+async function StudyFavoritesSection({ dict }: { dict: (typeof DICTIONARIES)[Locale] }) {
+  const bookmarks = await getBookmarkedSkills().catch(() => []);
+  return bookmarks.length === 0 ? (
+    <p className="text-sm opacity-80">{dict["study.noFavorites"]}</p>
+  ) : (
+    <div className="flex flex-wrap gap-2">
+      {bookmarks.map((s) => (
+        <Link key={s.id} href={`/skills/${s.id}`}>
+          <Badge variant="secondary">{s.name}</Badge>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/** Resource list + creation form are supplementary to the queue — streamed independently. */
+async function StudyResourcesSection({ dict }: { dict: (typeof DICTIONARIES)[Locale] }) {
+  const [resources, skills] = await Promise.all([
+    getResources().catch(() => []),
+    getSkills().catch(() => []),
+  ]);
+  return (
+    <>
+      {resources.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{dict["study.noResources"]}</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {resources.map((r) => (
+            <ResourceRow key={r.id} resource={r} />
+          ))}
+        </div>
+      )}
+      <ResourceForm skills={skills} />
+    </>
+  );
+}
 
 export default async function StudyPage() {
   const supabase = await createClient();
@@ -31,12 +71,7 @@ export default async function StudyPage() {
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
 
-  const [queue, bookmarks, resources, skills] = await Promise.all([
-    getStudyQueue(),
-    getBookmarkedSkills().catch(() => []),
-    getResources().catch(() => []),
-    getSkills().catch(() => []),
-  ]);
+  const queue = await getStudyQueue();
 
   return (
     <AppShell>
@@ -92,31 +127,23 @@ export default async function StudyPage() {
             <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.favoritesHeading"]}</h2>
           </div>
           <p className="text-xs opacity-80">{dict["photoLabel.takeTimeUnderstand"]}</p>
-          {bookmarks.length === 0 ? (
-            <p className="text-sm opacity-80">{dict["study.noFavorites"]}</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {bookmarks.map((s) => (
-                <Link key={s.id} href={`/skills/${s.id}`}>
-                  <Badge variant="secondary">{s.name}</Badge>
-                </Link>
-              ))}
-            </div>
-          )}
+          <Suspense fallback={<Skeleton className="h-6 w-2/3 rounded-full" />}>
+            <StudyFavoritesSection dict={dict} />
+          </Suspense>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["study.resourcesHeading"]}</h2>
-          {resources.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{dict["study.noResources"]}</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {resources.map((r) => (
-                <ResourceRow key={r.id} resource={r} />
-              ))}
-            </div>
-          )}
-          <ResourceForm skills={skills} />
+          <Suspense
+            fallback={
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-14 w-full rounded-lg" />
+                <Skeleton className="h-14 w-full rounded-lg" />
+              </div>
+            }
+          >
+            <StudyResourcesSection dict={dict} />
+          </Suspense>
         </section>
         </div>
       </div>

@@ -209,7 +209,7 @@ const fr = {
   "skills.masteryMap": "Carte de maîtrise", "skills.searchAria": "Rechercher une compétence",
   "skills.searchPlaceholder": "Rechercher une compétence...", "skills.allDisciplines": "Toutes les disciplines",
   "action.filter": "Filtrer", "skills.noneMatch": "Aucune compétence ne correspond",
-  "skills.noneInCatalogue": "Aucune compétence au catalogue", "skills.tryOtherSearch": "Essayez une autre recherche ou une autre discipline.",
+  "skills.noneInCatalogue": "Aucune compétence au catalogue", "skills.tryOtherSearch": "Essayez une autre recherche ou une autre discipline.", "skills.catalogueLoadError": "Le catalogue n'a pas pu être chargé", "skills.catalogueLoadErrorDesc": "Problème temporaire de connexion. Réessayez dans un instant.",
   "skills.catalogueGrows": "Le catalogue de compétences se remplit au fil de vos séances et de son administration.",
   "action.resetFilters": "Réinitialiser les filtres", "skills.practicedAgo": "Pratiqué {when}",
 
@@ -697,7 +697,7 @@ const en: Dictionary = {
   "skills.masteryMap": "Mastery map", "skills.searchAria": "Search a skill",
   "skills.searchPlaceholder": "Search a skill...", "skills.allDisciplines": "All disciplines",
   "action.filter": "Filter", "skills.noneMatch": "No skill matches",
-  "skills.noneInCatalogue": "No skill in catalog", "skills.tryOtherSearch": "Try another search or discipline.",
+  "skills.noneInCatalogue": "No skill in catalog", "skills.tryOtherSearch": "Try another search or discipline.", "skills.catalogueLoadError": "The catalog could not be loaded", "skills.catalogueLoadErrorDesc": "Temporary connection issue. Try again in a moment.",
   "skills.catalogueGrows": "The skill catalog fills up as you log sessions and as it's administered.",
   "action.resetFilters": "Reset filters", "skills.practicedAgo": "Practiced {when}",
 
@@ -1181,7 +1181,7 @@ const es: Dictionary = {
   "skills.masteryMap": "Mapa de dominio", "skills.searchAria": "Buscar una competencia",
   "skills.searchPlaceholder": "Buscar una competencia...", "skills.allDisciplines": "Todas las disciplinas",
   "action.filter": "Filtrar", "skills.noneMatch": "Ninguna competencia coincide",
-  "skills.noneInCatalogue": "Ninguna competencia en el catálogo", "skills.tryOtherSearch": "Pruebe otra búsqueda u otra disciplina.",
+  "skills.noneInCatalogue": "Ninguna competencia en el catálogo", "skills.tryOtherSearch": "Pruebe otra búsqueda u otra disciplina.", "skills.catalogueLoadError": "No se pudo cargar el catálogo", "skills.catalogueLoadErrorDesc": "Problema de conexión temporal. Inténtelo de nuevo en un momento.",
   "skills.catalogueGrows": "El catálogo de competencias crece con sus sesiones y su administración.",
   "action.resetFilters": "Restablecer filtros", "skills.practicedAgo": "Practicado {when}",
 
@@ -1665,7 +1665,7 @@ const de: Dictionary = {
   "skills.masteryMap": "Beherrschungskarte", "skills.searchAria": "Fähigkeit suchen",
   "skills.searchPlaceholder": "Fähigkeit suchen...", "skills.allDisciplines": "Alle Disziplinen",
   "action.filter": "Filtern", "skills.noneMatch": "Keine Fähigkeit passt",
-  "skills.noneInCatalogue": "Keine Fähigkeit im Katalog", "skills.tryOtherSearch": "Versuchen Sie eine andere Suche oder Disziplin.",
+  "skills.noneInCatalogue": "Keine Fähigkeit im Katalog", "skills.tryOtherSearch": "Versuchen Sie eine andere Suche oder Disziplin.", "skills.catalogueLoadError": "Der Katalog konnte nicht geladen werden", "skills.catalogueLoadErrorDesc": "Vorübergehendes Verbindungsproblem. Versuchen Sie es gleich noch einmal.",
   "skills.catalogueGrows": "Der Fähigkeitenkatalog füllt sich mit Ihren Einheiten und seiner Verwaltung.",
   "action.resetFilters": "Filter zurücksetzen", "skills.practicedAgo": "Geübt {when}",
 
@@ -2149,7 +2149,7 @@ const ru: Dictionary = {
   "skills.masteryMap": "Карта мастерства", "skills.searchAria": "Искать навык",
   "skills.searchPlaceholder": "Искать навык...", "skills.allDisciplines": "Все дисциплины",
   "action.filter": "Фильтровать", "skills.noneMatch": "Ни один навык не подходит",
-  "skills.noneInCatalogue": "В каталоге нет навыков", "skills.tryOtherSearch": "Попробуйте другой запрос или дисциплину.",
+  "skills.noneInCatalogue": "В каталоге нет навыков", "skills.tryOtherSearch": "Попробуйте другой запрос или дисциплину.", "skills.catalogueLoadError": "Не удалось загрузить каталог", "skills.catalogueLoadErrorDesc": "Временная проблема с подключением. Повторите попытку через мгновение.",
   "skills.catalogueGrows": "Каталог навыков пополняется по мере тренировок и администрирования.",
   "action.resetFilters": "Сбросить фильтры", "skills.practicedAgo": "Практика {when}",
 
@@ -2633,7 +2633,7 @@ const ja: Dictionary = {
   "skills.masteryMap": "習熟度マップ", "skills.searchAria": "スキルを検索",
   "skills.searchPlaceholder": "スキルを検索...", "skills.allDisciplines": "すべての種目",
   "action.filter": "絞り込む", "skills.noneMatch": "該当するスキルがありません",
-  "skills.noneInCatalogue": "カタログにスキルがありません", "skills.tryOtherSearch": "別の検索語または種目をお試しください。",
+  "skills.noneInCatalogue": "カタログにスキルがありません", "skills.tryOtherSearch": "別の検索語または種目をお試しください。", "skills.catalogueLoadError": "カタログを読み込めませんでした", "skills.catalogueLoadErrorDesc": "一時的な接続の問題です。しばらくしてから再試行してください。",
   "skills.catalogueGrows": "スキルカタログはセッションの記録と管理に応じて充実していきます。",
   "action.resetFilters": "フィルターをリセット", "skills.practicedAgo": "練習：{when}",
 

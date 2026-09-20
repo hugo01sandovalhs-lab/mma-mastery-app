@@ -51,9 +51,14 @@ export default async function SkillsPage({
   if (!user) redirect("/login");
 
   const { q, discipline } = await searchParams;
+  let catalogLoadError = false;
   const [disciplines, skills, locale] = await Promise.all([
     getDisciplines().catch(() => []),
-    getSkills({ disciplineId: discipline || undefined, search: q || undefined }),
+    getSkills({ disciplineId: discipline || undefined, search: q || undefined }).catch((error) => {
+      console.error(error);
+      catalogLoadError = true;
+      return [] as SkillListItem[];
+    }),
     getServerLocale(),
   ]);
   const dict = DICTIONARIES[locale];
@@ -127,7 +132,22 @@ export default async function SkillsPage({
           </Button>
         </form>
 
-        {skills.length === 0 ? (
+        {catalogLoadError ? (
+          <Card>
+            <CardContent className="editorial-empty">
+              <Target className="size-6 text-muted-foreground" />
+              <p className="font-medium">
+                <T k="skills.catalogueLoadError" fallback="Le catalogue n'a pas pu être chargé" />
+              </p>
+              <p className="max-w-md text-sm text-muted-foreground">
+                <T k="skills.catalogueLoadErrorDesc" fallback="Problème temporaire de connexion. Réessayez dans un instant." />
+              </p>
+              <Button variant="outline" size="sm" render={<Link href="/skills" />} className="mt-1">
+                <T k="offline.cta" fallback="Réessayer" />
+              </Button>
+            </CardContent>
+          </Card>
+        ) : skills.length === 0 ? (
           <Card>
             <CardContent className="editorial-empty">
               <Target className="size-6 text-muted-foreground" />
