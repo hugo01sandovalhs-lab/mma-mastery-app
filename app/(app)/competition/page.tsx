@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { Timer } from "lucide-react";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -45,6 +46,16 @@ export default async function CompetitionPage() {
         <PageHeader page="competition" title={dict["page.competition.title"]} description={dict["page.competition.description"]} />
 
         <ChampionshipPhotoMosaic page="competition" />
+
+        <ChampionshipSectionPhoto
+          src="/mma-mastery-photos/anastase-maragos-mDSGxpSugsE-unsplash.jpg"
+          alt="Coin d'un combattant entre deux rounds, préparation dans le ring"
+          label="Préparation"
+          labelKey="photoLabel.preparation"
+          icon={<Timer className="size-4 shrink-0 text-primary" aria-hidden="true" />}
+          objectPosition="50% 55%"
+          size="large"
+        />
 
         <div className="editorial-competition-columns">
         <section className="editorial-section">

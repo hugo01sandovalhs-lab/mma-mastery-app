@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, UserRoundPlus, UsersRound } from "lucide-react";
+import { BookOpen, UserRoundPlus, Users, UsersRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -52,6 +53,16 @@ export default async function ClubListPage() {
             <Button variant="outline" size="sm" render={<Link href="/profile#partenaires" />}><T k="club.managePartners" fallback="Gérer mes partenaires" /></Button>
           </section>
         </div>
+
+        <ChampionshipSectionPhoto
+          src="/mma-mastery-photos/gmb-fitness-Ba3FAXwp3A8-unsplash.jpg"
+          alt="Groupe de pratiquants réunis en cercle pour un briefing collectif"
+          label="Collectif"
+          labelKey="photoLabel.collective"
+          icon={<Users className="size-4 shrink-0 text-primary" aria-hidden="true" />}
+          objectPosition="50% 45%"
+          size="large"
+        />
 
         <div className="editorial-secondary-columns">
         <section id="creer-un-club" className="editorial-section">

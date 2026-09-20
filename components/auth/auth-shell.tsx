@@ -8,7 +8,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 
 const SLIDE_DURATION = 6500;
 
-type Cover = {
+export type Cover = {
   src: string;
   alt: string;
   labelKey: string;
@@ -60,22 +60,37 @@ export function AuthShell({
   intro,
   children,
   hero,
+  covers: coversProp,
 }: {
   title: string;
   intro: string;
   children: React.ReactNode;
   hero: "static" | "rotate";
+  covers?: Cover[];
 }) {
-  const covers = hero === "rotate" ? ROTATING_COVERS : [STATIC_COVER];
+  const covers = hero === "rotate" ? (coversProp ?? ROTATING_COVERS) : [STATIC_COVER];
   const [active, setActive] = useState(0);
+  // Only the active cover plus one lookahead is ever in the DOM, so the browser
+  // never fetches all rotation photos at once — each loads shortly before its turn.
+  const [maxLoaded, setMaxLoaded] = useState(1);
   const { t } = useI18n();
 
   useEffect(() => {
-    if (hero !== "rotate") return;
-    const interval = window.setInterval(
-      () => setActive((current) => (current + 1) % covers.length),
-      SLIDE_DURATION,
-    );
+    if (hero !== "rotate" || covers.length <= 1) return;
+    const timeout = window.setTimeout(() => setMaxLoaded((m) => Math.max(m, 2)), 1200);
+    return () => window.clearTimeout(timeout);
+  }, [hero, covers.length]);
+
+  useEffect(() => {
+    if (hero !== "rotate" || covers.length <= 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const interval = window.setInterval(() => {
+      setActive((current) => {
+        const next = (current + 1) % covers.length;
+        setMaxLoaded((m) => Math.max(m, next + 1));
+        return next;
+      });
+    }, SLIDE_DURATION);
     return () => window.clearInterval(interval);
   }, [hero, covers.length]);
 
@@ -84,7 +99,7 @@ export function AuthShell({
   return (
     <main className="auth-stage">
       <section className="auth-cover" aria-label={`Ambiance ${t(image.labelKey, image.label)}`}>
-        {covers.map((cover, index) => (
+        {covers.slice(0, maxLoaded).map((cover, index) => (
           <Image
             key={cover.src}
             src={cover.src}

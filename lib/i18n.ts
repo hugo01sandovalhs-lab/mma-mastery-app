@@ -301,6 +301,7 @@ const fr = {
   "photoLabel.repeat": "Répéter", "photoLabel.understand": "Comprendre", "photoLabel.breakdown": "Décomposer",
   "photoLabel.resources": "Ressources", "photoLabel.direction": "Cap", "photoLabel.progress": "Progression",
   "photoLabel.fight": "Combat", "photoLabel.upcoming": "Échéance", "photoLabel.sequences": "Séquences",
+  "photoLabel.sparring": "Sparring", "photoLabel.takedown": "Projections", "photoLabel.preparation": "Préparation",
   "photoLabel.classes": "Cours", "photoLabel.collective": "Collectif", "photoLabel.partners": "Partenaires",
   "photoLabel.identity": "Identité", "photoLabel.journey": "Parcours", "photoLabel.trainings": "Entraînements",
   "photoLabel.competitions": "Compétitions", "photoLabel.workPace": "Cadence de travail",
@@ -340,7 +341,7 @@ const fr = {
   "dashboard.groups": "Groupes", "dashboard.noGroups": "Aucun groupe.",
   "dashboard.quickAction.fullHistory": "Historique complet", "dashboard.quickAction.studyQueue": "File d'étude",
 
-  "authCover.cage": "Cage", "authCover.ring": "Ring", "authCover.pads": "Paos", "authCover.strike": "Frappe",
+  "authCover.cage": "Cage", "authCover.ring": "Ring", "authCover.pads": "Paos", "authCover.strike": "Frappe", "authCover.training": "Entraînement",
 
   "notFound.title": "Page introuvable", "notFound.body": "Cette page n'existe pas ou plus.",
   "notFound.cta": "Retour à l'accueil",
@@ -830,6 +831,7 @@ const en: Dictionary = {
   "photoLabel.repeat": "Repeat", "photoLabel.understand": "Understand", "photoLabel.breakdown": "Break down",
   "photoLabel.resources": "Resources", "photoLabel.direction": "Direction", "photoLabel.progress": "Progress",
   "photoLabel.fight": "Fight", "photoLabel.upcoming": "Upcoming", "photoLabel.sequences": "Sequences",
+  "photoLabel.sparring": "Sparring", "photoLabel.takedown": "Takedowns", "photoLabel.preparation": "Preparation",
   "photoLabel.classes": "Classes", "photoLabel.collective": "Team", "photoLabel.partners": "Partners",
   "photoLabel.identity": "Identity", "photoLabel.journey": "Journey", "photoLabel.trainings": "Trainings",
   "photoLabel.competitions": "Competitions", "photoLabel.workPace": "Work pace",
@@ -869,7 +871,7 @@ const en: Dictionary = {
   "dashboard.groups": "Groups", "dashboard.noGroups": "No group yet.",
   "dashboard.quickAction.fullHistory": "Full history", "dashboard.quickAction.studyQueue": "Study queue",
 
-  "authCover.cage": "Cage", "authCover.ring": "Ring", "authCover.pads": "Pads", "authCover.strike": "Strike",
+  "authCover.cage": "Cage", "authCover.ring": "Ring", "authCover.pads": "Pads", "authCover.strike": "Strike", "authCover.training": "Training",
 
   "notFound.title": "Page not found", "notFound.body": "This page doesn't exist anymore.",
   "notFound.cta": "Back to home",
@@ -1356,6 +1358,7 @@ const es: Dictionary = {
   "photoLabel.repeat": "Repetir", "photoLabel.understand": "Comprender", "photoLabel.breakdown": "Desglosar",
   "photoLabel.resources": "Recursos", "photoLabel.direction": "Rumbo", "photoLabel.progress": "Progreso",
   "photoLabel.fight": "Combate", "photoLabel.upcoming": "Próximo", "photoLabel.sequences": "Secuencias",
+  "photoLabel.sparring": "Sparring", "photoLabel.takedown": "Derribos", "photoLabel.preparation": "Preparación",
   "photoLabel.classes": "Clases", "photoLabel.collective": "Colectivo", "photoLabel.partners": "Compañeros",
   "photoLabel.identity": "Identidad", "photoLabel.journey": "Trayectoria", "photoLabel.trainings": "Entrenamientos",
   "photoLabel.competitions": "Competiciones", "photoLabel.workPace": "Ritmo de trabajo",
@@ -1395,7 +1398,7 @@ const es: Dictionary = {
   "dashboard.groups": "Grupos", "dashboard.noGroups": "Ningún grupo.",
   "dashboard.quickAction.fullHistory": "Historial completo", "dashboard.quickAction.studyQueue": "Cola de estudio",
 
-  "authCover.cage": "Jaula", "authCover.ring": "Ring", "authCover.pads": "Manoplas", "authCover.strike": "Golpe",
+  "authCover.cage": "Jaula", "authCover.ring": "Ring", "authCover.pads": "Manoplas", "authCover.strike": "Golpe", "authCover.training": "Entrenamiento",
 
   "notFound.title": "Página no encontrada", "notFound.body": "Esta página ya no existe.",
   "notFound.cta": "Volver al inicio",
@@ -1882,6 +1885,7 @@ const de: Dictionary = {
   "photoLabel.repeat": "Wiederholen", "photoLabel.understand": "Verstehen", "photoLabel.breakdown": "Zerlegen",
   "photoLabel.resources": "Ressourcen", "photoLabel.direction": "Kurs", "photoLabel.progress": "Fortschritt",
   "photoLabel.fight": "Kampf", "photoLabel.upcoming": "Anstehend", "photoLabel.sequences": "Sequenzen",
+  "photoLabel.sparring": "Sparring", "photoLabel.takedown": "Würfe", "photoLabel.preparation": "Vorbereitung",
   "photoLabel.classes": "Kurse", "photoLabel.collective": "Kollektiv", "photoLabel.partners": "Partner",
   "photoLabel.identity": "Identität", "photoLabel.journey": "Werdegang", "photoLabel.trainings": "Trainingseinheiten",
   "photoLabel.competitions": "Wettkämpfe", "photoLabel.workPace": "Arbeitstempo",
@@ -1921,7 +1925,7 @@ const de: Dictionary = {
   "dashboard.groups": "Gruppen", "dashboard.noGroups": "Noch keine Gruppe.",
   "dashboard.quickAction.fullHistory": "Vollständiger Verlauf", "dashboard.quickAction.studyQueue": "Lernwarteschlange",
 
-  "authCover.cage": "Käfig", "authCover.ring": "Ring", "authCover.pads": "Pratzen", "authCover.strike": "Schlag",
+  "authCover.cage": "Käfig", "authCover.ring": "Ring", "authCover.pads": "Pratzen", "authCover.strike": "Schlag", "authCover.training": "Training",
 
   "notFound.title": "Seite nicht gefunden", "notFound.body": "Diese Seite gibt es nicht mehr.",
   "notFound.cta": "Zurück zur Startseite",
@@ -2408,6 +2412,7 @@ const ru: Dictionary = {
   "photoLabel.repeat": "Повторить", "photoLabel.understand": "Понять", "photoLabel.breakdown": "Разобрать",
   "photoLabel.resources": "Ресурсы", "photoLabel.direction": "Курс", "photoLabel.progress": "Прогресс",
   "photoLabel.fight": "Бой", "photoLabel.upcoming": "Ближайший", "photoLabel.sequences": "Последовательности",
+  "photoLabel.sparring": "Спарринг", "photoLabel.takedown": "Броски", "photoLabel.preparation": "Подготовка",
   "photoLabel.classes": "Занятия", "photoLabel.collective": "Коллектив", "photoLabel.partners": "Партнёры",
   "photoLabel.identity": "Личность", "photoLabel.journey": "Путь", "photoLabel.trainings": "Тренировки",
   "photoLabel.competitions": "Соревнования", "photoLabel.workPace": "Темп работы",
@@ -2447,7 +2452,7 @@ const ru: Dictionary = {
   "dashboard.groups": "Группы", "dashboard.noGroups": "Нет ни одной группы.",
   "dashboard.quickAction.fullHistory": "Полная история", "dashboard.quickAction.studyQueue": "Очередь обучения",
 
-  "authCover.cage": "Клетка", "authCover.ring": "Ринг", "authCover.pads": "Лапы", "authCover.strike": "Удар",
+  "authCover.cage": "Клетка", "authCover.ring": "Ринг", "authCover.pads": "Лапы", "authCover.strike": "Удар", "authCover.training": "Тренировка",
 
   "notFound.title": "Страница не найдена", "notFound.body": "Этой страницы больше не существует.",
   "notFound.cta": "На главную",
@@ -2934,6 +2939,7 @@ const ja: Dictionary = {
   "photoLabel.repeat": "繰り返す", "photoLabel.understand": "理解する", "photoLabel.breakdown": "分解する",
   "photoLabel.resources": "リソース", "photoLabel.direction": "方向", "photoLabel.progress": "進歩",
   "photoLabel.fight": "試合", "photoLabel.upcoming": "予定", "photoLabel.sequences": "シーケンス",
+  "photoLabel.sparring": "スパーリング", "photoLabel.takedown": "テイクダウン", "photoLabel.preparation": "準備",
   "photoLabel.classes": "クラス", "photoLabel.collective": "集団", "photoLabel.partners": "パートナー",
   "photoLabel.identity": "アイデンティティ", "photoLabel.journey": "歩み", "photoLabel.trainings": "トレーニング",
   "photoLabel.competitions": "大会", "photoLabel.workPace": "作業ペース",
@@ -2973,7 +2979,7 @@ const ja: Dictionary = {
   "dashboard.groups": "グループ", "dashboard.noGroups": "グループはまだありません。",
   "dashboard.quickAction.fullHistory": "全履歴", "dashboard.quickAction.studyQueue": "学習キュー",
 
-  "authCover.cage": "ケージ", "authCover.ring": "リング", "authCover.pads": "ミット", "authCover.strike": "打撃技",
+  "authCover.cage": "ケージ", "authCover.ring": "リング", "authCover.pads": "ミット", "authCover.strike": "打撃技", "authCover.training": "トレーニング",
 
   "notFound.title": "ページが見つかりません", "notFound.body": "このページはもう存在しません。",
   "notFound.cta": "ホームに戻る",

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Network, Search, Target } from "lucide-react";
+import { Network, Search, Swords, Target, Waypoints } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { T } from "@/components/i18n-provider";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,6 +95,25 @@ export default async function SkillsPage({
         } />
 
         <ChampionshipPhotoMosaic page="skills" />
+
+        <div className="editorial-secondary-columns">
+          <ChampionshipSectionPhoto
+            src="/mma-mastery-photos/pexels-duren-williams-29414623-11392335.jpg"
+            alt="Deux pratiquantes en situation de sparring au sol"
+            label="Sparring"
+            labelKey="photoLabel.sparring"
+            icon={<Swords className="size-4 shrink-0 text-primary" aria-hidden="true" />}
+            objectPosition="45% 55%"
+          />
+          <ChampionshipSectionPhoto
+            src="/mma-mastery-photos/pexels-stephanie-crephead-130171264-11201261.jpg"
+            alt="Projection de judo sur tapis en extérieur"
+            label="Projections"
+            labelKey="photoLabel.takedown"
+            icon={<Waypoints className="size-4 shrink-0 text-primary" aria-hidden="true" />}
+            objectPosition="35% 65%"
+          />
+        </div>
 
         <form className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_200px_auto]">
           <div className="relative">
