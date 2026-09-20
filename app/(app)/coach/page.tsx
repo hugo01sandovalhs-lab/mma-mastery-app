@@ -36,15 +36,23 @@ async function TechniqueOfDayVideos({ technique, discipline }: { technique: stri
 
 /** The 3-card weekly digest is supplementary context, not the page's core purpose (the coach answer below it) — streamed independently so it never blocks first paint. */
 async function CoachWeeklyDigestSection({ locale }: { locale: Locale }) {
-  const [techniqueOfTheDay, weeklyDigest, lastResolved] = await Promise.all([
-    getTechniqueOfTheDay().catch((): TechniqueOfTheDay | null => null),
+  // A rejection here (catalog/DB blip) is a temporary-unavailable state, never
+  // the same "no skills" empty state the UI shows when the pick genuinely
+  // found nothing — conflating the two used to render "Catalogue vide" for a
+  // transient failure even though the catalog itself has 133 skills.
+  const [techniqueOfDayResult, weeklyDigest, lastResolved] = await Promise.all([
+    getTechniqueOfTheDay().then(
+      (value): { value: TechniqueOfTheDay | null; failed: boolean } => ({ value, failed: false }),
+    ).catch(() => ({ value: null, failed: true })),
     getWeeklyReviewDigest().catch(() => ({ skillsTouchedCount: 0, questionCount: 0, difficultyCount: 0 })),
     getLastResolvedDifficulty().catch(() => null),
   ]);
+  const { value: techniqueOfTheDay, failed: techniqueOfDayFailed } = techniqueOfDayResult;
   return (
     <CoachWeeklyDigest
       locale={locale}
       techniqueOfTheDay={techniqueOfTheDay}
+      techniqueOfDayFailed={techniqueOfDayFailed}
       videoSlot={
         techniqueOfTheDay ? (
           <Suspense fallback={null}>
@@ -87,7 +95,12 @@ async function CoachVideoGrid({ videoQuery }: { videoQuery: VideoSearchQuery }) 
   );
 }
 
-export default async function CoachPage() {
+export default async function CoachPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -126,7 +139,7 @@ export default async function CoachPage() {
 
         <section className="editorial-section">
           <h2 className="font-heading text-lg font-semibold tracking-tight">{dict["coach.ask"]}</h2>
-          <CoachQuestionForm />
+          <CoachQuestionForm initialQuestion={q} />
           <ChampionshipSectionPhoto
             src="/mma-mastery-photos/wade-austin-ellis-sf0qE4XehbI-unsplash.jpg"
             alt="Coach donnant des conseils entre deux rounds"

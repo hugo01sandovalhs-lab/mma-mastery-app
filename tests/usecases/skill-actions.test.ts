@@ -28,13 +28,16 @@ const CATALOG = [
 ];
 
 vi.mock("@/lib/infra/db/supabase-service", () => ({
-  createServiceClient: vi.fn(() => ({
+  createPublicClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         order: vi.fn(async () => ({ data: CATALOG, error: null })),
       })),
     })),
   })),
+  createServiceClient: vi.fn(() => {
+    throw new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
+  }),
 }));
 
 vi.mock("@/lib/infra/db/supabase-server", () => ({
@@ -59,5 +62,25 @@ describe("getSkills degrades secondary per-user progress instead of crashing the
 
     expect(skills).toHaveLength(1);
     expect(skills[0]).toMatchObject({ id: "skill-1", name: "Armbar", stage: "unknown", lastPracticedAt: null });
+  });
+});
+
+/**
+ * Regression test for the production /skills "Le catalogue n'a pas pu être
+ * chargé" failure: getSkillsCatalog() used to read the 133-row public skills
+ * table through createServiceClient(), which throws when
+ * SUPABASE_SERVICE_ROLE_KEY is unset in a deploy environment. The catalog is
+ * public reference data (RLS `using (true)`, migration 17) and must load via
+ * createPublicClient() (anon key) instead, so a missing/misscoped
+ * service-role secret can never turn a non-empty DB into an empty catalog.
+ */
+describe("getSkillsCatalog does not depend on the service-role client", () => {
+  it("loads the catalog via createPublicClient even if createServiceClient would throw", async () => {
+    const { getSkillsCatalog } = await import("@/lib/usecases/skill-actions");
+
+    const catalog = await getSkillsCatalog();
+
+    expect(catalog).toHaveLength(1);
+    expect(catalog[0]).toMatchObject({ id: "skill-1", name: "Armbar" });
   });
 });

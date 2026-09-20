@@ -16,7 +16,21 @@ import type { Locale } from "@/lib/i18n";
  *      name, only once the exact/substring/alias passes above found nothing.
  */
 
-export type NavigationDestination = "coach" | "training" | "goals" | "study" | "youtube";
+export type NavigationDestination =
+  | "dashboard"
+  | "training"
+  | "trainingNew"
+  | "skills"
+  | "coach"
+  | "study"
+  | "goals"
+  | "competition"
+  | "club"
+  | "profile"
+  | "calendar"
+  | "sparring"
+  | "search"
+  | "youtube";
 
 export type NavigationIntent = {
   destination: NavigationDestination;
@@ -25,13 +39,142 @@ export type NavigationIntent = {
   descKey: string;
 };
 
+/**
+ * The full app-navigator destination set (P0 "search as Spotlight" redefine)
+ * — every top-level page a user can jump to, not just the handful that used
+ * to have curated phrases. `titleKey` reuses the existing `nav.*`/`action.*`
+ * dictionary entries (already translated for all 6 locales) instead of
+ * duplicating a title string per destination.
+ */
 export const NAVIGATION_INTENTS: Record<NavigationDestination, NavigationIntent> = {
-  training: { destination: "training", href: "/training", titleKey: "search.nav.training", descKey: "search.nav.trainingDesc" },
-  goals: { destination: "goals", href: "/goals", titleKey: "search.nav.goals", descKey: "search.nav.goalsDesc" },
-  coach: { destination: "coach", href: "/coach", titleKey: "search.nav.coach", descKey: "search.nav.coachDesc" },
-  study: { destination: "study", href: "/study", titleKey: "search.nav.study", descKey: "search.nav.studyDesc" },
-  youtube: { destination: "youtube", href: "/youtube", titleKey: "search.nav.youtube", descKey: "search.nav.youtubeDesc" },
+  dashboard: { destination: "dashboard", href: "/dashboard", titleKey: "nav.dashboard", descKey: "search.nav.dashboardDesc" },
+  training: { destination: "training", href: "/training", titleKey: "nav.training", descKey: "search.nav.trainingDesc" },
+  trainingNew: { destination: "trainingNew", href: "/training/new", titleKey: "action.newSession", descKey: "search.nav.trainingNewDesc" },
+  skills: { destination: "skills", href: "/skills", titleKey: "nav.skills", descKey: "search.nav.skillsDesc" },
+  coach: { destination: "coach", href: "/coach", titleKey: "nav.coach", descKey: "search.nav.coachDesc" },
+  study: { destination: "study", href: "/study", titleKey: "nav.study", descKey: "search.nav.studyDesc" },
+  goals: { destination: "goals", href: "/goals", titleKey: "nav.goals", descKey: "search.nav.goalsDesc" },
+  competition: { destination: "competition", href: "/competition", titleKey: "nav.competition", descKey: "search.nav.competitionDesc" },
+  club: { destination: "club", href: "/club", titleKey: "nav.club", descKey: "search.nav.clubDesc" },
+  profile: { destination: "profile", href: "/profile", titleKey: "nav.profile", descKey: "search.nav.profileDesc" },
+  calendar: { destination: "calendar", href: "/calendar", titleKey: "nav.calendar", descKey: "search.nav.calendarDesc" },
+  sparring: { destination: "sparring", href: "/sparring", titleKey: "nav.sparring", descKey: "search.nav.sparringDesc" },
+  search: { destination: "search", href: "/search", titleKey: "nav.search", descKey: "search.nav.searchDesc" },
+  youtube: { destination: "youtube", href: "/youtube", titleKey: "nav.youtube", descKey: "search.nav.youtubeDesc" },
 };
+
+/**
+ * Single-word/short-phrase aliases per destination, accent/case-normalized
+ * (see `normalizeForNav`). Matched as a plain substring first; when nothing
+ * matches at all, also used as the dictionary for the fuzzy typo-tolerant
+ * fallback (`matchNavigationIntents` below) — e.g. "spraring" → sparring.
+ */
+const NAVIGATION_ALIASES: Record<Locale, Partial<Record<NavigationDestination, string[]>>> = {
+  fr: {
+    dashboard: ["accueil"],
+    training: ["entrainement", "seances", "mes seances", "entrainements", "historique"],
+    trainingNew: ["nouvelle seance"],
+    skills: ["competences", "techniques"],
+    coach: ["coach"],
+    study: ["etude", "revision", "favoris"],
+    goals: ["objectifs"],
+    competition: ["competition"],
+    club: ["club"],
+    profile: ["profil", "mon compte"],
+    calendar: ["calendrier"],
+    sparring: ["sparring"],
+    search: ["recherche"],
+    youtube: ["videos", "youtube"],
+  },
+  en: {
+    dashboard: ["home", "dashboard"],
+    training: ["training", "sessions", "my sessions", "workouts"],
+    trainingNew: ["new session"],
+    skills: ["skills", "techniques"],
+    coach: ["coach"],
+    study: ["study", "review", "favorites", "favourites"],
+    goals: ["goals"],
+    competition: ["competition"],
+    club: ["club"],
+    profile: ["profile", "my account"],
+    calendar: ["calendar"],
+    sparring: ["sparring"],
+    search: ["search"],
+    youtube: ["videos", "youtube"],
+  },
+  es: {
+    dashboard: ["inicio"],
+    training: ["entrenamiento", "sesiones", "mis sesiones"],
+    trainingNew: ["nueva sesion"],
+    skills: ["habilidades", "tecnicas"],
+    coach: ["coach", "entrenador"],
+    study: ["estudio", "revision", "favoritos"],
+    goals: ["objetivos"],
+    competition: ["competicion"],
+    club: ["club"],
+    profile: ["perfil", "mi cuenta"],
+    calendar: ["calendario"],
+    sparring: ["sparring"],
+    search: ["buscar", "busqueda"],
+    youtube: ["videos", "youtube"],
+  },
+  de: {
+    dashboard: ["start", "dashboard"],
+    training: ["training", "einheiten", "meine einheiten"],
+    trainingNew: ["neue einheit"],
+    skills: ["fahigkeiten", "techniken"],
+    coach: ["coach", "trainer"],
+    study: ["lernen", "lernliste", "wiederholung", "favoriten"],
+    goals: ["ziele"],
+    competition: ["wettkampf"],
+    club: ["verein", "club"],
+    profile: ["profil", "mein konto"],
+    calendar: ["kalender"],
+    sparring: ["sparring"],
+    search: ["suche"],
+    youtube: ["videos", "youtube"],
+  },
+  ru: {
+    dashboard: ["главная"],
+    training: ["тренировки", "тренировка", "мои тренировки"],
+    trainingNew: ["новая тренировка"],
+    skills: ["навыки", "техники"],
+    coach: ["тренер", "коуч"],
+    study: ["обучение", "повторение", "избранное"],
+    goals: ["цели"],
+    competition: ["соревнования"],
+    club: ["клуб"],
+    profile: ["профиль", "мой аккаунт"],
+    calendar: ["календарь"],
+    sparring: ["спарринг"],
+    search: ["поиск"],
+    youtube: ["видео", "youtube"],
+  },
+  ja: {
+    dashboard: ["ホーム"],
+    training: ["トレーニング", "練習記録", "セッション"],
+    trainingNew: ["新しいセッション"],
+    skills: ["スキル", "技"],
+    coach: ["コーチ"],
+    study: ["学習", "復習", "お気に入り"],
+    goals: ["目標"],
+    competition: ["試合"],
+    club: ["クラブ"],
+    profile: ["プロフィール", "マイアカウント"],
+    calendar: ["カレンダー"],
+    sparring: ["スパーリング"],
+    search: ["検索"],
+    youtube: ["動画", "youtube"],
+  },
+};
+
+function stripDiacritics(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+function normalizeForNav(s: string): string {
+  return stripDiacritics(s.toLocaleLowerCase()).replace(/['’]/g, "").trim();
+}
 
 /** Per-locale phrase → destination. Matched as whole-word/phrase regexes against the normalized (lowercased) query. */
 const NAVIGATION_KEYWORDS: Record<Locale, Partial<Record<NavigationDestination, RegExp[]>>> = {
@@ -84,16 +227,53 @@ const NAVIGATION_KEYWORDS: Record<Locale, Partial<Record<NavigationDestination, 
   },
 };
 
+/**
+ * Three layers, deterministic first:
+ *   1. curated idiomatic phrases (`NAVIGATION_KEYWORDS`, e.g. "mes séances");
+ *   2. plain substring match against short aliases (`NAVIGATION_ALIASES`,
+ *      accent/case-normalized), covering the single-word destination names
+ *      ("profil", "club", "sparring", ...);
+ *   3. only when nothing matched at all — fuzzy per-token typo tolerance
+ *      against those same aliases (e.g. "spraring" → sparring), so a small
+ *      typo still lands on a destination instead of an empty navigator.
+ */
 export function matchNavigationIntents(query: string, locale: Locale): NavigationIntent[] {
   const keywords = NAVIGATION_KEYWORDS[locale] ?? NAVIGATION_KEYWORDS.en;
-  const matched: NavigationIntent[] = [];
+  const aliases = NAVIGATION_ALIASES[locale] ?? NAVIGATION_ALIASES.en;
+  const matched = new Set<NavigationDestination>();
+
   for (const destination of Object.keys(NAVIGATION_INTENTS) as NavigationDestination[]) {
-    const patterns = keywords[destination];
-    if (patterns?.some((re) => re.test(query))) {
-      matched.push(NAVIGATION_INTENTS[destination]);
+    if (keywords[destination]?.some((re) => re.test(query))) matched.add(destination);
+  }
+
+  const normalizedQuery = normalizeForNav(query);
+  if (matched.size === 0) {
+    for (const destination of Object.keys(NAVIGATION_INTENTS) as NavigationDestination[]) {
+      if (aliases[destination]?.some((phrase) => normalizedQuery.includes(phrase))) matched.add(destination);
     }
   }
-  return matched;
+
+  if (matched.size === 0) {
+    const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+    let best: { destination: NavigationDestination; distance: number } | null = null;
+    for (const destination of Object.keys(NAVIGATION_INTENTS) as NavigationDestination[]) {
+      for (const phrase of aliases[destination] ?? []) {
+        for (const word of phrase.split(/\s+/)) {
+          if (word.length < 4) continue;
+          for (const token of tokens) {
+            const tolerance = word.length <= 6 ? 1 : 2;
+            const distance = levenshtein(token, word);
+            if (distance <= tolerance && (!best || distance < best.distance)) {
+              best = { destination, distance };
+            }
+          }
+        }
+      }
+    }
+    if (best) matched.add(best.destination);
+  }
+
+  return Array.from(matched).map((d) => NAVIGATION_INTENTS[d]);
 }
 
 /**

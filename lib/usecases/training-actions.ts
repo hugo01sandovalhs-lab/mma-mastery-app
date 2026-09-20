@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { createServiceClient } from "@/lib/infra/db/supabase-service";
+import { createPublicClient } from "@/lib/infra/db/supabase-service";
 import { tServer } from "@/lib/i18n-server";
 import {
   trainingSessionInputSchema,
@@ -202,7 +202,7 @@ export async function getTrainingSession(id: string): Promise<TrainingSessionDet
  */
 const getDisciplinesCached = unstable_cache(
   async (): Promise<Discipline[]> => {
-    const supabase = createServiceClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase.from("disciplines").select("id, code, name").order("name");
     if (error) throw new Error(error.message);
     return data ?? [];

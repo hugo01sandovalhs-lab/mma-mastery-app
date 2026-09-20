@@ -21,7 +21,7 @@ const CATALOG = [
 ];
 
 vi.mock("@/lib/infra/db/supabase-service", () => ({
-  createServiceClient: vi.fn(() => ({
+  createPublicClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         order: vi.fn(async () => ({ data: CATALOG, error: null })),

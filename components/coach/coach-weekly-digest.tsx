@@ -22,12 +22,15 @@ function relativeDays(iso: string, dict: Dict): string {
 export function CoachWeeklyDigest({
   locale,
   techniqueOfTheDay,
+  techniqueOfDayFailed = false,
   videoSlot,
   weeklyDigest,
   lastResolved,
 }: {
   locale: Locale;
   techniqueOfTheDay: TechniqueOfTheDay | null;
+  /** True when the pick failed to load (transient DB/catalog error) — distinct from a legitimate empty catalog, so the UI never lies with "Catalogue vide" for a temporary failure. */
+  techniqueOfDayFailed?: boolean;
   /** 1-2 relevant YouTube videos for today's technique, streamed in separately so the external lookup never blocks the digest. */
   videoSlot?: ReactNode;
   weeklyDigest: WeeklyReviewDigest;
@@ -61,7 +64,9 @@ export function CoachWeeklyDigest({
             {videoSlot}
           </>
         ) : (
-          <p className="text-sm opacity-80">{dict["coach.techniqueOfDay.empty"]}</p>
+          <p className="text-sm opacity-80">
+            {techniqueOfDayFailed ? dict["coach.techniqueOfDay.unavailable"] : dict["coach.techniqueOfDay.empty"]}
+          </p>
         )}
       </div>
 

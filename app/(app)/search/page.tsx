@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Video } from "lucide-react";
+import { MessageCircleQuestion, Video } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
 import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
@@ -18,6 +18,7 @@ import { DICTIONARIES, SEARCH_QUICK_PROMPTS } from "@/lib/i18n";
 
 const TYPE_LABEL_KEYS: Record<SearchResultType, string> = {
   navigation: "search.type.navigation",
+  coach: "search.type.coach",
   skill: "search.type.skill",
   resource: "search.type.resource",
   session: "search.type.session",
@@ -27,6 +28,7 @@ const TYPE_LABEL_KEYS: Record<SearchResultType, string> = {
 };
 const TYPE_LABEL_FALLBACKS: Record<SearchResultType, string> = {
   navigation: "Aller à",
+  coach: "Coach",
   skill: "Compétence",
   resource: "Ressource",
   session: "Séance",
@@ -49,6 +51,15 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = q ?? "";
   const results = query ? await search(query) : [];
+
+  // Single, unambiguous destination: skip the results list and go straight
+  // there (P0 "Search as app navigator" — pressing Enter/Search should feel
+  // like Spotlight, not like reviewing a results page, when there's only one
+  // sensible place to land).
+  if (query.trim().length >= 2 && results.length === 1 && results[0].type === "navigation") {
+    redirect(results[0].href);
+  }
+
   const locale = await getServerLocale();
   const dict = DICTIONARIES[locale];
   const quickPrompts = SEARCH_QUICK_PROMPTS[locale];
@@ -106,6 +117,7 @@ function SearchResultCard({ result: r, dict }: { result: SearchResult; dict: (ty
     <Card className="transition-colors hover:bg-muted/50">
       <CardContent className="flex items-start gap-3 py-3">
         {r.type === "video" ? <Video className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /> : null}
+        {r.type === "coach" ? <MessageCircleQuestion className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /> : null}
         <Badge variant="outline" className="mt-0.5 shrink-0">
           <T k={TYPE_LABEL_KEYS[r.type]} fallback={TYPE_LABEL_FALLBACKS[r.type]} />
         </Badge>

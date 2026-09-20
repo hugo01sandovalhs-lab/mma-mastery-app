@@ -25,7 +25,7 @@ import {
  * enough at this data volume (docs/architecture.md keeps that deferred).
  */
 
-export type SearchResultType = "navigation" | "skill" | "resource" | "session" | "observation" | "goal" | "video";
+export type SearchResultType = "navigation" | "coach" | "skill" | "resource" | "session" | "observation" | "goal" | "video";
 
 export type SearchResult = {
   type: SearchResultType;
@@ -96,6 +96,30 @@ export function normalizeSearchQuery(query: string, locale: Locale = "fr"): stri
   return q.trim();
 }
 
+/** Locale-specific "this looks like a question" starter words, for queries a stray `?` doesn't catch (e.g. "comment améliorer mon jab"). Japanese has no leading question word, so it checks a trailing question particle instead. */
+const QUESTION_START: Record<Locale, RegExp> = {
+  fr: /^(comment|pourquoi|quoi|que\s|qu['’]|montre[- ]moi)\b/i,
+  en: /^(how|why|what|show me)\b/i,
+  es: /^(c[oó]mo|por qu[ée]|qu[ée]|mu[ée]strame)\b/i,
+  de: /^(wie|warum|was|zeig mir)\b/i,
+  ru: /^(как|почему|что|покажи)\b/i,
+  ja: /(か|教えて|見せて)$/,
+};
+
+/**
+ * A "comment améliorer mon jab" / "what should I work on" style query is a
+ * coaching question, not a navigation/record lookup — that belongs to Coach
+ * (P0: /search must stay an app navigator, never a natural-language MMA
+ * knowledge engine). Only checked once no curated navigation phrase already
+ * matched, so existing intents like "quoi travailler aujourd'hui" keep
+ * resolving to the Coach nav card exactly as before.
+ */
+function isCoachingQuestion(query: string, locale: Locale): boolean {
+  if (/[?？]\s*$/.test(query.trim())) return true;
+  const pattern = QUESTION_START[locale] ?? QUESTION_START.en;
+  return pattern.test(query.trim());
+}
+
 /** Ranks a DB-matched row's title against the query so each type block reads most-relevant-first, same scale intent as scoreSkillMatch. */
 function textScore(title: string, q: string): number {
   const t = title.toLocaleLowerCase();
@@ -111,11 +135,25 @@ export async function search(query: string): Promise<SearchResult[]> {
   if (raw.length < 2) return [];
 
   const navigationIntents = matchNavigationIntents(raw, locale);
+  const dict = DICTIONARIES[locale];
+
+  if (navigationIntents.length === 0 && isCoachingQuestion(raw, locale)) {
+    return [
+      {
+        type: "coach",
+        id: "ask-coach",
+        title: dict["search.askCoach"],
+        detail: raw,
+        href: `/coach?q=${encodeURIComponent(raw)}`,
+      },
+    ];
+  }
+
   const results: SearchResult[] = navigationIntents.map((intent) => ({
     type: "navigation",
     id: intent.destination,
-    title: DICTIONARIES[locale][intent.titleKey as keyof (typeof DICTIONARIES)["fr"]],
-    detail: DICTIONARIES[locale][intent.descKey as keyof (typeof DICTIONARIES)["fr"]],
+    title: dict[intent.titleKey as keyof (typeof DICTIONARIES)["fr"]],
+    detail: dict[intent.descKey as keyof (typeof DICTIONARIES)["fr"]],
     href: intent.href,
   }));
 

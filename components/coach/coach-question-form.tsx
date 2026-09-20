@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { Send } from "lucide-react";
 import { askCoachAction } from "@/app/(app)/coach/actions";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,19 @@ async function askAction(_prev: CoachAnswer | null, formData: FormData): Promise
   return askCoachAction(String(formData.get("question") ?? ""));
 }
 
-export function CoachQuestionForm() {
+/** `initialQuestion` comes from /search redirecting a coaching-question query here (e.g. `/coach?q=...`) — prefilled and auto-submitted once so the hand-off feels immediate. */
+export function CoachQuestionForm({ initialQuestion }: { initialQuestion?: string }) {
   const { t } = useI18n();
   const [answer, formAction, isPending] = useActionState(askAction, null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const autoSubmitted = useRef(false);
+
+  useEffect(() => {
+    if (initialQuestion && !autoSubmitted.current) {
+      autoSubmitted.current = true;
+      formRef.current?.requestSubmit();
+    }
+  }, [initialQuestion]);
   const SUGGESTED_QUESTIONS = [
     t("coach.suggested1", "Comment améliorer mon open guard ?"),
     t("coach.suggested2", "Quelles erreurs dois-je corriger en priorité ?"),
@@ -31,11 +41,12 @@ export function CoachQuestionForm() {
 
   return (
     <div className="flex flex-col gap-4">
-      <form action={formAction} className="flex flex-col gap-2 sm:flex-row">
+      <form ref={formRef} action={formAction} className="flex flex-col gap-2 sm:flex-row">
         <Input
           name="question"
           aria-label={t("coach.askLabel", "Votre question au coach")}
           placeholder={t("coach.askPlaceholder", "Pose une question au coach...")}
+          defaultValue={initialQuestion}
           className="flex-1"
           disabled={isPending}
         />

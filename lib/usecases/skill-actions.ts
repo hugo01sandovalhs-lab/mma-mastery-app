@@ -1,7 +1,7 @@
 import "server-only";
 import { unstable_cache, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { createServiceClient } from "@/lib/infra/db/supabase-service";
+import { createPublicClient, createServiceClient } from "@/lib/infra/db/supabase-service";
 import {
   computeMasteryStage,
   skillInputSchema,
@@ -35,10 +35,17 @@ export type CatalogSkill = Omit<SkillListItem, "stage" | "lastPracticedAt"> & { 
  * createSkill/updateSkill below). Cached across requests with the Next Data
  * Cache instead of re-querying on every dashboard/skills/goals/study/coach
  * navigation; invalidated on demand by those writers via revalidateTag.
+ *
+ * Reads through `createPublicClient` (anon key, RLS `using (true)` — see
+ * migration 17), not the service-role client: a cached function has no
+ * request scope, so it cannot use the cookie-bound `createClient`, and
+ * gating a public catalog behind SUPABASE_SERVICE_ROLE_KEY made the whole
+ * catalog fail closed (empty in the UI) whenever that deploy-scoped secret
+ * was missing in one environment, even though the DB had rows.
  */
 export const getSkillsCatalog = unstable_cache(
   async (): Promise<CatalogSkill[]> => {
-    const supabase = createServiceClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("skills")
       .select("id, name, slug, category, discipline_id, discipline:disciplines(id, code, name)")

@@ -191,3 +191,36 @@ describe("search()", () => {
     await expect(search("arm drag")).resolves.toBeInstanceOf(Array);
   });
 });
+
+/**
+ * P0 "Search as app navigator" redefinition: /search's job is finding a
+ * page/module inside the app, not answering an MMA question — the previous
+ * version only had 5 curated navigation phrases and leaned on skill/technique
+ * matching as its main mechanism. Covers the full destination set plus one
+ * typo case and the "this is a coaching question, not a navigation lookup"
+ * hand-off to Coach.
+ */
+describe("search() app navigator (P0 redefinition)", () => {
+  it.each([
+    ["entrainement", "/training"],
+    ["profil", "/profile"],
+    ["accueil", "/dashboard"],
+    ["club", "/club"],
+    ["favoris", "/study"],
+    ["technique du jour", "/coach"],
+    ["objectifs", "/goals"],
+    ["calendrier", "/calendar"],
+    ["youtube", "/youtube"],
+    ["spraring", "/sparring"],
+  ])("resolves %j to the %s navigation destination", async (query, href) => {
+    const results = await search(query);
+    expect(results.some((r) => r.type === "navigation" && r.href === href)).toBe(true);
+  });
+
+  it("hands a coaching question to Coach instead of returning a generic empty search", async () => {
+    const query = "comment améliorer mon jab";
+    const results = await search(query);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ type: "coach", href: `/coach?q=${encodeURIComponent(query)}` });
+  });
+});
