@@ -47,7 +47,16 @@
 .study-favorites-photo h2,.editorial-photo-module h2 { color:#fff4dc; }
 .study-favorites-photo [data-slot=badge],.editorial-photo-module [data-slot=badge] { border-color:#ffffff40; background:#0000002f; color:#fff4dc; }
 .editorial-goals .editorial-photo-module { min-height:460px; border-radius:14px; gap:14px; }
-.editorial-photo-module .goals-photo-panel { background:#0000002f; border:1px solid #ffffff26; border-radius:8px; padding:14px; }
+.editorial-photo-module .goals-photo-panel { background:linear-gradient(155deg,#ffffff17,#00000026); backdrop-filter:blur(16px) saturate(150%); -webkit-backdrop-filter:blur(16px) saturate(150%); border:1px solid #ffffff2e; border-radius:12px; padding:16px; box-shadow:0 12px 30px -14px #00000080, inset 0 1px 0 #ffffff1f; }
+.editorial-goals .goals-photo-panel form.border { background:transparent; border:0; padding:0; }
+.editorial-goals .goals-photo-panel :is(input:not([type=hidden]),textarea,[data-slot=select-trigger]) { background:#ffffff14; border-color:#ffffff40; color:#fff4dc; }
+.editorial-goals .goals-photo-panel :is(input,textarea)::placeholder { color:#fff4dc85; }
+.editorial-goals .goals-photo-panel [data-slot=select-trigger] svg { color:#fff4dcb3; }
+.editorial-goals .goals-photo-panel label { color:#fff4dcd9; }
+.editorial-goals .goals-photo-panel [data-slot=card] { background:#ffffff12; border-color:#ffffff2e; box-shadow:none; backdrop-filter:blur(10px); color:#fff4dc; }
+.editorial-goals .goals-photo-panel .text-muted-foreground { color:#f0e6cba3; }
+.editorial-goals .goals-empty-panel { display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+.editorial-goals .goals-empty-panel svg { color:#f0e6cbb3; width:20px; height:20px; }
 .editorial-training li [data-slot=card] { border:0; border-bottom:1px solid var(--border); background:transparent; box-shadow:none; border-radius:0; padding-block:4px 16px; }
 .editorial-training li { padding-bottom:16px; }
 .editorial-skills section>div:first-child { border-bottom:1px solid var(--border); padding-bottom:8px; }

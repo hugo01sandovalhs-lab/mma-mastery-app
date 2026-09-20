@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
+import { TargetIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
-import { Card, CardContent } from "@/components/ui/card";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getGoals } from "@/lib/usecases/goals-actions";
@@ -56,13 +56,12 @@ export default async function GoalsPage() {
         />
         <h2>{dict["goals.roadmap"]}</h2>
         {goals.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">
-              {dict["goals.noneYet"]}
-            </CardContent>
-          </Card>
+          <div className="goals-photo-panel goals-empty-panel">
+            <TargetIcon aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">{dict["goals.noneYet"]}</p>
+          </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="goals-photo-panel flex flex-col gap-2">
             {goals.map((g) => (
               <GoalRow key={g.id} goal={g} />
             ))}
