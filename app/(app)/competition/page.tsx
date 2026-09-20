@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { Timer } from "lucide-react";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipPhotoMosaic, ChampionshipSectionPhoto } from "@/components/championship/section-photo";
-import { Card, CardContent } from "@/components/ui/card";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { getDisciplines } from "@/lib/usecases/training-actions";
@@ -47,16 +47,6 @@ export default async function CompetitionPage() {
 
         <ChampionshipPhotoMosaic page="competition" />
 
-        <ChampionshipSectionPhoto
-          src="/mma-mastery-photos/anastase-maragos-mDSGxpSugsE-unsplash.jpg"
-          alt="Coin d'un combattant entre deux rounds, préparation dans le ring"
-          label="Préparation"
-          labelKey="photoLabel.preparation"
-          icon={<Timer className="size-4 shrink-0 text-primary" aria-hidden="true" />}
-          objectPosition="50% 55%"
-          size="large"
-        />
-
         <div className="editorial-competition-columns">
         <section className="editorial-section">
         <h2>{dict["competition.recordMatch"]}</h2>
@@ -65,21 +55,25 @@ export default async function CompetitionPage() {
         </Suspense>
         </section>
 
-        <section className="editorial-section">
-        <h2>{dict["competition.matchHistory"]}</h2>
-        {matches.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">
-              {dict["competition.noMatches"]}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {matches.map((m) => (
-              <MatchRow key={m.id} match={m} locale={locale} />
-            ))}
-          </div>
-        )}
+        <section className="editorial-photo-module">
+        <ProgressiveImage
+          src="/mma-mastery-photos/anastase-maragos-mDSGxpSugsE-unsplash.jpg"
+          alt="Coin d'un combattant entre deux rounds, préparation dans le ring"
+          fill
+          sizes="(max-width: 900px) 100vw, 42vw"
+          style={{ objectFit: "cover", objectPosition: "50% 55%" }}
+        />
+        <div className="flex items-center gap-2">
+          <Timer className="size-4 shrink-0" aria-hidden="true" />
+          <h2>{dict["competition.matchHistory"]}</h2>
+        </div>
+        <div className="goals-photo-panel competition-photo-panel flex flex-col gap-2">
+          {matches.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{dict["competition.noMatches"]}</p>
+          ) : (
+            matches.map((m) => <MatchRow key={m.id} match={m} locale={locale} />)
+          )}
+        </div>
         </section>
         </div>
       </div>

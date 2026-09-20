@@ -3,9 +3,7 @@ import { redirect } from "next/navigation";
 import { BookOpen, UserRoundPlus, Users, UsersRound } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/championship/page-header";
-import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
-import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { PHOTO_STORIES } from "@/lib/design/photography";
 import { getMyClubs } from "@/lib/usecases/club-actions";
@@ -54,39 +52,29 @@ export default async function ClubListPage() {
           </section>
         </div>
 
-        <ChampionshipSectionPhoto
+        <section id="creer-un-club" className="editorial-photo-module club-collectif-module">
+        <ProgressiveImage
           src="/mma-mastery-photos/gmb-fitness-Ba3FAXwp3A8-unsplash.jpg"
           alt="Groupe de pratiquants réunis en cercle pour un briefing collectif"
-          label="Collectif"
-          labelKey="photoLabel.collective"
-          icon={<Users className="size-4 shrink-0 text-primary" aria-hidden="true" />}
-          objectPosition="50% 45%"
-          size="large"
+          fill
+          sizes="(max-width: 900px) 100vw, 65vw"
+          style={{ objectFit: "cover", objectPosition: "50% 45%" }}
         />
-
-        <div className="editorial-secondary-columns">
-        <section id="creer-un-club" className="editorial-section">
-        <h2><T k="club.createTitle" fallback="Créer un club" /></h2>
-        <ClubForm />
-        </section>
-
-        <section className="editorial-section">
-        <h2><T k="club.myClubs" fallback="Vos clubs" /></h2>
-        {clubs.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-sm text-muted-foreground">
-              <T k="club.noneYet" fallback="Aucun club pour l'instant." />
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {clubs.map((c) => (
-              <ClubRow key={c.id} club={c} />
-            ))}
-          </div>
-        )}
-        </section>
+        <div className="flex items-center gap-2">
+          <Users className="size-4 shrink-0" aria-hidden="true" />
+          <h2><T k="club.myClubs" fallback="Vos clubs" /></h2>
         </div>
+        <div className="goals-photo-panel club-photo-panel flex flex-col gap-2">
+          {clubs.length === 0 ? (
+            <>
+              <p className="text-sm text-muted-foreground"><T k="club.noneYet" fallback="Aucun club pour l'instant." /></p>
+              <ClubForm />
+            </>
+          ) : (
+            clubs.map((c) => <ClubRow key={c.id} club={c} />)
+          )}
+        </div>
+        </section>
       </div>
     </AppShell>
   );

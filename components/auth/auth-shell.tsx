@@ -8,6 +8,10 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 
 const SLIDE_DURATION = 6500;
 
+/** Tiny neutral dark placeholder so the cover area never renders blank while a photo decodes. */
+const BLUR_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
 export type Cover = {
   src: string;
   alt: string;
@@ -70,46 +74,56 @@ export function AuthShell({
 }) {
   const covers = hero === "rotate" ? (coversProp ?? ROTATING_COVERS) : [STATIC_COVER];
   const [active, setActive] = useState(0);
-  // Only the active cover plus one lookahead is ever in the DOM, so the browser
-  // never fetches all rotation photos at once — each loads shortly before its turn.
-  const [maxLoaded, setMaxLoaded] = useState(1);
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set());
+  const [pendingAdvance, setPendingAdvance] = useState(false);
   const { t } = useI18n();
 
-  useEffect(() => {
-    if (hero !== "rotate" || covers.length <= 1) return;
-    const timeout = window.setTimeout(() => setMaxLoaded((m) => Math.max(m, 2)), 1200);
-    return () => window.clearTimeout(timeout);
-  }, [hero, covers.length]);
+  const nextIndex = covers.length > 1 ? (active + 1) % covers.length : active;
+  // Only the active cover plus one lookahead is ever in the DOM, so the browser
+  // never fetches all rotation photos at once — the next photo preloads in the
+  // background for a full slide while the current one is showing.
+  const mounted = nextIndex === active ? [active] : [active, nextIndex];
+
+  const markLoaded = (index: number) =>
+    setLoaded((prev) => (prev.has(index) ? prev : new Set(prev).add(index)));
 
   useEffect(() => {
     if (hero !== "rotate" || covers.length <= 1) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const interval = window.setInterval(() => {
-      setActive((current) => {
-        const next = (current + 1) % covers.length;
-        setMaxLoaded((m) => Math.max(m, next + 1));
-        return next;
-      });
-    }, SLIDE_DURATION);
+    const interval = window.setInterval(() => setPendingAdvance(true), SLIDE_DURATION);
     return () => window.clearInterval(interval);
   }, [hero, covers.length]);
+
+  // Crossfade only starts once the next photo has actually decoded — the previous
+  // photo stays visible until then, so the cover never shows a blank/black frame.
+  useEffect(() => {
+    if (!pendingAdvance || !loaded.has(nextIndex)) return;
+    setActive(nextIndex);
+    setPendingAdvance(false);
+  }, [pendingAdvance, loaded, nextIndex]);
 
   const image = covers[active];
 
   return (
     <main className="auth-stage">
       <section className="auth-cover" aria-label={`Ambiance ${t(image.labelKey, image.label)}`}>
-        {covers.slice(0, maxLoaded).map((cover, index) => (
-          <Image
-            key={cover.src}
-            src={cover.src}
-            alt={index === active ? cover.alt : ""}
-            fill
-            priority={index === 0}
-            sizes="(max-width: 767px) 100vw, 58vw"
-            style={{ objectPosition: cover.position, opacity: index === active ? 1 : 0 }}
-          />
-        ))}
+        {mounted.map((index) => {
+          const cover = covers[index];
+          return (
+            <Image
+              key={cover.src}
+              src={cover.src}
+              alt={index === active ? cover.alt : ""}
+              fill
+              priority={index === 0}
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
+              onLoad={() => markLoaded(index)}
+              sizes="(max-width: 767px) 100vw, 58vw"
+              style={{ objectPosition: cover.position, opacity: index === active ? 1 : 0 }}
+            />
+          );
+        })}
         <Link href="/" className="auth-brand" aria-label="MMA Mastery, accueil">
           <span>MM</span> MMA Mastery
         </Link>

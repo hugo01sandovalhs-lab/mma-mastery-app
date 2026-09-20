@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { tServer } from "@/lib/i18n-server";
@@ -21,6 +22,11 @@ export async function signInWithPassword(
     return { error: error.message };
   }
 
+  // The client Router Cache may still hold the pre-login (redirect-to-login) response
+  // for /dashboard from before the session cookie was set; without this, that stale
+  // entry can render on the first landing and only refreshes after navigating away
+  // and back.
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard");
 }
 

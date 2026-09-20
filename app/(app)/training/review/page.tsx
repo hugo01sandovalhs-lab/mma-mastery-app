@@ -7,10 +7,13 @@ import {
   HelpCircle,
   MessageCircleQuestion,
   Sprout,
+  Swords,
+  Waypoints,
   Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { T } from "@/components/i18n-provider";
+import { ChampionshipSectionPhoto } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
@@ -63,6 +66,25 @@ export default async function ReviewPage() {
           <p className="text-sm text-muted-foreground">
             <T k="review.queueIntro" fallback="Questions non résolues, difficultés récentes et compétences en attente de pratique." />
           </p>
+        </div>
+
+        <div className="editorial-secondary-columns">
+          <ChampionshipSectionPhoto
+            src="/mma-mastery-photos/pexels-duren-williams-29414623-11392335.jpg"
+            alt="Deux pratiquantes en situation de sparring au sol"
+            label="Sparring"
+            labelKey="photoLabel.sparring"
+            icon={<Swords className="size-4 shrink-0 text-primary" aria-hidden="true" />}
+            objectPosition="45% 55%"
+          />
+          <ChampionshipSectionPhoto
+            src="/mma-mastery-photos/pexels-stephanie-crephead-130171264-11201261.jpg"
+            alt="Projection de judo sur tapis en extérieur"
+            label="Projections"
+            labelKey="photoLabel.takedown"
+            icon={<Waypoints className="size-4 shrink-0 text-primary" aria-hidden="true" />}
+            objectPosition="35% 65%"
+          />
         </div>
 
         {groups.length === 0 ? (

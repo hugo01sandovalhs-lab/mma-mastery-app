@@ -57,6 +57,15 @@
 .editorial-goals .goals-photo-panel .text-muted-foreground { color:#f0e6cba3; }
 .editorial-goals .goals-empty-panel { display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
 .editorial-goals .goals-empty-panel svg { color:#f0e6cbb3; width:20px; height:20px; }
+.editorial-competition .competition-photo-panel [data-slot=card] { background:#ffffff12; border-color:#ffffff2e; box-shadow:none; backdrop-filter:blur(10px); color:#fff4dc; }
+.editorial-competition .competition-photo-panel .text-muted-foreground { color:#f0e6cba3; }
+.editorial-club .club-collectif-module { min-height:320px; }
+.editorial-club .club-photo-panel [data-slot=card] { background:#ffffff12; border-color:#ffffff2e; box-shadow:none; backdrop-filter:blur(10px); color:#fff4dc; }
+.editorial-club .club-photo-panel .text-muted-foreground { color:#f0e6cba3; }
+.editorial-club .club-photo-panel form.border { background:transparent; border:0; padding:0; }
+.editorial-club .club-photo-panel :is(input:not([type=hidden]),textarea,[data-slot=select-trigger]) { background:#ffffff14; border-color:#ffffff40; color:#fff4dc; }
+.editorial-club .club-photo-panel :is(input,textarea)::placeholder { color:#fff4dc85; }
+.editorial-club .club-photo-panel label { color:#fff4dcd9; }
 .editorial-training li [data-slot=card] { border:0; border-bottom:1px solid var(--border); background:transparent; box-shadow:none; border-radius:0; padding-block:4px 16px; }
 .editorial-training li { padding-bottom:16px; }
 .editorial-skills section>div:first-child { border-bottom:1px solid var(--border); padding-bottom:8px; }
