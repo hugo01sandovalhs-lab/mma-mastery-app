@@ -36,7 +36,9 @@ export default async function ClubListPage() {
             <ProgressiveImage src={coursPhoto.src} alt={coursPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectPosition: coursPhoto.position }} />
             <div className="club-path-shade" aria-hidden="true" />
             <BookOpen aria-hidden="true" /><h2><T k="photoLabel.classes" fallback="Cours" /></h2><p><T k="club.classesDesc" fallback="Retrouvez le planning et les séances de votre club." /></p>
-            <Button variant="outline" size="sm" render={<Link href={primaryClub ? `/club/${primaryClub.id}/classes` : "#creer-un-club"} />}>{primaryClub ? dict["club.viewClasses"] : dict["club.createClub"]}</Button>
+            {primaryClub && (
+              <Button variant="outline" size="sm" render={<Link href={`/club/${primaryClub.id}/classes`} />}>{dict["club.viewClasses"]}</Button>
+            )}
           </section>
           <section id="collectif">
             <ProgressiveImage src={collectifPhoto.src} alt={collectifPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectPosition: collectifPhoto.position }} />
