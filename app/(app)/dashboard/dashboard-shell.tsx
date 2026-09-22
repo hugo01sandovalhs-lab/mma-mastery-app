@@ -10,6 +10,7 @@ import { ShellRoot } from "@/components/championship/shell-root";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { QuickActionsBar } from "@/components/quick-actions-bar";
 import { QuickLogButton } from "@/components/quick-log/quick-log-button";
+import { CommandPalette } from "@/components/search/command-palette";
 import { getDisciplines } from "@/lib/usecases/training-actions";
 import { getSkills } from "@/lib/usecases/skill-actions";
 
@@ -43,6 +44,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               MMA MASTERY
             </Link>
             <div className="flex items-center gap-2">
+              <CommandPalette />
               <LanguageSwitcher />
               <Suspense fallback={<Skeleton className="h-8 w-8 rounded-full" />}>
                 <UserMenu />
