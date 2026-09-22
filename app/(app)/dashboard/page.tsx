@@ -471,7 +471,18 @@ function FocusCard({ dict, rec }: { dict: (typeof DICTIONARIES)[Locale]; rec: Sk
           <T k={rec.reasons[0].key} fallback="" vars={rec.reasons[0].vars} />
         </p>
         {rec.reasons.length > 1 ? (
-          <p className="text-[11px] text-muted-foreground">{formatT(dict["dashboard.otherSignals"], { count: rec.reasons.length - 1 })}</p>
+          <details className="dashboard-evidence">
+            <summary className="text-[11px] font-medium text-primary">
+              {formatT(dict["dashboard.viewEvidence"], { count: rec.reasons.length - 1 })}
+            </summary>
+            <ul className="mt-1.5 flex flex-col gap-1">
+              {rec.reasons.slice(1).map((reason, i) => (
+                <li key={i} className="text-[11px] text-muted-foreground">
+                  <T k={reason.key} fallback="" vars={reason.vars} />
+                </li>
+              ))}
+            </ul>
+          </details>
         ) : null}
 
         <p className="flex items-start gap-1.5 text-xs">

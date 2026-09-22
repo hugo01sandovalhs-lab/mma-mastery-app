@@ -111,5 +111,9 @@
 
 .championship-stats .relative.inline-flex { flex-shrink:0; }
 
+.dashboard-evidence summary { cursor:pointer; list-style:none; }
+.dashboard-evidence summary::-webkit-details-marker { display:none; }
+.dashboard-evidence summary:hover { text-decoration:underline; }
+
 .quick-log-fab { position:fixed; right:16px; bottom:24px; z-index:45; width:56px; height:56px; border-radius:9999px; box-shadow:0 8px 24px -6px rgba(0,0,0,.4); }
 @media(max-width:767px) { .quick-log-fab { bottom:84px; } }
