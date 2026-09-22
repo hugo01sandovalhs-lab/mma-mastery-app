@@ -16,7 +16,7 @@ import { SESSION_TYPES, type SessionType } from "@/lib/domain/training";
 export default async function NewTrainingSessionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; technique?: string; note?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -24,7 +24,7 @@ export default async function NewTrainingSessionPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { type } = await searchParams;
+  const { type, technique, note } = await searchParams;
   const initialSessionType = SESSION_TYPES.includes(type as SessionType) ? (type as SessionType) : undefined;
 
   const [disciplines, skills, plan] = await Promise.all([
@@ -52,6 +52,8 @@ export default async function NewTrainingSessionPage({
           skills={skills}
           action={createTrainingSession}
           initialSessionType={initialSessionType}
+          initialTechniqueName={technique}
+          initialObservationContent={note}
           submitLabel={<T k="action.save" fallback="Enregistrer" />}
         />
       </div>

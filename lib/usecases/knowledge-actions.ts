@@ -70,6 +70,18 @@ export async function getResourcesForSkill(skillId: string): Promise<ResourceLis
   return (data ?? []) as unknown as ResourceListItem[];
 }
 
+export async function getResourcesForVideo(url: string): Promise<ResourceListItem[]> {
+  const { supabase } = await requireUserId();
+  const { data, error } = await supabase
+    .from("resources")
+    .select("id, type, title, author, url, skill_id, timestamp_seconds, notes, created_at")
+    .eq("url", url)
+    .not("timestamp_seconds", "is", null)
+    .order("timestamp_seconds", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as ResourceListItem[];
+}
+
 export async function getResources(): Promise<ResourceListItem[]> {
   const { supabase } = await requireUserId();
   const { data, error } = await supabase

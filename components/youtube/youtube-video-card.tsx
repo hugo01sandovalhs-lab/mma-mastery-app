@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Heart, Video } from "lucide-react";
+import { Heart, NotebookPen, Video } from "lucide-react";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/components/i18n-provider";
@@ -32,7 +33,17 @@ export function YouTubeVideoCard({ video, favoriteId }: { video: VideoSearchResu
         <strong className="line-clamp-2 text-sm">{video.title}</strong>
         <span className="text-xs text-muted-foreground">{video.channelTitle}</span>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" render={<a href={video.url} target="_blank" rel="noreferrer" />}>
+          <Button
+            size="sm"
+            render={
+              <Link
+                href={`/youtube/${video.videoId}?title=${encodeURIComponent(video.title)}&channel=${encodeURIComponent(video.channelTitle)}`}
+              />
+            }
+          >
+            <NotebookPen /> {t("action.analyzeVideo", "Analyser")}
+          </Button>
+          <Button size="sm" variant="outline" render={<a href={video.url} target="_blank" rel="noreferrer" />}>
             <Video /> {t("action.openYoutube", "Voir sur YouTube")}
           </Button>
           <Button

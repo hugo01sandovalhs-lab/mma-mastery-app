@@ -40,10 +40,23 @@ type TrainingFormProps = {
   action: (prevState: TrainingActionState, formData: FormData) => Promise<TrainingActionState>;
   initialData?: TrainingSessionDetail;
   initialSessionType?: SessionType;
+  /** Prefills the first technique row — used by "add to next training" links (e.g. from a YouTube note). */
+  initialTechniqueName?: string;
+  /** Prefills the first observation row's content, same source as `initialTechniqueName`. */
+  initialObservationContent?: string;
   submitLabel: React.ReactNode;
 };
 
-export function TrainingForm({ disciplines, skills, action, initialData, initialSessionType, submitLabel }: TrainingFormProps) {
+export function TrainingForm({
+  disciplines,
+  skills,
+  action,
+  initialData,
+  initialSessionType,
+  initialTechniqueName,
+  initialObservationContent,
+  submitLabel,
+}: TrainingFormProps) {
   const { t } = useI18n();
   const skillByName = new Map(skills.map((s) => [s.name.trim().toLowerCase(), s.id]));
   function resolveSkillId(name: string): string | undefined {
@@ -70,14 +83,17 @@ export function TrainingForm({ disciplines, skills, action, initialData, initial
       position: t.position ?? undefined,
       round_seconds: t.round_seconds ?? undefined,
       ruleset: t.ruleset ?? undefined,
-    })) ?? [],
+    })) ??
+      (initialTechniqueName
+        ? ([{ technique_name: initialTechniqueName }] as SessionTechniqueInput[])
+        : []),
   );
   const [observations, setObservations] = useState<ObservationRow[]>(
     initialData?.observations.map((o) => ({
       type: o.type,
       content: o.content,
       related_skill_id: o.related_skill_id ?? undefined,
-    })) ?? [{ type: "difficulty", content: "" }],
+    })) ?? [{ type: "difficulty", content: initialObservationContent ?? "" }],
   );
 
   const techniquesJsonRef = useRef<HTMLInputElement>(null);
