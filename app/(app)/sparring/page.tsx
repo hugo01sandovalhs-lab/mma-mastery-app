@@ -5,8 +5,14 @@ import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { createClient } from "@/lib/infra/db/supabase-server";
-import { summarizeSparringRounds } from "@/lib/domain/sparring";
+import {
+  computeRecentTrend,
+  summarizePositionBreakdown,
+  summarizeSparringRounds,
+  summarizeTechniqueBreakdown,
+} from "@/lib/domain/sparring";
 import { getSparringSessions, type SparringSessionListItem } from "@/lib/usecases/sparring-actions";
 import { DICTIONARIES, formatT, type Locale } from "@/lib/i18n";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -30,6 +36,9 @@ export default async function SparringListPage() {
   const sessions = await getSparringSessions();
   const allRounds = sessions.flatMap((s) => s.techniques);
   const summary = summarizeSparringRounds(allRounds);
+  const positionBreakdown = summarizePositionBreakdown(allRounds);
+  const techniqueBreakdown = summarizeTechniqueBreakdown(allRounds);
+  const trend = computeRecentTrend(sessions.map((s) => ({ date: s.date, rounds: s.techniques })));
 
   return (
     <AppShell>
@@ -50,6 +59,10 @@ export default async function SparringListPage() {
         </div>
 
         <SummaryCard summary={summary} dict={dict} />
+
+        {sessions.length > 0 ? (
+          <InsightsCard positionBreakdown={positionBreakdown} techniqueBreakdown={techniqueBreakdown} trend={trend} dict={dict} />
+        ) : null}
 
         {sessions.length === 0 ? (
           <Card>
@@ -112,6 +125,110 @@ function SummaryCard({
               ))}
             </ul>
           )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InsightsCard({
+  positionBreakdown,
+  techniqueBreakdown,
+  trend,
+  dict,
+}: {
+  positionBreakdown: ReturnType<typeof summarizePositionBreakdown>;
+  techniqueBreakdown: ReturnType<typeof summarizeTechniqueBreakdown>;
+  trend: ReturnType<typeof computeRecentTrend>;
+  dict: Dict;
+}) {
+  const { weakPositions, strongPositions } = positionBreakdown;
+  const { mostAttempted, leastSuccessful } = techniqueBreakdown;
+  const TrendIcon = trend === null ? null : trend.direction === "up" ? TrendingUp : trend.direction === "down" ? TrendingDown : Minus;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{dict["sparringList.insightsTitle"]}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        {trend !== null && TrendIcon !== null ? (
+          <div className="flex items-center gap-2 text-sm">
+            <TrendIcon className={`size-4 shrink-0 ${trend.direction === "up" ? "text-primary" : trend.direction === "down" ? "text-destructive" : "text-muted-foreground"}`} />
+            <span className="font-medium">{dict["sparringList.trendLabel"]}:</span>
+            <span>
+              {formatT(dict[trend.direction === "up" ? "sparringList.trendUp" : trend.direction === "down" ? "sparringList.trendDown" : "sparringList.trendStable"], {
+                recent: Math.round(trend.recentRate * 100),
+                prior: Math.round(trend.priorRate * 100),
+              })}
+            </span>
+          </div>
+        ) : null}
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div>
+            <p className="mb-1.5 text-sm font-medium">{dict["sparringList.weakPositionsTitle"]}</p>
+            {weakPositions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{dict["sparringList.noPositionData"]}</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {weakPositions.map((p) => (
+                  <li key={p.position} className="flex items-center gap-2 text-sm">
+                    <span>{p.position}</span>
+                    <Badge variant="outline">{Math.round(p.successRate * 100)}% / {p.attempts}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <p className="mb-1.5 text-sm font-medium">{dict["sparringList.strongPositionsTitle"]}</p>
+            {strongPositions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{dict["sparringList.noPositionData"]}</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {strongPositions.map((p) => (
+                  <li key={p.position} className="flex items-center gap-2 text-sm">
+                    <span>{p.position}</span>
+                    <Badge variant="outline">{Math.round(p.successRate * 100)}% / {p.attempts}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <p className="mb-1.5 text-sm font-medium">{dict["sparringList.mostAttemptedTitle"]}</p>
+            {mostAttempted.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{dict["sparringList.noTechniqueData"]}</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {mostAttempted.map((t) => (
+                  <li key={t.technique} className="flex items-center gap-2 text-sm">
+                    <span>{t.technique}</span>
+                    <Badge variant="outline">{formatT(dict["sparringList.occurrences"], { count: t.attempts })}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <p className="mb-1.5 text-sm font-medium">{dict["sparringList.leastSuccessfulTitle"]}</p>
+            {leastSuccessful.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{dict["sparringList.noTechniqueData"]}</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {leastSuccessful.map((t) => (
+                  <li key={t.technique} className="flex items-center gap-2 text-sm">
+                    <span>{t.technique}</span>
+                    <Badge variant="outline">{Math.round((t.successRate as number) * 100)}% / {t.attempts}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

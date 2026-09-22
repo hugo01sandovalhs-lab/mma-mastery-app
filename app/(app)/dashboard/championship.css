@@ -110,3 +110,6 @@
 @media(max-width:767px) { .championship-frame { display:block; padding-bottom:76px; } .championship-nav { display:none; } .championship-hero { height:440px; } .championship-hero-copy { padding:47px 20px 0; max-width:78%; } .championship-hero h1 { font-size:49px; letter-spacing:-3px; } .championship-fighter { width:min(100%,700px); object-position:50% 60%; } .championship-hero-footer { left:20px; } .championship-hero-footer>span { max-width:110px; } .championship-hero-views { right:18px; bottom:76px; } .championship-details { grid-template-columns:1fr; } .championship-grid { padding:10px; } .championship-stats { grid-template-columns:1fr; gap:8px; } .championship-stats>:last-child { grid-column:auto; min-height:180px; } .championship-image-panel { min-height:280px; } .championship-stats [data-slot=card-content] { padding:0 18px; } .championship-stats img { display:block; } }
 
 .championship-stats .relative.inline-flex { flex-shrink:0; }
+
+.quick-log-fab { position:fixed; right:16px; bottom:24px; z-index:45; width:56px; height:56px; border-radius:9999px; box-shadow:0 8px 24px -6px rgba(0,0,0,.4); }
+@media(max-width:767px) { .quick-log-fab { bottom:84px; } }
