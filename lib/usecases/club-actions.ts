@@ -3,11 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import {
+  CLUB_SHARING_CATEGORIES,
+  PRIVATE_CLUB_SHARING,
   clubInputSchema,
   groupInputSchema,
   inviteMemberInputSchema,
   type ClubRole,
+  type ClubSharingPreferences,
 } from "@/lib/domain/club";
+import { tServer } from "@/lib/i18n-server";
 
 export type ClubActionState = { error: string | null };
 
@@ -231,4 +235,38 @@ export async function removeMemberFromGroup(groupId: string, userId: string, clu
   const { error } = await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
   if (error) throw new Error(error.message);
   revalidatePath(`/club/${clubId}`);
+}
+
+export async function getClubSharingPreferences(clubId: string): Promise<ClubSharingPreferences> {
+  const { supabase, userId } = await requireUserId();
+  const { data, error } = await supabase
+    .from("club_sharing_preferences")
+    .select("share_skills, share_training, share_sparring, share_difficulties, share_goals, share_youtube")
+    .eq("club_id", clubId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return PRIVATE_CLUB_SHARING;
+  return Object.fromEntries(
+    CLUB_SHARING_CATEGORIES.map((category) => [category, Boolean(data[`share_${category}`])]),
+  ) as ClubSharingPreferences;
+}
+
+export async function updateClubSharingPreferences(
+  _previous: ClubActionState & { saved?: boolean },
+  formData: FormData,
+): Promise<ClubActionState & { saved?: boolean }> {
+  const clubId = String(formData.get("club_id") ?? "");
+  const { supabase, userId } = await requireUserId();
+  const values = Object.fromEntries(
+    CLUB_SHARING_CATEGORIES.map((category) => [`share_${category}`, formData.get(category) === "on"]),
+  );
+  const { error } = await supabase.from("club_sharing_preferences").upsert({
+    club_id: clubId,
+    user_id: userId,
+    ...values,
+  });
+  if (error) return { error: await tServer("error.saveFailed", "Impossible d'enregistrer pour le moment. Réessayez dans un instant.") };
+  revalidatePath(`/club/${clubId}`);
+  return { error: null, saved: true };
 }

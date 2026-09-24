@@ -31,6 +31,25 @@ export function hasClubRoleAtLeast(role: ClubRole, min: ClubRole): boolean {
   return CLUB_ROLE_RANK[role] >= CLUB_ROLE_RANK[min];
 }
 
+export const CLUB_SHARING_CATEGORIES = [
+  "skills",
+  "training",
+  "sparring",
+  "difficulties",
+  "goals",
+  "youtube",
+] as const;
+export type ClubSharingCategory = (typeof CLUB_SHARING_CATEGORIES)[number];
+export type ClubSharingPreferences = Record<ClubSharingCategory, boolean>;
+export const PRIVATE_CLUB_SHARING: ClubSharingPreferences = {
+  skills: false,
+  training: false,
+  sparring: false,
+  difficulties: false,
+  goals: false,
+  youtube: false,
+};
+
 export const clubInputSchema = z.object({
   name: z.string().trim().min(1, "Nom requis").max(120),
 });

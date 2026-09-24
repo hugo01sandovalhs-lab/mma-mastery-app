@@ -54,6 +54,16 @@ export default async function ClubAdminPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div className="flex flex-col gap-3">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">Synthèse de l’équipe</h2>
+          <div className="grid gap-3 lg:grid-cols-3">
+            <Card><CardContent className="py-4"><p className="text-sm text-muted-foreground">Volume partagé, 14 jours</p><strong className="mt-1 block text-2xl">{overview.teamInsights.recentSessionCount}</strong><span className="text-xs text-muted-foreground">séances partagées</span></CardContent></Card>
+            <Card><CardContent className="py-4"><p className="mb-2 text-sm font-medium">Difficultés fréquentes</p>{overview.teamInsights.recurringDifficulties.length ? <ul className="space-y-1 text-sm">{overview.teamInsights.recurringDifficulties.map((item) => <li key={item.label}>{item.label} <Badge variant="outline">{item.count}</Badge></li>)}</ul> : <p className="text-sm text-muted-foreground">Données insuffisantes.</p>}</CardContent></Card>
+            <Card><CardContent className="py-4"><p className="mb-2 text-sm font-medium">Sujets vidéo recherchés</p>{overview.teamInsights.searchedTopics.length ? <ul className="space-y-1 text-sm">{overview.teamInsights.searchedTopics.map((item) => <li key={item.label}>{item.label} <Badge variant="outline">{item.count}</Badge></li>)}</ul> : <p className="text-sm text-muted-foreground">Données insuffisantes.</p>}</CardContent></Card>
+          </div>
+          {overview.teamInsights.inactiveMembers.length ? <Card><CardContent className="py-4"><p className="mb-2 text-sm font-medium">Sans séance partagée ces 14 derniers jours</p><div className="flex flex-wrap gap-2">{overview.teamInsights.inactiveMembers.map((member) => <Link key={member.user_id} href={`/club/${id}/members/${member.user_id}`}><Badge variant="outline">{member.display_name ?? "Membre"}</Badge></Link>)}</div></CardContent></Card> : null}
+        </div>
+
+        <div className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-semibold tracking-tight"><T k="club.roleBreakdown" fallback="Répartition des rôles" /></h2>
           <div className="flex flex-wrap gap-2">
             {Object.entries(overview.memberCountsByRole)

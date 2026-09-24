@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/infra/db/supabase-server";
 import { CLUB_ROLE_LABELS, hasClubRoleAtLeast } from "@/lib/domain/club";
-import { getClub } from "@/lib/usecases/club-actions";
+import { getClub, getClubSharingPreferences } from "@/lib/usecases/club-actions";
 import { getUnreadAnnouncementCount } from "@/lib/usecases/club-announcement-actions";
 import { InviteForm } from "@/components/club/invite-form";
 import { MemberRow } from "@/components/club/member-row";
@@ -15,6 +15,7 @@ import { GroupCard } from "@/components/club/group-card";
 import { T } from "@/components/i18n-provider";
 import { getServerLocale } from "@/lib/i18n-server";
 import { DICTIONARIES } from "@/lib/i18n";
+import { SharingPreferencesForm } from "@/components/club/sharing-preferences-form";
 
 export default async function ClubDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,9 +25,10 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [club, unreadAnnouncements, locale] = await Promise.all([
+  const [club, unreadAnnouncements, sharingPreferences, locale] = await Promise.all([
     getClub(id),
     getUnreadAnnouncementCount(id),
+    getClubSharingPreferences(id),
     getServerLocale(),
   ]);
   if (!club) notFound();
@@ -79,6 +81,8 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ id:
             ) : null}
           </div>
         </div>
+
+        <SharingPreferencesForm clubId={club.id} preferences={sharingPreferences} />
 
         <div className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-semibold tracking-tight"><T k="club.members" fallback="Membres" /></h2>

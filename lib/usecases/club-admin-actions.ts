@@ -4,6 +4,7 @@ import { createClient } from "@/lib/infra/db/supabase-server";
 import { CLUB_ROLES, hasClubRoleAtLeast, type ClubRole } from "@/lib/domain/club";
 import { computeRate, isLowAttendanceSession } from "@/lib/domain/club-admin";
 import type { AttendanceStatus } from "@/lib/domain/class";
+import { buildClubSharedInsights } from "@/lib/domain/club-insights";
 
 const ATTENDANCE_WINDOW_DAYS = 30;
 const UPCOMING_WINDOW_DAYS = 7;
@@ -36,6 +37,12 @@ export type ClubAdminOverview = {
     present: number;
     marked: number;
   }[];
+  teamInsights: {
+    recentSessionCount: number;
+    inactiveMembers: { user_id: string; display_name: string | null }[];
+    recurringDifficulties: { label: string; count: number }[];
+    searchedTopics: { label: string; count: number }[];
+  };
 };
 
 export async function getClubAdminOverview(clubId: string): Promise<ClubAdminOverview | null> {
@@ -84,6 +91,33 @@ export async function getClubAdminOverview(clubId: string): Promise<ClubAdminOve
   const membersWithoutGroup = (members ?? [])
     .filter((m) => !groupedUserIds.has(m.user_id))
     .map((m) => ({ user_id: m.user_id as string, display_name: nameByUserId.get(m.user_id as string) ?? null }));
+
+  const { data: sharingRows } = await supabase
+    .from("club_sharing_preferences")
+    .select("user_id, share_training, share_sparring, share_difficulties, share_youtube")
+    .eq("club_id", clubId);
+  const sharingUserIds = (sharingRows ?? [])
+    .filter((row) => row.share_training || row.share_sparring)
+    .map((row) => row.user_id as string);
+  const difficultyUserIds = (sharingRows ?? []).filter((row) => row.share_difficulties).map((row) => row.user_id as string);
+  const youtubeUserIds = (sharingRows ?? []).filter((row) => row.share_youtube).map((row) => row.user_id as string);
+  const [{ data: sharedSessions }, { data: sharedObservations }, { data: sharedResources }] = await Promise.all([
+    sharingUserIds.length
+      ? supabase.from("training_sessions").select("user_id, date").in("user_id", sharingUserIds)
+      : Promise.resolve({ data: [] }),
+    difficultyUserIds.length
+      ? supabase.from("session_observations").select("content, session:training_sessions!inner(user_id)").in("session.user_id", difficultyUserIds).in("type", ["difficulty", "question"])
+      : Promise.resolve({ data: [] }),
+    youtubeUserIds.length
+      ? supabase.from("resources").select("title").in("user_id", youtubeUserIds).eq("type", "video")
+      : Promise.resolve({ data: [] }),
+  ]);
+  const sharedInsights = buildClubSharedInsights({
+    sharingUserIds,
+    sessions: ((sharedSessions ?? []) as { user_id: string; date: string }[]).map((row) => ({ userId: row.user_id, date: row.date })),
+    difficulties: ((sharedObservations ?? []) as { content: string }[]).map((row) => row.content),
+    youtubeTopics: ((sharedResources ?? []) as { title: string }[]).map((row) => row.title),
+  });
 
   const { data: classes, error: classesError } = await supabase
     .from("classes")
@@ -156,6 +190,12 @@ export async function getClubAdminOverview(clubId: string): Promise<ClubAdminOve
     },
     membersWithoutGroup,
     lowAttendanceSessions,
+    teamInsights: {
+      recentSessionCount: sharedInsights.recentSessionCount,
+      inactiveMembers: sharedInsights.inactiveUserIds.map((user_id) => ({ user_id, display_name: nameByUserId.get(user_id) ?? null })),
+      recurringDifficulties: sharedInsights.recurringDifficulties,
+      searchedTopics: sharedInsights.searchedTopics,
+    },
   };
 }
 
@@ -170,6 +210,14 @@ export type MemberDetail = {
   groups: { id: string; name: string }[];
   attendance: { session_id: string; class_name: string; starts_at: string; status: AttendanceStatus }[];
   attendanceRate: number;
+  shared: {
+    categories: string[];
+    recentSessions: { id: string; date: string; title: string | null; session_type: string; duration_minutes: number | null }[];
+    skills: { skillName: string; evidenceCount: number; lastPracticedAt: string | null }[];
+    observations: { type: string; content: string; date: string }[];
+    goals: { id: string; title: string; status: string }[];
+    resources: { id: string; title: string; url: string }[];
+  };
 };
 
 export async function getMemberDetail(clubId: string, memberUserId: string): Promise<MemberDetail | null> {
@@ -242,6 +290,34 @@ export async function getMemberDetail(clubId: string, memberUserId: string): Pro
 
   const presentCount = attendance.filter((a) => a.status === "present").length;
 
+  const { data: sharing } = await supabase
+    .from("club_sharing_preferences")
+    .select("share_skills, share_training, share_sparring, share_difficulties, share_goals, share_youtube")
+    .eq("club_id", clubId)
+    .eq("user_id", memberUserId)
+    .maybeSingle();
+  const categories = Object.entries(sharing ?? {})
+    .filter(([, enabled]) => enabled)
+    .map(([key]) => key.replace("share_", ""));
+
+  const [sessionsResult, skillsResult, observationsResult, goalsResult, resourcesResult] = await Promise.all([
+    categories.some((c) => c === "training" || c === "sparring")
+      ? supabase.from("training_sessions").select("id, date, title, session_type, duration_minutes").eq("user_id", memberUserId).order("date", { ascending: false }).limit(12)
+      : Promise.resolve({ data: [] }),
+    categories.includes("skills")
+      ? supabase.from("skill_progress").select("evidence_count, last_practiced_at, skill:skills(name)").eq("user_id", memberUserId).order("evidence_count", { ascending: false }).limit(8)
+      : Promise.resolve({ data: [] }),
+    categories.includes("difficulties")
+      ? supabase.from("session_observations").select("type, content, session:training_sessions!inner(date, user_id)").eq("session.user_id", memberUserId).in("type", ["difficulty", "question"]).limit(8)
+      : Promise.resolve({ data: [] }),
+    categories.includes("goals")
+      ? supabase.from("goals").select("id, title, status").eq("user_id", memberUserId).order("created_at", { ascending: false }).limit(8)
+      : Promise.resolve({ data: [] }),
+    categories.includes("youtube")
+      ? supabase.from("resources").select("id, title, url").eq("user_id", memberUserId).eq("type", "video").order("created_at", { ascending: false }).limit(8)
+      : Promise.resolve({ data: [] }),
+  ]);
+
   return {
     clubId,
     userId: memberUserId,
@@ -251,5 +327,21 @@ export async function getMemberDetail(clubId: string, memberUserId: string): Pro
     groups,
     attendance,
     attendanceRate: computeRate(presentCount, attendance.length),
+    shared: {
+      categories,
+      recentSessions: (sessionsResult.data ?? []) as MemberDetail["shared"]["recentSessions"],
+      skills: ((skillsResult.data ?? []) as unknown as { evidence_count: number; last_practiced_at: string | null; skill: { name: string } | null }[]).map((row) => ({
+        skillName: row.skill?.name ?? "Technique",
+        evidenceCount: row.evidence_count,
+        lastPracticedAt: row.last_practiced_at,
+      })),
+      observations: ((observationsResult.data ?? []) as unknown as { type: string; content: string; session: { date: string } | null }[]).map((row) => ({
+        type: row.type,
+        content: row.content,
+        date: row.session?.date ?? "",
+      })),
+      goals: (goalsResult.data ?? []) as MemberDetail["shared"]["goals"],
+      resources: (resourcesResult.data ?? []) as MemberDetail["shared"]["resources"],
+    },
   };
 }

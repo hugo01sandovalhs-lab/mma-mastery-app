@@ -94,6 +94,47 @@ export default async function MemberDetailPage({
             </div>
           )}
         </div>
+
+        <div className="flex flex-col gap-3">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">Progression partagée</h2>
+          {member.shared.categories.length === 0 ? (
+            <Card><CardContent className="py-8 text-sm text-muted-foreground">Ce membre ne partage actuellement aucune donnée de progression.</CardContent></Card>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2">
+              <Card><CardContent className="py-4">
+                <p className="mb-3 text-sm font-semibold">Activité récente</p>
+                {member.shared.recentSessions.length === 0 ? <p className="text-sm text-muted-foreground">Aucune séance partagée récente.</p> : (
+                  <ul className="space-y-2 text-sm">{member.shared.recentSessions.map((session) => (
+                    <li key={session.id} className="flex justify-between gap-3"><span>{session.title || session.session_type}</span><span className="text-muted-foreground">{new Date(session.date).toLocaleDateString(intlLocale)}</span></li>
+                  ))}</ul>
+                )}
+              </CardContent></Card>
+              <Card><CardContent className="py-4">
+                <p className="mb-3 text-sm font-semibold">Compétences</p>
+                {member.shared.skills.length === 0 ? <p className="text-sm text-muted-foreground">Données insuffisantes.</p> : (
+                  <ul className="space-y-2 text-sm">{member.shared.skills.map((skill) => (
+                    <li key={skill.skillName} className="flex justify-between gap-3"><span>{skill.skillName}</span><span className="text-muted-foreground">{skill.evidenceCount} preuves</span></li>
+                  ))}</ul>
+                )}
+              </CardContent></Card>
+              <Card><CardContent className="py-4">
+                <p className="mb-3 text-sm font-semibold">Difficultés et questions</p>
+                {member.shared.observations.length === 0 ? <p className="text-sm text-muted-foreground">Aucune donnée partagée.</p> : (
+                  <ul className="space-y-2 text-sm">{member.shared.observations.map((item, index) => <li key={`${item.date}-${index}`}><Badge variant="outline">{item.type}</Badge> <span className="ml-1">{item.content}</span></li>)}</ul>
+                )}
+              </CardContent></Card>
+              <Card><CardContent className="py-4">
+                <p className="mb-3 text-sm font-semibold">Objectifs et vidéos</p>
+                {member.shared.goals.length + member.shared.resources.length === 0 ? <p className="text-sm text-muted-foreground">Aucune donnée partagée.</p> : (
+                  <ul className="space-y-2 text-sm">
+                    {member.shared.goals.map((goal) => <li key={goal.id}>{goal.title} <Badge variant="outline">{goal.status}</Badge></li>)}
+                    {member.shared.resources.map((resource) => <li key={resource.id}><a className="underline" href={resource.url} target="_blank" rel="noreferrer">{resource.title}</a></li>)}
+                  </ul>
+                )}
+              </CardContent></Card>
+            </div>
+          )}
+        </div>
       </div>
     </AppShell>
   );
