@@ -28,6 +28,8 @@ export type SkillObservationSignal = {
 export type SkillIntelligenceInput = {
   skillId: string;
   skillName: string;
+  disciplineName?: string;
+  category?: string | null;
   progress: SkillProgressDimensions;
   observations: SkillObservationSignal[];
   /** Most recent training session date (ISO) in which this skill was drilled, or null if never. */

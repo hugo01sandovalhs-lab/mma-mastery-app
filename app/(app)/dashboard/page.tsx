@@ -259,7 +259,7 @@ function Hero({
             </span>
           ) : null}
         </span>
-        <Button size="sm" render={<Link href="/training/new" />}><Dumbbell /> {dict["action.newSession"]}</Button>
+        <Button size="lg" className="min-h-11 w-full sm:w-auto" render={<Link href="/training/new" />}><Dumbbell /> {dict["action.newSession"]}</Button>
       </div>
     </section>
   );

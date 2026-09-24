@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, PlayCircle, Search, Sparkles, Swords, Target, Trophy, User, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Dumbbell, Flag, LayoutDashboard, Network, PlayCircle, Search, Sparkles, Swords, Target, Trophy, User, Users } from "lucide-react";
 import { cn } from "cn";
 import { useI18n } from "@/components/i18n-provider";
 
@@ -15,6 +15,7 @@ const NAV_LINKS = [
 ];
 
 const SIDEBAR_ONLY_LINKS = [
+  { href: "/my-game", label: "My Game", icon: Network },
   { href: "/sparring", label: "Sparring", icon: Swords },
   { href: "/youtube", label: "YouTube", icon: PlayCircle },
   { href: "/calendar", label: "Calendrier", icon: CalendarDays },

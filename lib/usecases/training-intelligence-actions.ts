@@ -45,23 +45,23 @@ async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceI
       supabase
         .from("skill_progress")
         .select(
-          "skill_id, knowledge_level, drilling_reps, live_application_count, sparring_attempt_count, sparring_success_count, consistency_score, pressure_performance_level, confidence_level, evidence_count, last_practiced_at, skill:skills(id, name)",
+          "skill_id, knowledge_level, drilling_reps, live_application_count, sparring_attempt_count, sparring_success_count, consistency_score, pressure_performance_level, confidence_level, evidence_count, last_practiced_at, skill:skills(id, name, category, discipline:disciplines(name))",
         )
         .eq("user_id", user.id),
       supabase
         .from("session_techniques")
-        .select("skill_id, skill:skills(id, name), session:training_sessions(date)")
+        .select("skill_id, skill:skills(id, name, category, discipline:disciplines(name)), session:training_sessions(date)")
         .not("skill_id", "is", null),
       supabase
         .from("session_observations")
         .select(
-          "type, content, related_skill_id, skill:skills(id, name), session:training_sessions(date)",
+          "type, content, related_skill_id, skill:skills(id, name, category, discipline:disciplines(name)), session:training_sessions(date)",
         )
         .not("related_skill_id", "is", null)
         .in("type", ["difficulty", "question"]),
     ]);
 
-  type SkillRef = { id: string; name: string };
+  type SkillRef = { id: string; name: string; category: string | null; discipline: { name: string } | null };
   type ProgressRow = SkillProgressDimensions & { skill_id: string; skill: SkillRef | null };
   type TechniqueRow = { skill_id: string; skill: SkillRef | null; session: { date: string } | null };
   type ObservationRow = {
@@ -77,6 +77,7 @@ async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceI
   const observations = (observationRows ?? []) as unknown as ObservationRow[];
 
   const skillNames = new Map<string, string>();
+  const skillMetadata = new Map<string, { category: string | null; disciplineName: string }>();
   const progressBySkill = new Map<string, SkillProgressDimensions>();
   const lastPracticedBySkill = new Map<string, string>();
   const observationsBySkill = new Map<string, SkillObservationSignal[]>();
@@ -84,6 +85,7 @@ async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceI
   for (const row of progress) {
     if (!row.skill) continue;
     skillNames.set(row.skill_id, row.skill.name);
+    skillMetadata.set(row.skill_id, { category: row.skill.category, disciplineName: row.skill.discipline?.name ?? "MMA" });
     progressBySkill.set(row.skill_id, {
       knowledge_level: row.knowledge_level,
       drilling_reps: row.drilling_reps,
@@ -101,6 +103,7 @@ async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceI
   for (const row of techniques) {
     if (!row.skill || !row.session?.date) continue;
     skillNames.set(row.skill_id, row.skill.name);
+    skillMetadata.set(row.skill_id, { category: row.skill.category, disciplineName: row.skill.discipline?.name ?? "MMA" });
     const current = lastPracticedBySkill.get(row.skill_id);
     if (!current || row.session.date > current) {
       lastPracticedBySkill.set(row.skill_id, row.session.date);
@@ -110,6 +113,7 @@ async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceI
   for (const row of observations) {
     if (!row.skill || !row.session?.date) continue;
     skillNames.set(row.related_skill_id, row.skill.name);
+    skillMetadata.set(row.related_skill_id, { category: row.skill.category, disciplineName: row.skill.discipline?.name ?? "MMA" });
     const list = observationsBySkill.get(row.related_skill_id) ?? [];
     list.push({ type: row.type, content: row.content, occurredAt: row.session.date });
     observationsBySkill.set(row.related_skill_id, list);
@@ -138,6 +142,8 @@ async function loadSkillIntelligenceInputsUncached(): Promise<SkillIntelligenceI
   return skillIds.map((skillId) => ({
     skillId,
     skillName: skillNames.get(skillId) as string,
+    disciplineName: skillMetadata.get(skillId)?.disciplineName,
+    category: skillMetadata.get(skillId)?.category,
     progress: progressBySkill.get(skillId) ?? defaultProgress,
     observations: observationsBySkill.get(skillId) ?? [],
     lastPracticedAt: lastPracticedBySkill.get(skillId) ?? null,
