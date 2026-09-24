@@ -71,6 +71,7 @@ export default function LoginPage() {
           {isPending ? t("auth.login.submitPending", "Connexion…") : t("auth.login.submit", "Se connecter")}
         </Button>
         <p className="auth-switch">{t("auth.login.noAccount", "Pas encore de compte ?")} <Link href="/signup">{t("auth.login.createAccount", "Créer un compte")}</Link></p>
+        <p className="auth-switch"><Link href="/resend-confirmation">{t("auth.resend", "Renvoyer l’email de confirmation")}</Link></p>
       </form>
     </AuthShell>
   );
