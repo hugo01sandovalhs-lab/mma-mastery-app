@@ -30,7 +30,7 @@ export async function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon" className="min-h-11 min-w-11 rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarFallback>{initial}</AvatarFallback>
             </Avatar>

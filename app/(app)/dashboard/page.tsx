@@ -144,22 +144,22 @@ export default async function DashboardPage() {
         />
 
         <div className="championship-grid">
-        <Suspense key={locale} fallback={<StatRowSkeleton />}>
+        <Suspense key={`stats-${locale}`} fallback={<StatRowSkeleton />}>
           <DashboardStatRowSection dict={dict} />
         </Suspense>
 
         <div className="championship-details">
-          <Suspense key={locale} fallback={<Skeleton className="h-56 w-full rounded-xl" />}>
+          <Suspense key={`progress-${locale}`} fallback={<Skeleton className="h-56 w-full rounded-xl" />}>
             <DashboardProgressionSection dict={dict} />
           </Suspense>
           <RecentActivity dict={dict} locale={locale} sessions={recent} />
         </div>
 
         <div className="championship-support">
-          <Suspense key={locale} fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+          <Suspense key={`activity-${locale}`} fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
             <DashboardFocusSection dict={dict} />
           </Suspense>
-          <Suspense key={locale} fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
+          <Suspense key={`focus-${locale}`} fallback={<Skeleton className="h-40 w-full rounded-xl" />}>
             <DashboardClubSection dict={dict} locale={locale} />
           </Suspense>
         </div>
@@ -243,7 +243,7 @@ function Hero({
         <p>{displayName ? formatT(dict["dashboard.greeting"], { name: displayName }) : dict["dashboard.greetingDefault"]}</p>
         <h1>{dict["dashboard.tagline1"]}<br />{dict["dashboard.tagline2"]}<br />{dict["dashboard.tagline3"]}</h1>
         <p className="championship-status">
-          <Suspense key={locale} fallback={heroStatusText(dict, sessionCount, lastSessionDate, 0)}>
+          <Suspense key={`hero-${locale}`} fallback={heroStatusText(dict, sessionCount, lastSessionDate, 0)}>
             <HeroStatus dict={dict} sessionCount={sessionCount} lastSessionDate={lastSessionDate} />
           </Suspense>
         </p>
@@ -284,6 +284,7 @@ function StatRow({
   return (
     <div className="championship-stats">
       <ImageMetricPanel
+        priority
         label={dict["dashboard.focusToday"]}
         imageSrc={PHOTOS.focus.src}
         objectPosition={PHOTOS.focus.position}
@@ -319,6 +320,7 @@ function StatRow({
 }
 
 function ImageMetricPanel({
+  priority = false,
   label,
   imageSrc,
   imageAlt,
@@ -327,6 +329,7 @@ function ImageMetricPanel({
   title,
   detail,
 }: {
+  priority?: boolean;
   label: string;
   imageSrc: string;
   imageAlt: string;
@@ -337,7 +340,7 @@ function ImageMetricPanel({
 }) {
   return (
     <Link href={href} className="championship-image-panel">
-      <ProgressiveImage src={imageSrc} alt={imageAlt} fill sizes="(max-width: 767px) 100vw, 40vw" style={{ objectPosition }} />
+      <ProgressiveImage src={imageSrc} alt={imageAlt} fill priority={priority} sizes="(max-width: 767px) 100vw, 40vw" style={{ objectPosition }} />
       <span className="championship-image-panel-copy">
         <span className="championship-image-panel-label">{label}</span>
         <strong>{title}</strong>

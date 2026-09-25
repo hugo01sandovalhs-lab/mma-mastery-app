@@ -42,7 +42,7 @@ export function CoachWeeklyDigest({
   return (
     <div className="coach-modules">
       <div className="coach-module-card">
-        <ProgressiveImage src={watchPhoto.src} alt={watchPhoto.alt} fill sizes="(max-width: 767px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: watchPhoto.position }} />
+        <ProgressiveImage src={watchPhoto.src} alt={watchPhoto.alt} fill priority sizes="(max-width: 767px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: watchPhoto.position }} />
         <span className="coach-module-eyebrow">
           <Sparkles className="size-3.5" /> {dict["photoLabel.watch"]} · {dict["skills.techniqueOfDay"]}
         </span>

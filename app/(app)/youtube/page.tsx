@@ -173,16 +173,17 @@ export default async function YouTubePage({
         </section>
 
         {query ? (
-          <Suspense key={locale} fallback={videoGridSkeleton()}>
+          <Suspense key={`results-${locale}`} fallback={videoGridSkeleton()}>
             <SearchResultsSection dict={dict} query={query} discipline={effectiveDiscipline} favoriteIdByUrl={favoriteIdByUrl} />
           </Suspense>
         ) : null}
 
-        <Suspense key={locale} fallback={null}>
+        <Suspense key={`for-you-${locale}`} fallback={null}>
           <ForYouSection dict={dict} favoriteIdByUrl={favoriteIdByUrl} />
         </Suspense>
 
         <ChampionshipSectionPhoto
+          priority
           src="/mma-mastery-photos/ahmad-thomas-ulFi8aO6Xdk-unsplash.jpg"
           alt="Travail au pao en Muay Thai"
           label="Techniques et drills"

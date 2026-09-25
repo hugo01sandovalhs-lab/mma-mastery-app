@@ -97,6 +97,7 @@ export function CommandPalette() {
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="min-h-11 min-w-11"
         aria-label={t("commandPalette.open")}
         onClick={() => setOpen(true)}
       >

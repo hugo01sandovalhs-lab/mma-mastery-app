@@ -16,6 +16,7 @@ export function ChampionshipSectionPhoto({
   objectPosition = "center",
   className,
   size = "default",
+  priority = false,
 }: {
   src: string;
   alt: string;
@@ -28,6 +29,7 @@ export function ChampionshipSectionPhoto({
   objectPosition?: string;
   className?: string;
   size?: "default" | "large";
+  priority?: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -36,6 +38,7 @@ export function ChampionshipSectionPhoto({
         src={src}
         alt={alt}
         fill
+        priority={priority}
         sizes="(max-width: 767px) 100vw, 65vw"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ objectPosition }}
@@ -64,7 +67,7 @@ export function ChampionshipPhotoMosaic({ page, className }: { page: PhotoStoryP
     <div className={cn("editorial-photo-mosaic", className)}>
       {photos.map((photo, index) => {
         const content = <>
-          <ProgressiveImage src={photo.src} alt={photo.alt} fill sizes="(max-width: 767px) 82vw, (max-width: 1100px) 42vw, 30vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
+          <ProgressiveImage src={photo.src} alt={photo.alt} fill priority={index === 0} sizes="(max-width: 767px) 82vw, (max-width: 1100px) 42vw, 30vw" style={{ objectFit: "cover", objectPosition: photo.position }} />
           <span>{t(photo.labelKey, photo.label)}</span>
         </>;
         return "href" in photo ? (
