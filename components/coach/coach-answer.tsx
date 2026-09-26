@@ -57,30 +57,42 @@ export function CoachAnswerView({
             </Badge>
           </div>
           <p className="text-sm leading-relaxed">{response.summary}</p>
-
-          {response.recommendations.length > 0 ? (
-            <ul className="flex flex-col gap-2 border-t border-border pt-3">
-              {response.recommendations.map((rec, i) => (
-                <li key={i} className="flex flex-col gap-1">
-                  <p className="flex items-start gap-1.5 text-sm">
-                    <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
-                    <span>{rec.statement}</span>
-                  </p>
-                  {rec.basedOnFactIndexes.length > 0 ? (
-                    <p className="pl-5 text-xs text-muted-foreground">
-                      {t("coach.basedOn", "Basé sur:")}{" "}
-                      {rec.basedOnFactIndexes
-                        .map((idx) => context.facts[idx]?.statement)
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : null}
         </CardContent>
       </Card>
+
+      {response.recommendations.length > 0 ? (
+        <div className="coach-brief">
+          {response.recommendations.slice(0, 3).map((rec, i) => {
+            const evidence = rec.basedOnFactIndexes.map((idx) => context.facts[idx]?.statement).filter(Boolean);
+            return (
+              <article key={i} className="coach-brief-card">
+                <span className="coach-brief-index">{i + 1}</span>
+                <div className="coach-brief-body">
+                  <span className="coach-brief-label">{t("coach.briefPriority", "Priorité")}</span>
+                  <p className="coach-brief-statement">{rec.statement}</p>
+
+                  {evidence.length > 0 ? (
+                    <>
+                      <span className="coach-brief-label">{t("coach.briefEvidence", "Preuves")}</span>
+                      <ul className="coach-brief-evidence">
+                        {evidence.map((statement, j) => (
+                          <li key={j}>{statement}</li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : null}
+
+                  <span className="coach-brief-label">{t("coach.briefNext", "Prochaine action")}</span>
+                  <p className="coach-brief-next">
+                    <ArrowRight className="size-3.5 shrink-0 text-primary" />
+                    {t("coach.briefNextDefault", "Travaille ce point lors de ta prochaine séance.")}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
 
       <section aria-labelledby="coach-videos" className="coach-video-stage">
         <ProgressiveImage

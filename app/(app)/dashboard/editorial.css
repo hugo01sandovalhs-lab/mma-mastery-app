@@ -15,6 +15,7 @@
 .editorial-header--skills { grid-template-columns:1fr 34%; min-height:250px; }
 .editorial-header--coach { grid-template-columns:1fr 29%; min-height:230px; }
 .editorial-header--competition { grid-template-columns:1fr 52%; min-height:250px; }
+.editorial-header--sparring { grid-template-columns:1fr 34%; min-height:250px; }
 .editorial-header--study,.editorial-header--goals,.editorial-header--club,.editorial-header--search,.editorial-header--profile,.editorial-header--calendar { min-height:184px; }
 .editorial-header--goals,.editorial-header--profile,.editorial-header--study { grid-template-columns:1fr 27%; }
 .editorial-header--goals h1,.editorial-header--profile h1,.editorial-header--study h1,.editorial-header--club h1,.editorial-header--search h1,.editorial-header--calendar h1 { font-size:clamp(32px,3vw,44px); text-transform:capitalize; }
@@ -68,9 +69,17 @@
 .editorial-club .club-photo-panel label { color:#fff4dcd9; }
 .editorial-training li [data-slot=card] { border:0; border-bottom:1px solid var(--border); background:transparent; box-shadow:none; border-radius:0; padding-block:4px 16px; }
 .editorial-training li { padding-bottom:16px; }
-.editorial-skills section>div:first-child { border-bottom:1px solid var(--border); padding-bottom:8px; }
 .editorial-skills section [data-slot=card] { height:100%; }
 .editorial-skills section [data-slot=card-content]>div:first-child { flex-wrap:wrap; }
+.skills-bucket-heading { display:flex; align-items:baseline; gap:8px; border-bottom:2px solid #201e18; padding-bottom:8px; margin-bottom:14px; }
+.skills-bucket-heading h2 { font-family:var(--championship-ui); font-size:22px; font-weight:850; letter-spacing:-.03em; text-transform:none; }
+.skills-bucket-heading span { font-size:13px; color:var(--muted-foreground); }
+.skills-bucket--inGame .skills-bucket-heading { border-color:#7a9b5f; }
+.skills-bucket--developing .skills-bucket-heading { border-color:#a48649; }
+.skills-bucket--toWork .skills-bucket-heading { border-color:#a12e25; }
+.skills-stage-tracker { display:flex; gap:3px; }
+.skills-stage-tracker>span { flex:1; height:5px; border-radius:2px; background:var(--muted); }
+.skills-stage-tracker>span[data-filled] { background:#a48649; }
 .editorial-profile-details { display:grid; grid-template-columns:1fr 1fr; gap:18px; font-size:14px; }
 .editorial-profile-details dt { color:var(--muted-foreground); margin-bottom:6px; font-size:12px; }
 .editorial-profile-details dd { overflow-wrap:anywhere; font-weight:600; }
@@ -88,6 +97,17 @@
 .coach-module-card p { color:#f2ece0; }
 .coach-module-card [data-slot=badge] { border-color:#ffffff40; background:#0000002f; color:#fff4dc; }
 .coach-module-card [data-slot=button][data-variant=outline] { border-color:#ffffff40; background:#0000001f; color:#fff4dc; }
+.coach-brief { display:flex; flex-direction:column; gap:10px; }
+.coach-brief-card { display:flex; gap:14px; padding:16px 18px; border:1px solid var(--border); border-radius:8px; background:var(--card); }
+.coach-brief-index { display:flex; align-items:center; justify-content:center; width:30px; height:30px; flex:none; border-radius:999px; background:#a48649; color:#17140e; font-size:14px; font-weight:850; }
+.coach-brief-body { display:flex; flex-direction:column; gap:3px; min-width:0; flex:1; }
+.coach-brief-label { font-size:10px; font-weight:750; letter-spacing:.05em; text-transform:uppercase; color:#a48649; margin-top:8px; }
+.coach-brief-body>.coach-brief-label:first-child { margin-top:0; }
+.coach-brief-statement { font-size:15px; font-weight:650; line-height:1.35; letter-spacing:-.01em; }
+.coach-brief-evidence { display:flex; flex-direction:column; gap:2px; }
+.coach-brief-evidence li { font-size:12.5px; line-height:1.5; color:var(--muted-foreground); }
+.coach-brief-evidence li:before { content:"· "; }
+.coach-brief-next { display:flex; align-items:flex-start; gap:6px; font-size:13px; font-weight:550; }
 .coach-video-stage { position:relative; isolation:isolate; display:grid; gap:18px; overflow:hidden; padding:22px; border:1px solid #9a742d66; border-radius:6px; background:#0a0b09; color:#f5eddd; }
 .coach-video-stage-bg { z-index:-2; object-fit:cover; }
 .coach-video-stage-shade { position:absolute; inset:0; z-index:-1; background:linear-gradient(135deg,#17150fe8,#0a0b09d9); }
@@ -120,6 +140,16 @@
 .search-prompts { display:flex; flex-wrap:wrap; gap:8px; }
 .search-prompts a { padding:8px 11px; border:1px solid var(--border); border-radius:4px; color:var(--muted-foreground); font-size:12px; }
 .search-prompts a:hover,.search-prompts a:focus-visible { border-color:#9a742d; color:var(--foreground); }
+.sparring-fightiq { display:grid; grid-template-columns:repeat(5,1fr); gap:1px; overflow:hidden; border-radius:8px; background:#d7d0c1; }
+.sparring-fightiq-item { display:flex; flex-direction:column; gap:4px; padding:20px 16px; background:#0b0c09; color:#fff4dc; }
+.sparring-fightiq-item>svg { width:18px; height:18px; color:#d7bd80; margin-bottom:4px; }
+.sparring-fightiq-item>span { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:#bcb3a4; }
+.sparring-fightiq-item>strong { font-size:18px; line-height:1.15; letter-spacing:-.02em; }
+.sparring-fightiq-item>small { font-size:12px; color:#e6dcc7; }
+.sparring-fightiq-trend { font-size:13px!important; line-height:1.35; font-weight:600; }
+.sparring-detail-columns { display:grid; grid-template-columns:1fr 1.3fr; gap:16px; align-items:start; opacity:.92; }
+.sparring-detail-columns [data-slot=card-title] { font-size:14px; }
+@media(max-width:900px) { .sparring-fightiq { grid-template-columns:repeat(2,1fr); } .sparring-fightiq-item:last-child { grid-column:1/-1; } .sparring-detail-columns { grid-template-columns:1fr; } }
 .club-paths { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
 .club-paths section { position:relative; isolation:isolate; overflow:hidden; display:flex; min-height:240px; flex-direction:column; align-items:flex-start; gap:10px; padding:22px; border:1px solid var(--border); border-radius:6px; background:#0b0c09; color:#fff4dc; scroll-margin-top:20px; }
 .club-paths section>img { z-index:-2; object-fit:cover; }
@@ -133,7 +163,7 @@
 .photo-share a:hover,.photo-share a:focus-visible { background:var(--muted); color:var(--foreground); }
 .photo-share svg { width:15px; height:15px; }
 .photo-share a>span { font-size:11px; font-weight:800; letter-spacing:-.04em; }
-.editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile { min-height:240px; }
+.editorial-club .editorial-photo-tile,.editorial-coach .editorial-photo-tile,.editorial-study .editorial-photo-tile,.editorial-skills .editorial-photo-tile,.editorial-sparring .editorial-photo-tile { min-height:240px; }
 .editorial-calendar .editorial-header { min-height:260px; }
 .editorial-profile .editorial-header { min-height:280px; }
 .editorial-calendar .editorial-photo-tile,.editorial-profile .editorial-photo-tile { min-height:300px; }

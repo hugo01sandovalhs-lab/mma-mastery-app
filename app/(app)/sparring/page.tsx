@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PlusIcon, Swords } from "lucide-react";
+import { PlusIcon, Swords, Shield, AlertTriangle, Crosshair, CircleAlert } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/championship/page-header";
+import { ChampionshipPhotoMosaic } from "@/components/championship/section-photo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,27 +44,22 @@ export default async function SparringListPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex flex-col gap-1.5">
-            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-              {dict["page.sparring.title"]}
-            </h1>
-            <p className="text-sm text-muted-foreground">{dict["page.sparring.tagline"]}</p>
-            <p className="text-xs text-muted-foreground">
-              {formatT(dict["sparringList.sessionCount"], { count: sessions.length })}
-            </p>
-          </div>
-          <Button size="lg" render={<Link href="/training/new?type=sparring" />}>
-            <PlusIcon /> {dict["action.newSparring"]}
-          </Button>
-        </div>
+      <div className="editorial-page editorial-sparring">
+        <PageHeader
+          page="sparring"
+          title={dict["page.sparring.title"]}
+          description={<>
+            <p>{dict["page.sparring.tagline"]}</p>
+            <p className="editorial-caption">{formatT(dict["sparringList.sessionCount"], { count: sessions.length })}</p>
+          </>}
+          actions={
+            <Button size="lg" render={<Link href="/training/new?type=sparring" />}>
+              <PlusIcon /> {dict["action.newSparring"]}
+            </Button>
+          }
+        />
 
-        <SummaryCard summary={summary} dict={dict} />
-
-        {sessions.length > 0 ? (
-          <InsightsCard positionBreakdown={positionBreakdown} techniqueBreakdown={techniqueBreakdown} trend={trend} dict={dict} />
-        ) : null}
+        <ChampionshipPhotoMosaic page="sparring" />
 
         {sessions.length === 0 ? (
           <Card>
@@ -76,14 +73,90 @@ export default async function SparringListPage() {
             </CardContent>
           </Card>
         ) : (
-          <ul className="flex flex-col">
-            {sessions.map((s, i) => (
-              <SessionRow key={s.id} session={s} isLast={i === sessions.length - 1} dict={dict} locale={locale} />
-            ))}
-          </ul>
+          <>
+            <FightIQBand
+              positionBreakdown={positionBreakdown}
+              techniqueBreakdown={techniqueBreakdown}
+              summary={summary}
+              trend={trend}
+              dict={dict}
+            />
+
+            <div className="sparring-detail-columns">
+              <SummaryCard summary={summary} dict={dict} />
+              <InsightsCard positionBreakdown={positionBreakdown} techniqueBreakdown={techniqueBreakdown} trend={trend} dict={dict} />
+            </div>
+
+            <ul className="flex flex-col">
+              {sessions.map((s, i) => (
+                <SessionRow key={s.id} session={s} isLast={i === sessions.length - 1} dict={dict} locale={locale} />
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </AppShell>
+  );
+}
+
+function FightIQBand({
+  positionBreakdown,
+  techniqueBreakdown,
+  summary,
+  trend,
+  dict,
+}: {
+  positionBreakdown: ReturnType<typeof summarizePositionBreakdown>;
+  techniqueBreakdown: ReturnType<typeof summarizeTechniqueBreakdown>;
+  summary: ReturnType<typeof summarizeSparringRounds>;
+  trend: ReturnType<typeof computeRecentTrend>;
+  dict: Dict;
+}) {
+  const strong = positionBreakdown.strongPositions[0] ?? null;
+  const weak = positionBreakdown.weakPositions[0] ?? null;
+  const topTechnique = techniqueBreakdown.mostAttempted[0] ?? null;
+  const problem = summary.recurringDifficulties[0] ?? null;
+  const TrendIcon = trend === null ? Minus : trend.direction === "up" ? TrendingUp : trend.direction === "down" ? TrendingDown : Minus;
+  const trendText =
+    trend === null
+      ? dict["sparringList.noPositionData"]
+      : formatT(dict[trend.direction === "up" ? "sparringList.trendUp" : trend.direction === "down" ? "sparringList.trendDown" : "sparringList.trendStable"], {
+          recent: Math.round(trend.recentRate * 100),
+          prior: Math.round(trend.priorRate * 100),
+        });
+
+  return (
+    <section className="sparring-fightiq">
+      <div className="sparring-fightiq-item">
+        <Shield aria-hidden="true" />
+        <span>{dict["sparringList.strongPositionsTitle"]}</span>
+        <strong>{strong ? strong.position : "—"}</strong>
+        {strong ? <small>{Math.round(strong.successRate * 100)}% · {strong.attempts}</small> : null}
+      </div>
+      <div className="sparring-fightiq-item">
+        <AlertTriangle aria-hidden="true" />
+        <span>{dict["sparringList.weakPositionsTitle"]}</span>
+        <strong>{weak ? weak.position : "—"}</strong>
+        {weak ? <small>{Math.round(weak.successRate * 100)}% · {weak.attempts}</small> : null}
+      </div>
+      <div className="sparring-fightiq-item">
+        <Crosshair aria-hidden="true" />
+        <span>{dict["sparringList.mostAttemptedTitle"]}</span>
+        <strong>{topTechnique ? topTechnique.technique : "—"}</strong>
+        {topTechnique ? <small>{formatT(dict["sparringList.occurrences"], { count: topTechnique.attempts })}</small> : null}
+      </div>
+      <div className="sparring-fightiq-item">
+        <CircleAlert aria-hidden="true" />
+        <span>{dict["sparringList.recurringDifficultiesTitle"]}</span>
+        <strong>{problem ? problem.problem : "—"}</strong>
+        {problem ? <small>{formatT(dict["sparringList.occurrences"], { count: problem.count })}</small> : null}
+      </div>
+      <div className="sparring-fightiq-item">
+        <TrendIcon aria-hidden="true" />
+        <span>{dict["sparringList.trendLabel"]}</span>
+        <strong className="sparring-fightiq-trend">{trendText}</strong>
+      </div>
+    </section>
   );
 }
 

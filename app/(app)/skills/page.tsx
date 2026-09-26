@@ -39,6 +39,32 @@ const STAGE_BADGE_VARIANT: Record<MasteryStage, "default" | "secondary" | "outli
   mastered: "default",
 };
 
+const STAGE_TRACKER = ["COMPRIS", "DRILLÉ", "APPLIQUÉ", "RÉUSSI", "SOUS PRESSION"] as const;
+const STAGE_TRACKER_INDEX: Record<MasteryStage, number> = {
+  unknown: 0,
+  introduced: 1,
+  drilling: 2,
+  applying: 3,
+  consistent: 4,
+  mastered: 5,
+};
+
+type SkillBucket = "inGame" | "developing" | "toWork";
+const BUCKET_ORDER: SkillBucket[] = ["inGame", "developing", "toWork"];
+const BUCKET_LABEL: Record<SkillBucket, string> = {
+  inGame: "Dans ton jeu",
+  developing: "En développement",
+  toWork: "À travailler",
+};
+const BUCKET_STAGES: Record<SkillBucket, MasteryStage[]> = {
+  inGame: ["consistent", "mastered"],
+  developing: ["drilling", "applying"],
+  toWork: ["unknown", "introduced"],
+};
+function bucketOf(stage: MasteryStage): SkillBucket {
+  return BUCKET_ORDER.find((b) => BUCKET_STAGES[b].includes(stage)) ?? "toWork";
+}
+
 export default async function SkillsPage({
   searchParams,
 }: {
@@ -66,13 +92,11 @@ export default async function SkillsPage({
   const isFiltered = Boolean(q || discipline);
   const trackedCount = skills.filter((s) => s.stage !== "unknown").length;
 
-  const groups = new Map<string, { name: string; items: SkillListItem[] }>();
+  const buckets = new Map<SkillBucket, SkillListItem[]>();
   for (const s of skills) {
-    const g = groups.get(s.discipline.id) ?? { name: s.discipline.name, items: [] };
-    g.items.push(s);
-    groups.set(s.discipline.id, g);
+    const b = bucketOf(s.stage);
+    buckets.set(b, [...(buckets.get(b) ?? []), s]);
   }
-  const sortedGroups = Array.from(groups.values()).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <AppShell>
@@ -169,20 +193,23 @@ export default async function SkillsPage({
             </CardContent>
           </Card>
         ) : (
-          <div className="flex flex-col gap-6">
-            {sortedGroups.map((g) => (
-              <section key={g.name} className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-medium text-muted-foreground">{g.name}</h2>
-                  <span className="text-xs text-muted-foreground/70">{g.items.length}</span>
-                </div>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {g.items.map((s) => (
-                    <SkillCard key={s.id} skill={s} dict={dict} />
-                  ))}
-                </div>
-              </section>
-            ))}
+          <div className="flex flex-col gap-8">
+            {BUCKET_ORDER.filter((b) => (buckets.get(b)?.length ?? 0) > 0).map((b) => {
+              const items = buckets.get(b)!;
+              return (
+                <section key={b} className={`skills-bucket skills-bucket--${b}`}>
+                  <div className="skills-bucket-heading">
+                    <h2>{BUCKET_LABEL[b]}</h2>
+                    <span>{items.length}</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                    {items.map((s) => (
+                      <SkillCard key={s.id} skill={s} dict={dict} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </div>
@@ -191,18 +218,25 @@ export default async function SkillsPage({
 }
 
 function SkillCard({ skill, dict }: { skill: SkillListItem; dict: (typeof DICTIONARIES)["fr"] }) {
+  const filled = STAGE_TRACKER_INDEX[skill.stage];
   return (
     <Link href={`/skills/${skill.id}`}>
       <Card className="transition-colors hover:bg-muted/50">
-        <CardContent className="flex flex-col gap-2">
+        <CardContent className="flex flex-col gap-3">
           <div className="flex items-start justify-between gap-2">
             <span className="text-sm font-medium leading-snug">{skill.name}</span>
             <Badge variant={STAGE_BADGE_VARIANT[skill.stage]} className="shrink-0">
               {dict[MASTERY_STAGE_LABEL_KEYS[skill.stage]]}
             </Badge>
           </div>
+          <div className="skills-stage-tracker" aria-hidden="true">
+            {STAGE_TRACKER.map((label, i) => (
+              <span key={label} data-filled={i < filled || undefined} title={label} />
+            ))}
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             {skill.category ? <Badge variant="outline">{skill.category}</Badge> : null}
+            {skill.discipline?.name ? <Badge variant="outline">{skill.discipline.name}</Badge> : null}
             {skill.lastPracticedAt ? (
               <span className="text-xs text-muted-foreground">
                 {formatT(dict["skills.practicedAgo"], { when: relativeDays(skill.lastPracticedAt, dict) })}

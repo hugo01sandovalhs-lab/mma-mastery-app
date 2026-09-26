@@ -12,6 +12,7 @@ export const PAGE_PHOTOS = {
   profile: { src: "/mma-mastery-photos/vV0e12TcSRRwsZeaeyU7WoK-UUh7MRz3DvLnS9jPJ2FGg4LBjLV6q1rxRjlkDBmIJfh6xrBaYR7EZyhC3Vwpdm7_ESZRQOHKlZK1JQFZDJVXZXZ7DEWo42NhcYz_NscpE6vmn31HKt2X9NtvzNC1bQtHUe2DYOv4UNLdoCNvhrr046B13hRECkQ8qvmgoFR_.jpg", alt: "Portrait d'une combattante en garde", position: "50% 43%" },
   calendar: { src: "/mma-mastery-photos/pexels-pavel-danilyuk-6295766.jpg", alt: "Groupe structuré en séance de sparring", position: "50% 54%" },
   youtube: { src: "/mma-mastery-photos/diego-corona-_fljZhTXzSs-unsplash.jpg", alt: "Coup de pied sauté sur un ring sous des lumières dramatiques", position: "55% 45%" },
+  sparring: { src: "/mma-mastery-photos/pexels-roodzn-35029365.jpg", alt: "Deux pratiquants au clinch pendant un round de sparring", position: "38% 30%" },
 } as const;
 
 export const LANDING_SLIDES = [
@@ -73,6 +74,11 @@ export const PHOTO_STORIES = {
   calendar: [
     { src: "/mma-mastery-photos/pexels-cottonbro-4753927.jpg", alt: "Plusieurs binômes s'entraînent dans le gym", label: "Entraînements", labelKey: "photoLabel.trainings", href: "/training", position: "46% 46%" },
     { src: "/mma-mastery-photos/pexels-franco-monsalvo-252430633-13808107.jpg", alt: "Combat programmé sur un ring", label: "Compétitions", labelKey: "photoLabel.competitions", href: "/competition", position: "50% 54%" },
+  ],
+  sparring: [
+    { src: "/mma-mastery-photos/pexels-duren-williams-29414623-14796334.jpg", alt: "Échange de coups au sparring debout", label: "Frappe", labelKey: "photoLabel.striking", position: "50% 42%" },
+    { src: "/mma-mastery-photos/pexels-gabii-fernandez-199438359-38785771.jpg", alt: "Tentative de clé de bras au sol", label: "Sol", labelKey: "photoLabel.grappling", position: "50% 45%" },
+    { src: "/mma-mastery-photos/pexels-cottonbro-4761660.jpg", alt: "Combattant encaissant un coup en garde haute", label: "Intensité", labelKey: "photoLabel.intensity", position: "50% 55%" },
   ],
 } as const;
 

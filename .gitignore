@@ -37,6 +37,27 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Local design/source material not served by the application
+/.agents/
+/docs/design-references/MMA Mastery _ six univers visuels Caldwell.png
+/docs/design-references/README.md/
+/public/mma_mastery_product_plan_v3/
+/unused-photos-*.jpg
+/public/mma-mastery-photos/01_fight_operations.png
+/public/mma-mastery-photos/02_championship.png
+/public/mma-mastery-photos/03_athlete_editorial.png
+/public/mma-mastery-photos/04_fight_academy.png
+/public/mma-mastery-photos/06_fight_journal.png
+/public/mma-mastery-photos/MMA Mastery _ six univers visuels Caldwell.png
+/public/mma-mastery-photos/ahmad-thomas-VVqEIRNtqws-unsplash.jpg
+/public/mma-mastery-photos/anastase-maragos-AknKXOJOsoA-unsplash.jpg
+/public/mma-mastery-photos/diego-corona-HFEn8x1tLpM-unsplash.jpg
+/public/mma-mastery-photos/logan-weaver-lgnwvr-w4IsIvaE2I4-unsplash.jpg
+/public/mma-mastery-photos/pexels-tima-miroshnichenko-5750752.jpg
+/public/mma-mastery-photos/redd-francisco-P2pMvhoiW10-unsplash.jpg
+/public/mma-mastery-photos/redd-francisco-wEvO6fsQiG4-unsplash.jpg
+/public/mma-mastery-photos/yohann-libot-ByKXrd2NfGo-unsplash.jpg
+
 # supabase
 supabase/.temp/
 
